@@ -19,6 +19,10 @@ The following assumes the use of `node@>=10`.
 
 `yarn compile`
 
-## Run Tests
+## Run Tests (TODO)
 
 `yarn test`
+
+Currently tests are failing with the updated uniswap-v2-core dependency (@defiinvest.tech/uniswap-v2-xdai)
+
+Once tests are restored, the `prepulishOnly` npm script should be restored to `yarn test`
