@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@defiinvest.tech/uniswap-v2-xdai@1.0.1-beta.3":
-  version "1.0.1-beta.3"
-  resolved "https://registry.yarnpkg.com/@defiinvest.tech/uniswap-v2-xdai/-/uniswap-v2-xdai-1.0.1-beta.3.tgz#9cb31700bba4d247ecc107e1dfc94333bdad29c2"
-  integrity sha512-J0bXAk/ahfPKf5KrSxqKzmL5WQ5HLxsNZlCG/NJ2gxwjLTTvjpVAS4wxBlGtAteVKtmpr9t6/CBoKzvK06K2VQ==
+"@defiinvest.tech/uniswap-v2-xdai@1.0.1-beta.4":
+  version "1.0.1-beta.4"
+  resolved "https://registry.yarnpkg.com/@defiinvest.tech/uniswap-v2-xdai/-/uniswap-v2-xdai-1.0.1-beta.4.tgz#1a089e1bb258afc56ddc1b8def0c3e84e2b685a9"
+  integrity sha512-nkE0egTfnvwxmMISFNgBbDDi3F91rF/Cap7GYBZoLySV3JfFNtEQSbDQG6VaS2jDToUY0RWqW/dEBOe1YODe5g==
 
 "@ethereum-waffle/chai@^2.5.1":
   version "2.5.1"
