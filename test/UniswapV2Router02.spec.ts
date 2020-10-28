@@ -143,7 +143,7 @@ describe('fee-on-transfer tokens', () => {
     DTT = await deployContract(wallet, DeflatingERC20, [expandTo18Decimals(10000)])
 
     // make a DTT<>WETH pair
-    await fixture.factoryV2.createPair(DTT.address, WETH.address)
+    await fixture.factoryV2.createPair(DTT.address, WETH.address, WETH.address, wallet.address, 1000, 1000, 3)
     const pairAddress = await fixture.factoryV2.getPair(DTT.address, WETH.address)
     pair = new Contract(pairAddress, JSON.stringify(IUniswapV2Pair.abi), provider).connect(wallet)
   })
@@ -329,7 +329,7 @@ describe('fee-on-transfer tokens: reloaded', () => {
     DTT2 = await deployContract(wallet, DeflatingERC20, [expandTo18Decimals(10000)])
 
     // make a DTT<>WETH pair
-    await fixture.factoryV2.createPair(DTT.address, DTT2.address)
+    await fixture.factoryV2.createPair(DTT.address, DTT2.address, DTT2.address, wallet.address, 1000, 1000, 3)
     const pairAddress = await fixture.factoryV2.getPair(DTT.address, DTT2.address)
   })
 
