@@ -39,7 +39,7 @@
     "clean": "rimraf ./build/",
     "copy-v1-artifacts": "ncp ./buildV1 ./build",
     "precompile": "yarn clean",
-    "compile": "waffle .waffle.json & node hashContract.js",
+    "compile": "waffle .waffle.json && node hashContract.js",
     "postcompile": "yarn copy-v1-artifacts",
     "pretest": "yarn compile",
     "test": "mocha",
