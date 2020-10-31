@@ -71,7 +71,7 @@ library UniswapV2Library {
         amounts[0] = amountIn;
         for (uint i; i < path.length - 1; i++) {
             (uint reserveIn, uint reserveOut) = getReserves(factory, path[i], path[i + 1]);
-            (address base, uint m, uint n, uint fee) = getCurveParams(factory, path[i], path[i + 1]);
+            (,,, uint fee) = getCurveParams(factory, path[i], path[i + 1]);
             amounts[i + 1] = getAmountOut(amounts[i], reserveIn, reserveOut, fee);
         }
     }
@@ -83,7 +83,7 @@ library UniswapV2Library {
         amounts[amounts.length - 1] = amountOut;
         for (uint i = path.length - 1; i > 0; i--) {
             (uint reserveIn, uint reserveOut) = getReserves(factory, path[i - 1], path[i]);
-            (address base, uint m, uint n, uint fee) = getCurveParams(factory, path[i - 1], path[i]);
+            (,,, uint fee) = getCurveParams(factory, path[i - 1], path[i]);
             amounts[i - 1] = getAmountIn(amounts[i], reserveIn, reserveOut, fee);
         }
     }
