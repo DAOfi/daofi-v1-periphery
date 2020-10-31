@@ -1,6 +1,6 @@
 pragma solidity >=0.5.0;
 
-import '@defiinvest.tech/uniswap-v2-xdai/contracts/interfaces/IUniswapV2Pair.sol';
+import '@defiinvest.tech/uniswap-v2-core/contracts/interfaces/IUniswapV2Pair.sol';
 
 import "./SafeMath.sol";
 
@@ -21,7 +21,7 @@ library UniswapV2Library {
                 hex'ff',
                 factory,
                 keccak256(abi.encodePacked(token0, token1)),
-                hex'96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f' // init code hash
+                hex'a23657a3671fc8b15ca559e73f10e6edad00b4db1abdcb9b5aedf78970f2b279' // init code hash
             ))));
     }
 

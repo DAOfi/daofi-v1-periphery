@@ -3,7 +3,7 @@ import { solidity, MockProvider, createFixtureLoader, deployContract } from 'eth
 import { Contract } from 'ethers'
 import { BigNumber, bigNumberify } from 'ethers/utils'
 import { MaxUint256 } from 'ethers/constants'
-import IUniswapV2Pair from '@defiinvest.tech/uniswap-v2-xdai/build/IUniswapV2Pair.json'
+import IUniswapV2Pair from '@defiinvest.tech/uniswap-v2-core/build/IUniswapV2Pair.json'
 
 import { v2Fixture } from './shared/fixtures'
 import { expandTo18Decimals, getApprovalDigest, MINIMUM_LIQUIDITY } from './shared/utilities'
@@ -143,7 +143,7 @@ describe('fee-on-transfer tokens', () => {
     DTT = await deployContract(wallet, DeflatingERC20, [expandTo18Decimals(10000)])
 
     // make a DTT<>WETH pair
-    await fixture.factoryV2.createPair(DTT.address, WETH.address)
+    await fixture.factoryV2.createPair(DTT.address, WETH.address, WETH.address, wallet.address, expandTo18Decimals(1), 1, 3)
     const pairAddress = await fixture.factoryV2.getPair(DTT.address, WETH.address)
     pair = new Contract(pairAddress, JSON.stringify(IUniswapV2Pair.abi), provider).connect(wallet)
   })
@@ -329,7 +329,7 @@ describe('fee-on-transfer tokens: reloaded', () => {
     DTT2 = await deployContract(wallet, DeflatingERC20, [expandTo18Decimals(10000)])
 
     // make a DTT<>WETH pair
-    await fixture.factoryV2.createPair(DTT.address, DTT2.address)
+    await fixture.factoryV2.createPair(DTT.address, DTT2.address, DTT2.address, wallet.address, expandTo18Decimals(1), 1, 3)
     const pairAddress = await fixture.factoryV2.getPair(DTT.address, DTT2.address)
   })
 

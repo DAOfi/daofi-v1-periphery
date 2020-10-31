@@ -1,7 +1,7 @@
 pragma solidity =0.6.6;
 
-import '@defiinvest.tech/uniswap-v2-xdai/contracts/interfaces/IUniswapV2Factory.sol';
-import '@defiinvest.tech/uniswap-v2-xdai/contracts/interfaces/IUniswapV2Pair.sol';
+import '@defiinvest.tech/uniswap-v2-core/contracts/interfaces/IUniswapV2Factory.sol';
+import '@defiinvest.tech/uniswap-v2-core/contracts/interfaces/IUniswapV2Pair.sol';
 import '@uniswap/lib/contracts/libraries/FixedPoint.sol';
 
 import '../libraries/SafeMath.sol';
