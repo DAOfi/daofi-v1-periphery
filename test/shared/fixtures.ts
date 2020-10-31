@@ -4,8 +4,8 @@ import { deployContract } from 'ethereum-waffle'
 
 import { expandTo18Decimals } from './utilities'
 
-import UniswapV2Factory from '@defiinvest.tech/uniswap-v2-xdai/build/UniswapV2Factory.json'
-import IUniswapV2Pair from '@defiinvest.tech/uniswap-v2-xdai/build/IUniswapV2Pair.json'
+import UniswapV2Factory from '@defiinvest.tech/uniswap-v2-core/build/UniswapV2Factory.json'
+import IUniswapV2Pair from '@defiinvest.tech/uniswap-v2-core/build/IUniswapV2Pair.json'
 
 import ERC20 from '../../build/ERC20.json'
 import WETH9 from '../../build/WETH9.json'
@@ -69,7 +69,7 @@ export async function v2Fixture(provider: Web3Provider, [wallet]: Wallet[]): Pro
   )
 
   // initialize V2
-  await factoryV2.createPair(tokenA.address, tokenB.address, tokenA.address, wallet.address, 1000, 1000, 3)
+  await factoryV2.createPair(tokenA.address, tokenB.address, tokenA.address, wallet.address, expandTo18Decimals(1), 1, 3)
   const pairAddress = await factoryV2.getPair(tokenA.address, tokenB.address)
   const pair = new Contract(pairAddress, JSON.stringify(IUniswapV2Pair.abi), provider).connect(wallet)
 
@@ -77,7 +77,7 @@ export async function v2Fixture(provider: Web3Provider, [wallet]: Wallet[]): Pro
   const token0 = tokenA.address === token0Address ? tokenA : tokenB
   const token1 = tokenA.address === token0Address ? tokenB : tokenA
 
-  await factoryV2.createPair(WETH.address, WETHPartner.address, WETH.address, wallet.address, 1000, 1000, 3)
+  await factoryV2.createPair(WETH.address, WETHPartner.address, WETH.address, wallet.address, expandTo18Decimals(1), 1, 3)
   const WETHPairAddress = await factoryV2.getPair(WETH.address, WETHPartner.address)
   const WETHPair = new Contract(WETHPairAddress, JSON.stringify(IUniswapV2Pair.abi), provider).connect(wallet)
 
