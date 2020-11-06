@@ -44,9 +44,11 @@ library UniswapV2Library {
     }
 
     // given an input amount of an asset and pair reserves, returns the maximum output amount of the other asset
-    function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut, uint fee) internal pure returns (uint amountOut) {
+    function getAmountOut(uint amountIn, address factory, address tokenA, address tokenB) internal view returns (uint amountOut) {
+        (uint reserveIn, uint reserveOut) = getReserves(factory, tokenA, tokenB);
         require(amountIn > 0, 'UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT');
         require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Library: INSUFFICIENT_LIQUIDITY');
+        (,,, uint fee) = getCurveParams(factory, tokenA, tokenB);
         uint feeFactor = 1000 - fee;
         uint amountInWithFee = amountIn.mul(feeFactor);
         uint numerator = amountInWithFee.mul(reserveOut);
@@ -55,9 +57,11 @@ library UniswapV2Library {
     }
 
     // given an output amount of an asset and pair reserves, returns a required input amount of the other asset
-    function getAmountIn(uint amountOut, uint reserveIn, uint reserveOut, uint fee) internal pure returns (uint amountIn) {
+    function getAmountIn(uint amountOut, address factory, address tokenA, address tokenB) internal view returns (uint amountIn) {
+        (uint reserveIn, uint reserveOut) = getReserves(factory, tokenA, tokenB);
         require(amountOut > 0, 'UniswapV2Library: INSUFFICIENT_OUTPUT_AMOUNT');
         require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Library: INSUFFICIENT_LIQUIDITY');
+        (,,, uint fee) = getCurveParams(factory, tokenA, tokenB);
         uint feeFactor = 1000 - fee;
         uint numerator = reserveIn.mul(amountOut).mul(1000);
         uint denominator = reserveOut.sub(amountOut).mul(feeFactor);
@@ -70,9 +74,7 @@ library UniswapV2Library {
         amounts = new uint[](path.length);
         amounts[0] = amountIn;
         for (uint i; i < path.length - 1; i++) {
-            (uint reserveIn, uint reserveOut) = getReserves(factory, path[i], path[i + 1]);
-            (,,, uint fee) = getCurveParams(factory, path[i], path[i + 1]);
-            amounts[i + 1] = getAmountOut(amounts[i], reserveIn, reserveOut, fee);
+            amounts[i + 1] = getAmountOut(amounts[i], factory, path[i], path[i + 1]);
         }
     }
 
@@ -82,9 +84,7 @@ library UniswapV2Library {
         amounts = new uint[](path.length);
         amounts[amounts.length - 1] = amountOut;
         for (uint i = path.length - 1; i > 0; i--) {
-            (uint reserveIn, uint reserveOut) = getReserves(factory, path[i - 1], path[i]);
-            (,,, uint fee) = getCurveParams(factory, path[i - 1], path[i]);
-            amounts[i - 1] = getAmountIn(amounts[i], reserveIn, reserveOut, fee);
+            amounts[i - 1] = getAmountIn(amounts[i], factory, path[i - 1], path[i]);
         }
     }
 }
