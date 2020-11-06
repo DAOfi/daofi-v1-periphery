@@ -1,4 +1,5 @@
 pragma solidity >=0.5.0;
+pragma experimental ABIEncoderV2;
 
 import '@daofi/uniswap-v2-core/contracts/interfaces/IUniswapV2Pair.sol';
 
@@ -6,6 +7,13 @@ import "./SafeMath.sol";
 
 library UniswapV2Library {
     using SafeMath for uint;
+
+    struct CurveParams {
+        address base;
+        uint256 m;
+        uint n;
+        uint fee;
+    }
 
     // returns sorted token addresses, used to handle return values from pairs sorted in this order
     function sortTokens(address tokenA, address tokenB) internal pure returns (address token0, address token1) {
@@ -32,7 +40,7 @@ library UniswapV2Library {
         (reserveA, reserveB) = tokenA == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
     }
 
-    function getCurveParams(address factory, address tokenA, address tokenB) internal view returns (address _baseToken, uint _m, uint _n, uint _fee) {
+    function getCurveParams(address factory, address tokenA, address tokenB) internal view returns (bytes memory) {
         return IUniswapV2Pair(pairFor(factory, tokenA, tokenB)).getCurveParams();
     }
 
@@ -48,8 +56,8 @@ library UniswapV2Library {
         (uint reserveIn, uint reserveOut) = getReserves(factory, tokenA, tokenB);
         require(amountIn > 0, 'UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT');
         require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Library: INSUFFICIENT_LIQUIDITY');
-        (,,, uint fee) = getCurveParams(factory, tokenA, tokenB);
-        uint feeFactor = 1000 - fee;
+        CurveParams memory params = abi.decode(getCurveParams(factory, tokenA, tokenB), (CurveParams));
+        uint feeFactor = 1000 - params.fee;
         uint amountInWithFee = amountIn.mul(feeFactor);
         uint numerator = amountInWithFee.mul(reserveOut);
         uint denominator = reserveIn.mul(1000).add(amountInWithFee);
@@ -61,8 +69,8 @@ library UniswapV2Library {
         (uint reserveIn, uint reserveOut) = getReserves(factory, tokenA, tokenB);
         require(amountOut > 0, 'UniswapV2Library: INSUFFICIENT_OUTPUT_AMOUNT');
         require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Library: INSUFFICIENT_LIQUIDITY');
-        (,,, uint fee) = getCurveParams(factory, tokenA, tokenB);
-        uint feeFactor = 1000 - fee;
+        CurveParams memory params = abi.decode(getCurveParams(factory, tokenA, tokenB), (CurveParams));
+        uint feeFactor = 1000 - params.fee;
         uint numerator = reserveIn.mul(amountOut).mul(1000);
         uint denominator = reserveOut.sub(amountOut).mul(feeFactor);
         amountIn = (numerator / denominator).add(1);
