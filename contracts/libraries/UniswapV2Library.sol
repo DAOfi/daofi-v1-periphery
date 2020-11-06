@@ -9,7 +9,7 @@ library UniswapV2Library {
     using SafeMath for uint;
 
     struct CurveParams {
-        address base;
+        address baseToken;
         uint256 m;
         uint n;
         uint fee;
