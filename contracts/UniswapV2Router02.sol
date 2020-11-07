@@ -9,8 +9,9 @@ import './libraries/UniswapV2Library.sol';
 import './libraries/SafeMath.sol';
 import './interfaces/IERC20.sol';
 import './interfaces/IWETH.sol';
+import './Power.sol';
 
-contract UniswapV2Router02 is IUniswapV2Router02 {
+contract UniswapV2Router02 is IUniswapV2Router02, Power {
     using SafeMath for uint;
 
     address public immutable override factory;
@@ -243,7 +244,7 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         address to,
         uint deadline
     ) external virtual override ensure(deadline) returns (uint[] memory amounts) {
-        amounts = UniswapV2Library.getAmountsIn(factory, amountOut, path);
+        amounts = getAmountsIn(amountOut, path);
         require(amounts[0] <= amountInMax, 'UniswapV2Router: EXCESSIVE_INPUT_AMOUNT');
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, UniswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]
@@ -273,7 +274,7 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         returns (uint[] memory amounts)
     {
         require(path[path.length - 1] == WETH, 'UniswapV2Router: INVALID_PATH');
-        amounts = UniswapV2Library.getAmountsIn(factory, amountOut, path);
+        amounts = getAmountsIn(amountOut, path);
         require(amounts[0] <= amountInMax, 'UniswapV2Router: EXCESSIVE_INPUT_AMOUNT');
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, UniswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]
@@ -308,7 +309,7 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         returns (uint[] memory amounts)
     {
         require(path[0] == WETH, 'UniswapV2Router: INVALID_PATH');
-        amounts = UniswapV2Library.getAmountsIn(factory, amountOut, path);
+        amounts = getAmountsIn(amountOut, path);
         require(amounts[0] <= msg.value, 'UniswapV2Router: EXCESSIVE_INPUT_AMOUNT');
         IWETH(WETH).deposit{value: amounts[0]}();
         assert(IWETH(WETH).transfer(UniswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]));
@@ -442,6 +443,12 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         override
         returns (uint[] memory amounts)
     {
-        return UniswapV2Library.getAmountsIn(factory, amountOut, path);
+        require(path.length >= 2, 'UniswapV2Library: INVALID_PATH');
+        amounts = new uint[](path.length);
+        amounts[amounts.length - 1] = amountOut;
+        for (uint i = path.length - 1; i > 0; i--) {
+            (uint reserveIn, uint reserveOut) = UniswapV2Library.getReserves(factory, path[i - 1], path[i]);
+            amounts[i - 1] = getAmountIn(amounts[i], reserveIn, reserveOut, path[i - 1], path[i]);
+        }
     }
 }

@@ -2,7 +2,6 @@ pragma solidity >=0.5.0;
 pragma experimental ABIEncoderV2;
 
 import '@daofi/uniswap-v2-core/contracts/interfaces/IUniswapV2Pair.sol';
-
 import "./SafeMath.sol";
 
 library UniswapV2Library {
@@ -51,13 +50,20 @@ library UniswapV2Library {
         amountB = amountA.mul(reserveB) / reserveA;
     }
 
+    // function getBaseOut(uint amountQuote, uint reserveQuote, uint reserveBase, uint256 m) internal pure returns (uint amountBase) {
+    //     return Math.sqrt(uint(2).mul(amountQuote.add(reserveQuote)).mul(10**18) / m) / 1000;
+    // }
+
+    // function getQuoteOut(uint amountBase, uint reserveBase, uint reserveQuote, uint256 m) internal pure returns (uint amountQuote) {
+    //     return reserveQuote.sub(m.mul((reserveBase.sub(amountBase)).mul(reserveBase.sub(amountBase))) / (10**18) / 2) / 1000;
+    // }
+
     // given an input amount of an asset and pair reserves, returns the maximum output amount of the other asset
     function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut, address factory, address tokenA, address tokenB) internal view returns (uint amountOut) {
         require(amountIn > 0, 'UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT');
         require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Library: INSUFFICIENT_LIQUIDITY');
         CurveParams memory params = abi.decode(getCurveParams(factory, tokenA, tokenB), (CurveParams));
-        uint feeFactor = 1000 - params.fee; // 997
-        uint amountInWithFee = amountIn.mul(feeFactor);
+        uint amountInWithFee = amountIn.mul(1000 - params.fee);
         uint numerator = amountInWithFee.mul(reserveOut);
         uint denominator = reserveIn.mul(1000).add(amountInWithFee);
         amountOut = numerator / denominator;
@@ -68,9 +74,8 @@ library UniswapV2Library {
         require(amountOut > 0, 'UniswapV2Library: INSUFFICIENT_OUTPUT_AMOUNT');
         require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Library: INSUFFICIENT_LIQUIDITY');
         CurveParams memory params = abi.decode(getCurveParams(factory, tokenA, tokenB), (CurveParams));
-        uint feeFactor = 1000 - params.fee; // 997
         uint numerator = reserveIn.mul(amountOut).mul(1000);
-        uint denominator = reserveOut.sub(amountOut).mul(feeFactor);
+        uint denominator = reserveOut.sub(amountOut).mul(1000 - params.fee);
         amountIn = (numerator / denominator).add(1);
     }
 
