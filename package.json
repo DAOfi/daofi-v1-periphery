@@ -16,7 +16,7 @@
   ],
   "dependencies": {
     "@uniswap/lib": "1.1.1",
-    "@daofi/uniswap-v2-core": "1.3.1"
+    "@daofi/uniswap-v2-core": "1.3.2"
   },
   "devDependencies": {
     "@types/chai": "^4.2.6",

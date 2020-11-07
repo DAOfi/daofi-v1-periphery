@@ -29,7 +29,7 @@ library UniswapV2Library {
                 hex'ff',
                 factory,
                 keccak256(abi.encodePacked(token0, token1)),
-                hex'bda456e94e4301e569c9eb89af31c8ee55187a7ab6378688dc0e3458c793453a' // init code hash
+                hex'32dd506d0401253a05220ec2d93ea7746a7cf09c4cdd2be0c09dec9989b48846' // init code hash
             ))));
     }
 
@@ -57,7 +57,7 @@ library UniswapV2Library {
         require(amountIn > 0, 'UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT');
         require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Library: INSUFFICIENT_LIQUIDITY');
         CurveParams memory params = abi.decode(getCurveParams(factory, tokenA, tokenB), (CurveParams));
-        uint feeFactor = 1000 - params.fee;
+        uint feeFactor = 1000 - params.fee; // 997
         uint amountInWithFee = amountIn.mul(feeFactor);
         uint numerator = amountInWithFee.mul(reserveOut);
         uint denominator = reserveIn.mul(1000).add(amountInWithFee);
@@ -70,7 +70,7 @@ library UniswapV2Library {
         require(amountOut > 0, 'UniswapV2Library: INSUFFICIENT_OUTPUT_AMOUNT');
         require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Library: INSUFFICIENT_LIQUIDITY');
         CurveParams memory params = abi.decode(getCurveParams(factory, tokenA, tokenB), (CurveParams));
-        uint feeFactor = 1000 - params.fee;
+        uint feeFactor = 1000 - params.fee; // 997
         uint numerator = reserveIn.mul(amountOut).mul(1000);
         uint denominator = reserveOut.sub(amountOut).mul(feeFactor);
         amountIn = (numerator / denominator).add(1);

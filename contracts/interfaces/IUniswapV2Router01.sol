@@ -1,4 +1,5 @@
 pragma solidity >=0.6.2;
+pragma experimental ABIEncoderV2;
 
 interface IUniswapV2Router01 {
     function factory() external pure returns (address);
