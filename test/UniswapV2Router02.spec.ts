@@ -51,79 +51,79 @@ describe('UniswapV2Router02', () => {
   })
 
   it('getAmountOut', async () => {
-    expect(await router.getAmountOut(bigNumberify(2), bigNumberify(100), bigNumberify(100), 3)).to.eq(bigNumberify(1))
-    await expect(router.getAmountOut(bigNumberify(0), bigNumberify(100), bigNumberify(100), 3)).to.be.revertedWith(
+    expect(await router.getAmountOut(bigNumberify(2), bigNumberify(100), bigNumberify(100), token0.address, token1.address)).to.eq(bigNumberify(1))
+    await expect(router.getAmountOut(bigNumberify(0), bigNumberify(100), bigNumberify(100), token0.address, token1.address)).to.be.revertedWith(
       'UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT'
     )
-    await expect(router.getAmountOut(bigNumberify(2), bigNumberify(0), bigNumberify(100), 3)).to.be.revertedWith(
+    await expect(router.getAmountOut(bigNumberify(2), bigNumberify(0), bigNumberify(100), token0.address, token1.address)).to.be.revertedWith(
       'UniswapV2Library: INSUFFICIENT_LIQUIDITY'
     )
-    await expect(router.getAmountOut(bigNumberify(2), bigNumberify(100), bigNumberify(0), 3)).to.be.revertedWith(
+    await expect(router.getAmountOut(bigNumberify(2), bigNumberify(100), bigNumberify(0), token0.address, token1.address)).to.be.revertedWith(
       'UniswapV2Library: INSUFFICIENT_LIQUIDITY'
     )
   })
 
   it('getAmountOut: fee == 1', async () => {
-    expect(await router.getAmountOut(bigNumberify(2), bigNumberify(100), bigNumberify(100), 1)).to.eq(bigNumberify(1))
-    await expect(router.getAmountOut(bigNumberify(0), bigNumberify(100), bigNumberify(100), 1)).to.be.revertedWith(
+    expect(await router.getAmountOut(bigNumberify(2), bigNumberify(100), bigNumberify(100), token0.address, token1.address)).to.eq(bigNumberify(1))
+    await expect(router.getAmountOut(bigNumberify(0), bigNumberify(100), bigNumberify(100), token0.address, token1.address)).to.be.revertedWith(
       'UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT'
     )
-    await expect(router.getAmountOut(bigNumberify(2), bigNumberify(0), bigNumberify(100), 1)).to.be.revertedWith(
+    await expect(router.getAmountOut(bigNumberify(2), bigNumberify(0), bigNumberify(100), token0.address, token1.address)).to.be.revertedWith(
       'UniswapV2Library: INSUFFICIENT_LIQUIDITY'
     )
-    await expect(router.getAmountOut(bigNumberify(2), bigNumberify(100), bigNumberify(0), 1)).to.be.revertedWith(
+    await expect(router.getAmountOut(bigNumberify(2), bigNumberify(100), bigNumberify(0), token0.address, token1.address)).to.be.revertedWith(
       'UniswapV2Library: INSUFFICIENT_LIQUIDITY'
     )
   })
 
   it('getAmountOut: fee == 10', async () => {
-    expect(await router.getAmountOut(bigNumberify(2), bigNumberify(100), bigNumberify(100), 10)).to.eq(bigNumberify(1))
-    await expect(router.getAmountOut(bigNumberify(0), bigNumberify(100), bigNumberify(100), 10)).to.be.revertedWith(
+    expect(await router.getAmountOut(bigNumberify(2), bigNumberify(100), bigNumberify(100), token0.address, token1.address)).to.eq(bigNumberify(1))
+    await expect(router.getAmountOut(bigNumberify(0), bigNumberify(100), bigNumberify(100), token0.address, token1.address)).to.be.revertedWith(
       'UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT'
     )
-    await expect(router.getAmountOut(bigNumberify(2), bigNumberify(0), bigNumberify(100), 10)).to.be.revertedWith(
+    await expect(router.getAmountOut(bigNumberify(2), bigNumberify(0), bigNumberify(100), token0.address, token1.address)).to.be.revertedWith(
       'UniswapV2Library: INSUFFICIENT_LIQUIDITY'
     )
-    await expect(router.getAmountOut(bigNumberify(2), bigNumberify(100), bigNumberify(0), 10)).to.be.revertedWith(
+    await expect(router.getAmountOut(bigNumberify(2), bigNumberify(100), bigNumberify(0), token0.address, token1.address)).to.be.revertedWith(
       'UniswapV2Library: INSUFFICIENT_LIQUIDITY'
     )
   })
 
   it('getAmountIn', async () => {
-    expect(await router.getAmountIn(bigNumberify(1), bigNumberify(100), bigNumberify(100), 3)).to.eq(bigNumberify(2))
-    await expect(router.getAmountIn(bigNumberify(0), bigNumberify(100), bigNumberify(100), 3)).to.be.revertedWith(
+    expect(await router.getAmountIn(bigNumberify(1), bigNumberify(100), bigNumberify(100), token0.address, token1.address)).to.eq(bigNumberify(2))
+    await expect(router.getAmountIn(bigNumberify(0), bigNumberify(100), bigNumberify(100), token0.address, token1.address)).to.be.revertedWith(
       'UniswapV2Library: INSUFFICIENT_OUTPUT_AMOUNT'
     )
-    await expect(router.getAmountIn(bigNumberify(1), bigNumberify(0), bigNumberify(100), 3)).to.be.revertedWith(
+    await expect(router.getAmountIn(bigNumberify(1), bigNumberify(0), bigNumberify(100), token0.address, token1.address)).to.be.revertedWith(
       'UniswapV2Library: INSUFFICIENT_LIQUIDITY'
     )
-    await expect(router.getAmountIn(bigNumberify(1), bigNumberify(100), bigNumberify(0), 3)).to.be.revertedWith(
+    await expect(router.getAmountIn(bigNumberify(1), bigNumberify(100), bigNumberify(0), token0.address, token1.address)).to.be.revertedWith(
       'UniswapV2Library: INSUFFICIENT_LIQUIDITY'
     )
   })
 
   it('getAmountIn: fee == 1', async () => {
-    expect(await router.getAmountIn(bigNumberify(1), bigNumberify(100), bigNumberify(100), 1)).to.eq(bigNumberify(2))
-    await expect(router.getAmountIn(bigNumberify(0), bigNumberify(100), bigNumberify(100), 1)).to.be.revertedWith(
+    expect(await router.getAmountIn(bigNumberify(1), bigNumberify(100), bigNumberify(100), token0.address, token1.address)).to.eq(bigNumberify(2))
+    await expect(router.getAmountIn(bigNumberify(0), bigNumberify(100), bigNumberify(100), token0.address, token1.address)).to.be.revertedWith(
       'UniswapV2Library: INSUFFICIENT_OUTPUT_AMOUNT'
     )
-    await expect(router.getAmountIn(bigNumberify(1), bigNumberify(0), bigNumberify(100), 1)).to.be.revertedWith(
+    await expect(router.getAmountIn(bigNumberify(1), bigNumberify(0), bigNumberify(100), token0.address, token1.address)).to.be.revertedWith(
       'UniswapV2Library: INSUFFICIENT_LIQUIDITY'
     )
-    await expect(router.getAmountIn(bigNumberify(1), bigNumberify(100), bigNumberify(0), 1)).to.be.revertedWith(
+    await expect(router.getAmountIn(bigNumberify(1), bigNumberify(100), bigNumberify(0), token0.address, token1.address)).to.be.revertedWith(
       'UniswapV2Library: INSUFFICIENT_LIQUIDITY'
     )
   })
 
   it('getAmountIn: fee == 10', async () => {
-    expect(await router.getAmountIn(bigNumberify(1), bigNumberify(100), bigNumberify(100), 10)).to.eq(bigNumberify(2))
-    await expect(router.getAmountIn(bigNumberify(0), bigNumberify(100), bigNumberify(100), 10)).to.be.revertedWith(
+    expect(await router.getAmountIn(bigNumberify(1), bigNumberify(100), bigNumberify(100), token0.address, token1.address)).to.eq(bigNumberify(2))
+    await expect(router.getAmountIn(bigNumberify(0), bigNumberify(100), bigNumberify(100), token0.address, token1.address)).to.be.revertedWith(
       'UniswapV2Library: INSUFFICIENT_OUTPUT_AMOUNT'
     )
-    await expect(router.getAmountIn(bigNumberify(1), bigNumberify(0), bigNumberify(100), 10)).to.be.revertedWith(
+    await expect(router.getAmountIn(bigNumberify(1), bigNumberify(0), bigNumberify(100), token0.address, token1.address)).to.be.revertedWith(
       'UniswapV2Library: INSUFFICIENT_LIQUIDITY'
     )
-    await expect(router.getAmountIn(bigNumberify(1), bigNumberify(100), bigNumberify(0), 10)).to.be.revertedWith(
+    await expect(router.getAmountIn(bigNumberify(1), bigNumberify(100), bigNumberify(0), token0.address, token1.address)).to.be.revertedWith(
       'UniswapV2Library: INSUFFICIENT_LIQUIDITY'
     )
   })

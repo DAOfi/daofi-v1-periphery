@@ -328,9 +328,9 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
             uint amountOutput;
             { // scope to avoid stack too deep errors
             (uint reserve0, uint reserve1,) = pair.getReserves();
-            (uint reserveInput,) = input == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
-            amountInput = IERC20(input).balanceOf(address(pair)).sub(reserveInput);
-            amountOutput = UniswapV2Library.getAmountOut(amountInput, factory, input, output);
+            (uint reserveIn, uint reserveOut) = input == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
+            amountInput = IERC20(input).balanceOf(address(pair)).sub(reserveIn);
+            amountOutput = UniswapV2Library.getAmountOut(amountInput, reserveIn, reserveOut, factory, input, output);
             }
             (uint amount0Out, uint amount1Out) = input == token0 ? (uint(0), amountOutput) : (amountOutput, uint(0));
             address to = i < path.length - 2 ? UniswapV2Library.pairFor(factory, output, path[i + 2]) : _to;
@@ -405,24 +405,24 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         return UniswapV2Library.quote(amountA, reserveA, reserveB);
     }
 
-    function getAmountOut(uint amountIn, address tokenA, address tokenB)
+    function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut, address tokenA, address tokenB)
         public
         view
         virtual
         override
         returns (uint amountOut)
     {
-        return UniswapV2Library.getAmountOut(amountIn, factory, tokenA, tokenB);
+        return UniswapV2Library.getAmountOut(amountIn, reserveIn, reserveOut, factory, tokenA, tokenB);
     }
 
-    function getAmountIn(uint amountOut, address tokenA, address tokenB)
+    function getAmountIn(uint amountOut, uint reserveIn, uint reserveOut, address tokenA, address tokenB)
         public
         view
         virtual
         override
         returns (uint amountIn)
     {
-        return UniswapV2Library.getAmountIn(amountOut, factory, tokenA, tokenB);
+        return UniswapV2Library.getAmountIn(amountOut, reserveIn, reserveOut, factory, tokenA, tokenB);
     }
 
     function getAmountsOut(uint amountIn, address[] memory path)

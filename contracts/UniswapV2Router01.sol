@@ -263,12 +263,12 @@ contract UniswapV2Router01 is IUniswapV2Router01 {
         return UniswapV2Library.quote(amountA, reserveA, reserveB);
     }
 
-    function getAmountOut(uint amountIn, address tokenA, address tokenB) public view override returns (uint amountOut) {
-        return UniswapV2Library.getAmountOut(amountIn, factory, tokenA, tokenB);
+    function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut, address tokenA, address tokenB) public view override returns (uint amountOut) {
+        return UniswapV2Library.getAmountOut(amountIn, reserveIn, reserveOut, factory, tokenA, tokenB);
     }
 
-    function getAmountIn(uint amountOut, address tokenA, address tokenB) public view override returns (uint amountIn) {
-        return UniswapV2Library.getAmountOut(amountOut, factory, tokenA, tokenB);
+    function getAmountIn(uint amountOut, uint reserveIn, uint reserveOut,address tokenA, address tokenB) public view override returns (uint amountIn) {
+        return UniswapV2Library.getAmountOut(amountOut, reserveIn, reserveOut, factory, tokenA, tokenB);
     }
 
     function getAmountsOut(uint amountIn, address[] memory path) public view override returns (uint[] memory amounts) {
