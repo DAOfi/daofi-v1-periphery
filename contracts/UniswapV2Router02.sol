@@ -230,7 +230,7 @@ contract UniswapV2Router02 is IUniswapV2Router02, Power {
         address to,
         uint deadline
     ) external virtual override ensure(deadline) returns (uint[] memory amounts) {
-        amounts = UniswapV2Library.getAmountsOut(factory, amountIn, path);
+        amounts = getAmountsOut(amountIn, path);
         require(amounts[amounts.length - 1] >= amountOutMin, 'UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, UniswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]
@@ -260,7 +260,7 @@ contract UniswapV2Router02 is IUniswapV2Router02, Power {
         returns (uint[] memory amounts)
     {
         require(path[0] == WETH, 'UniswapV2Router: INVALID_PATH');
-        amounts = UniswapV2Library.getAmountsOut(factory, msg.value, path);
+        amounts = getAmountsOut(msg.value, path);
         require(amounts[amounts.length - 1] >= amountOutMin, 'UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
         IWETH(WETH).deposit{value: amounts[0]}();
         assert(IWETH(WETH).transfer(UniswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]));
@@ -291,7 +291,7 @@ contract UniswapV2Router02 is IUniswapV2Router02, Power {
         returns (uint[] memory amounts)
     {
         require(path[path.length - 1] == WETH, 'UniswapV2Router: INVALID_PATH');
-        amounts = UniswapV2Library.getAmountsOut(factory, amountIn, path);
+        amounts = getAmountsOut(amountIn, path);
         require(amounts[amounts.length - 1] >= amountOutMin, 'UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, UniswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]
@@ -433,7 +433,13 @@ contract UniswapV2Router02 is IUniswapV2Router02, Power {
         override
         returns (uint[] memory amounts)
     {
-        return UniswapV2Library.getAmountsOut(factory, amountIn, path);
+        require(path.length >= 2, 'UniswapV2Library: INVALID_PATH');
+        amounts = new uint[](path.length);
+        amounts[0] = amountIn;
+        for (uint i; i < path.length - 1; i++) {
+            (uint reserveIn, uint reserveOut) = UniswapV2Library.getReserves(factory, path[i], path[i + 1]);
+            amounts[i + 1] = getAmountOut(amounts[i], reserveIn, reserveOut, path[i], path[i + 1]);
+        }
     }
 
     function getAmountsIn(uint amountOut, address[] memory path)
