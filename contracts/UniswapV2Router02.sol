@@ -14,6 +14,13 @@ import './Power.sol';
 contract UniswapV2Router02 is IUniswapV2Router02, Power {
     using SafeMath for uint;
 
+    struct CurveParams {
+        address baseToken;
+        uint256 m;
+        uint n;
+        uint fee;
+    }
+
     address public immutable override factory;
     address public immutable override WETH;
 
@@ -423,7 +430,12 @@ contract UniswapV2Router02 is IUniswapV2Router02, Power {
         override
         returns (uint amountIn)
     {
-        return UniswapV2Library.getAmountIn(amountOut, reserveIn, reserveOut, factory, tokenA, tokenB);
+        require(amountOut > 0, 'UniswapV2Library: INSUFFICIENT_OUTPUT_AMOUNT');
+        require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Library: INSUFFICIENT_LIQUIDITY');
+        CurveParams memory params = abi.decode(UniswapV2Library.getCurveParams(factory, tokenA, tokenB), (CurveParams));
+        uint numerator = reserveIn.mul(amountOut).mul(1000);
+        uint denominator = reserveOut.sub(amountOut).mul(1000 - params.fee);
+        amountIn = (numerator / denominator).add(1);
     }
 
     function getAmountsOut(uint amountIn, address[] memory path)
