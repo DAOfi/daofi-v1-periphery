@@ -7,13 +7,6 @@ import "./SafeMath.sol";
 library UniswapV2Library {
     using SafeMath for uint;
 
-    struct CurveParams {
-        address baseToken;
-        uint256 m;
-        uint n;
-        uint fee;
-    }
-
     // returns sorted token addresses, used to handle return values from pairs sorted in this order
     function sortTokens(address tokenA, address tokenB) internal pure returns (address token0, address token1) {
         require(tokenA != tokenB, 'UniswapV2Library: IDENTICAL_ADDRESSES');
@@ -28,7 +21,7 @@ library UniswapV2Library {
                 hex'ff',
                 factory,
                 keccak256(abi.encodePacked(token0, token1)),
-                hex'32dd506d0401253a05220ec2d93ea7746a7cf09c4cdd2be0c09dec9989b48846' // init code hash
+                hex'96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f' // init code hash
             ))));
     }
 
@@ -39,6 +32,7 @@ library UniswapV2Library {
         (reserveA, reserveB) = tokenA == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
     }
 
+    // get params
     function getCurveParams(address factory, address tokenA, address tokenB) internal view returns (bytes memory) {
         return IUniswapV2Pair(pairFor(factory, tokenA, tokenB)).getCurveParams();
     }
@@ -50,32 +44,22 @@ library UniswapV2Library {
         amountB = amountA.mul(reserveB) / reserveA;
     }
 
-    // function getBaseOut(uint amountQuote, uint reserveQuote, uint reserveBase, uint256 m) internal pure returns (uint amountBase) {
-    //     return Math.sqrt(uint(2).mul(amountQuote.add(reserveQuote)).mul(10**18) / m) / 1000;
-    // }
-
-    // function getQuoteOut(uint amountBase, uint reserveBase, uint reserveQuote, uint256 m) internal pure returns (uint amountQuote) {
-    //     return reserveQuote.sub(m.mul((reserveBase.sub(amountBase)).mul(reserveBase.sub(amountBase))) / (10**18) / 2) / 1000;
-    // }
-
     // given an input amount of an asset and pair reserves, returns the maximum output amount of the other asset
-    function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut, address factory, address tokenA, address tokenB) internal view returns (uint amountOut) {
+    function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut) internal pure returns (uint amountOut) {
         require(amountIn > 0, 'UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT');
         require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Library: INSUFFICIENT_LIQUIDITY');
-        CurveParams memory params = abi.decode(getCurveParams(factory, tokenA, tokenB), (CurveParams));
-        uint amountInWithFee = amountIn.mul(1000 - params.fee);
+        uint amountInWithFee = amountIn.mul(997);
         uint numerator = amountInWithFee.mul(reserveOut);
         uint denominator = reserveIn.mul(1000).add(amountInWithFee);
         amountOut = numerator / denominator;
     }
 
     // given an output amount of an asset and pair reserves, returns a required input amount of the other asset
-    function getAmountIn(uint amountOut, uint reserveIn, uint reserveOut, address factory, address tokenA, address tokenB) internal view returns (uint amountIn) {
+    function getAmountIn(uint amountOut, uint reserveIn, uint reserveOut) internal pure returns (uint amountIn) {
         require(amountOut > 0, 'UniswapV2Library: INSUFFICIENT_OUTPUT_AMOUNT');
         require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Library: INSUFFICIENT_LIQUIDITY');
-        CurveParams memory params = abi.decode(getCurveParams(factory, tokenA, tokenB), (CurveParams));
         uint numerator = reserveIn.mul(amountOut).mul(1000);
-        uint denominator = reserveOut.sub(amountOut).mul(1000 - params.fee);
+        uint denominator = reserveOut.sub(amountOut).mul(997);
         amountIn = (numerator / denominator).add(1);
     }
 
@@ -86,7 +70,7 @@ library UniswapV2Library {
         amounts[0] = amountIn;
         for (uint i; i < path.length - 1; i++) {
             (uint reserveIn, uint reserveOut) = getReserves(factory, path[i], path[i + 1]);
-            amounts[i + 1] = getAmountOut(amounts[i], reserveIn, reserveOut, factory, path[i], path[i + 1]);
+            amounts[i + 1] = getAmountOut(amounts[i], reserveIn, reserveOut);
         }
     }
 
@@ -97,7 +81,7 @@ library UniswapV2Library {
         amounts[amounts.length - 1] = amountOut;
         for (uint i = path.length - 1; i > 0; i--) {
             (uint reserveIn, uint reserveOut) = getReserves(factory, path[i - 1], path[i]);
-            amounts[i - 1] = getAmountIn(amounts[i], reserveIn, reserveOut, factory, path[i - 1], path[i]);
+            amounts[i - 1] = getAmountIn(amounts[i], reserveIn, reserveOut);
         }
     }
 }

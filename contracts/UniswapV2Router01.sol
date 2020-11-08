@@ -38,7 +38,7 @@ contract UniswapV2Router01 is IUniswapV2Router01 {
     ) private returns (uint amountA, uint amountB) {
         // create the pair if it doesn't exist yet
         if (IUniswapV2Factory(factory).getPair(tokenA, tokenB) == address(0)) {
-            IUniswapV2Factory(factory).createPair(tokenA, tokenB, tokenA, msg.sender, 10**18, 1, 3);
+            IUniswapV2Factory(factory).createPair(tokenA, tokenB);
         }
         (uint reserveA, uint reserveB) = UniswapV2Library.getReserves(factory, tokenA, tokenB);
         if (reserveA == 0 && reserveB == 0) {
@@ -263,12 +263,12 @@ contract UniswapV2Router01 is IUniswapV2Router01 {
         return UniswapV2Library.quote(amountA, reserveA, reserveB);
     }
 
-    function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut, address tokenA, address tokenB) public view override returns (uint amountOut) {
-        return UniswapV2Library.getAmountOut(amountIn, reserveIn, reserveOut, factory, tokenA, tokenB);
+    function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut) public pure override returns (uint amountOut) {
+        return UniswapV2Library.getAmountOut(amountIn, reserveIn, reserveOut);
     }
 
-    function getAmountIn(uint amountOut, uint reserveIn, uint reserveOut,address tokenA, address tokenB) public view override returns (uint amountIn) {
-        return UniswapV2Library.getAmountOut(amountOut, reserveIn, reserveOut, factory, tokenA, tokenB);
+    function getAmountIn(uint amountOut, uint reserveIn, uint reserveOut) public pure override returns (uint amountIn) {
+        return UniswapV2Library.getAmountOut(amountOut, reserveIn, reserveOut);
     }
 
     function getAmountsOut(uint amountIn, address[] memory path) public view override returns (uint[] memory amounts) {

@@ -338,7 +338,7 @@ contract UniswapV2Router02 is IUniswapV2Router02, Power {
             (uint reserve0, uint reserve1,) = pair.getReserves();
             (uint reserveIn, uint reserveOut) = input == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
             amountInput = IERC20(input).balanceOf(address(pair)).sub(reserveIn);
-            amountOutput = UniswapV2Library.getAmountOut(amountInput, reserveIn, reserveOut, factory, input, output);
+            amountOutput = getAmountOut(amountInput, reserveIn, reserveOut, input, output);
             }
             (uint amount0Out, uint amount1Out) = input == token0 ? (uint(0), amountOutput) : (amountOutput, uint(0));
             address to = i < path.length - 2 ? UniswapV2Library.pairFor(factory, output, path[i + 2]) : _to;
@@ -409,25 +409,27 @@ contract UniswapV2Router02 is IUniswapV2Router02, Power {
     }
 
     // **** LIBRARY FUNCTIONS ****
-    function quote(uint amountA, uint reserveA, uint reserveB) public pure virtual override returns (uint amountB) {
+    function quote(uint amountA, uint reserveA, uint reserveB, uint tokenA, uint tokenB) public pure returns (uint amountB) {
         return UniswapV2Library.quote(amountA, reserveA, reserveB);
     }
 
     function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut, address tokenA, address tokenB)
         public
         view
-        virtual
-        override
         returns (uint amountOut)
     {
-        return UniswapV2Library.getAmountOut(amountIn, reserveIn, reserveOut, factory, tokenA, tokenB);
+        require(amountIn > 0, 'UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT');
+        require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Library: INSUFFICIENT_LIQUIDITY');
+        CurveParams memory params = abi.decode(UniswapV2Library.getCurveParams(factory, tokenA, tokenB), (CurveParams));
+        uint amountInWithFee = amountIn.mul(1000 - params.fee);
+        uint numerator = amountInWithFee.mul(reserveOut);
+        uint denominator = reserveIn.mul(1000).add(amountInWithFee);
+        amountOut = numerator / denominator;
     }
 
     function getAmountIn(uint amountOut, uint reserveIn, uint reserveOut, address tokenA, address tokenB)
         public
         view
-        virtual
-        override
         returns (uint amountIn)
     {
         require(amountOut > 0, 'UniswapV2Library: INSUFFICIENT_OUTPUT_AMOUNT');
@@ -438,11 +440,9 @@ contract UniswapV2Router02 is IUniswapV2Router02, Power {
         amountIn = (numerator / denominator).add(1);
     }
 
-    function getAmountsOut(uint amountIn, address[] memory path)
+    function getAmountsOutWithParams(uint amountIn, address[] memory path)
         public
         view
-        virtual
-        override
         returns (uint[] memory amounts)
     {
         require(path.length >= 2, 'UniswapV2Library: INVALID_PATH');
@@ -454,11 +454,9 @@ contract UniswapV2Router02 is IUniswapV2Router02, Power {
         }
     }
 
-    function getAmountsIn(uint amountOut, address[] memory path)
+    function getAmountsInWithParams(uint amountOut, address[] memory path)
         public
         view
-        virtual
-        override
         returns (uint[] memory amounts)
     {
         require(path.length >= 2, 'UniswapV2Library: INVALID_PATH');
@@ -468,5 +466,50 @@ contract UniswapV2Router02 is IUniswapV2Router02, Power {
             (uint reserveIn, uint reserveOut) = UniswapV2Library.getReserves(factory, path[i - 1], path[i]);
             amounts[i - 1] = getAmountIn(amounts[i], reserveIn, reserveOut, path[i - 1], path[i]);
         }
+    }
+
+    // v2 functions
+    function quote(uint amountA, uint reserveA, uint reserveB) public pure virtual override returns (uint amountB) {
+        return UniswapV2Library.quote(amountA, reserveA, reserveB);
+    }
+
+    function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut)
+        public
+        pure
+        virtual
+        override
+        returns (uint amountOut)
+    {
+        return UniswapV2Library.getAmountOut(amountIn, reserveIn, reserveOut);
+    }
+
+    function getAmountIn(uint amountOut, uint reserveIn, uint reserveOut)
+        public
+        pure
+        virtual
+        override
+        returns (uint amountIn)
+    {
+        return UniswapV2Library.getAmountIn(amountOut, reserveIn, reserveOut);
+    }
+
+    function getAmountsOut(uint amountIn, address[] memory path)
+        public
+        view
+        virtual
+        override
+        returns (uint[] memory amounts)
+    {
+        return UniswapV2Library.getAmountsOut(factory, amountIn, path);
+    }
+
+    function getAmountsIn(uint amountOut, address[] memory path)
+        public
+        view
+        virtual
+        override
+        returns (uint[] memory amounts)
+    {
+        return UniswapV2Library.getAmountsIn(factory, amountOut, path);
     }
 }
