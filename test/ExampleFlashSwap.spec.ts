@@ -45,7 +45,7 @@ describe('ExampleFlashSwap', () => {
     )
   })
 
-  it.only('uniswapV2Call:0', async () => {
+  it('uniswapV2Call:0', async () => {
     // add liquidity to V1 at a rate of 1 ETH / 200 X
     const WETHPartnerAmountV1 = expandTo18Decimals(2000)
     const ETHAmountV1 = expandTo18Decimals(10)

@@ -52,7 +52,7 @@ describe('UniswapV2Router02', () => {
 
   it('getAmountOut', async () => {
     expect(await router.getAmountOut(bigNumberify(2), bigNumberify(100), bigNumberify(100))).to.eq(bigNumberify(1))
-    await expect(router.getAmountOut(bigNumberify(0), bigNumberify(100), bigNumberify(100), token0.address, token1.address)).to.be.revertedWith(
+    await expect(router.getAmountOut(bigNumberify(0), bigNumberify(100), bigNumberify(100))).to.be.revertedWith(
       'UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT'
     )
     await expect(router.getAmountOut(bigNumberify(2), bigNumberify(0), bigNumberify(100))).to.be.revertedWith(

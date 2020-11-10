@@ -428,9 +428,16 @@ contract UniswapV2Router02 is IUniswapV2Router03, Power {
         require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Library: INSUFFICIENT_LIQUIDITY');
         CurveParams memory params = abi.decode(UniswapV2Library.getCurveParams(factory, tokenA, tokenB), (CurveParams));
         uint amountInWithFee = amountIn.mul(1000 - params.fee);
-        uint numerator = amountInWithFee.mul(reserveOut);
-        uint denominator = reserveIn.mul(1000).add(amountInWithFee);
-        amountOut = numerator / denominator;
+        // uint numerator = amountInWithFee.mul(reserveOut);
+        // uint denominator = reserveIn.mul(1000).add(amountInWithFee);
+        // amountOut = numerator / denominator;
+        if (tokenB == params.baseToken) {
+            (uint256 result, uint8 precision) = power((10 ** 18) * (params.n +1) * (amountInWithFee + (reserveIn * 1000)), params.m * 1000, 1, uint32(params.n + 1));
+            amountOut = (result >> precision) - IERC20(params.baseToken).totalSupply() - reserveOut;
+        } else {
+            (uint256 result, uint8 precision) = power(((IERC20(tokenA).totalSupply() * 1000) - (reserveIn * 1000) - amountInWithFee), 1000, uint32(params.n + 1), 1);
+            amountOut = reserveOut - ((result >> precision) * params.m) / (10 ** 18) / (params.n + 1);
+        }
     }
 
     function getAmountInWithParams(uint amountOut, uint reserveIn, uint reserveOut, address tokenA, address tokenB)
