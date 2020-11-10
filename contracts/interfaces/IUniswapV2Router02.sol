@@ -1,4 +1,5 @@
 pragma solidity >=0.6.2;
+pragma experimental ABIEncoderV2;
 
 import './IUniswapV2Router01.sol';
 

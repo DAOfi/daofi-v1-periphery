@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@daofi/uniswap-v2-core@1.3.1":
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/@daofi/uniswap-v2-core/-/uniswap-v2-core-1.3.1.tgz#b7cd62ff2dcdbeb58f35a46a2069ba1f2455f8d7"
-  integrity sha512-GxmuZMcmN7KUv30fWxMiU0FVnmV3FIKw+v05UOBYQSjq6Eh+mfmGOPI1yg+YC3j3pm3LZW6iwFqq9V8wy0pQvg==
+"@daofi/uniswap-v2-core@1.3.3":
+  version "1.3.3"
+  resolved "https://registry.yarnpkg.com/@daofi/uniswap-v2-core/-/uniswap-v2-core-1.3.3.tgz#97ac203b44c45ac808be0165e81ef7e9f8c7bfd9"
+  integrity sha512-dyslR1xhC5iVjuN55TlmVT3I5pA3lJEsUS4NgmC3A5iez6Hynd4wulDUuQxXMk/fRQlsTRPQt+/Sntcio26TLQ==
 
 "@ethereum-waffle/chai@^2.5.1":
   version "2.5.1"

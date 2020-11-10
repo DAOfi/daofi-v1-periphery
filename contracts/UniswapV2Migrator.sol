@@ -1,4 +1,5 @@
 pragma solidity =0.6.6;
+pragma experimental ABIEncoderV2;
 
 import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
 
