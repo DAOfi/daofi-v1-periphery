@@ -1,5 +1,3 @@
-const ethers = require('ethers');
-
 async function main() {
 
   const [deployer] = await ethers.getSigners();
@@ -11,7 +9,7 @@ async function main() {
 
   console.log("Deployer ccount balance:", (await deployer.getBalance()).toString());
 
-  const UniswapV2Router02 = await ethers.getContractFactory("UniswapV2Router02");
+  const UniswapV2Router02 = await ethers.getContractFactory("contracts/UniswapV2Router02.sol:UniswapV2Router02");
   const router = await UniswapV2Router02.deploy();
 
   console.log("Router address:", router.address);
