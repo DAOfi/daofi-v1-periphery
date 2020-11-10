@@ -409,13 +409,20 @@ contract UniswapV2Router02 is IUniswapV2Router03, Power {
     }
 
     // **** LIBRARY FUNCTIONS ****
-    function quoteWithParams(uint amountA, uint reserveA, uint reserveB, uint tokenA, uint tokenB)
+    function quoteWithParams(uint amountA, uint reserveA, uint reserveB, address tokenA, address tokenB)
         public
-        pure
+        view
         override
         returns (uint amountB)
     {
-        return UniswapV2Library.quote(amountA, reserveA, reserveB);
+        require(amountA > 0, 'UniswapV2Library: INSUFFICIENT_AMOUNT');
+        require(reserveA > 0 && reserveB > 0, 'UniswapV2Library: INSUFFICIENT_LIQUIDITY');
+        CurveParams memory params = abi.decode(UniswapV2Library.getCurveParams(factory, tokenA, tokenB), (CurveParams));
+        if (tokenB == params.baseToken) {
+            amountB = amountA.mul(reserveB).mul(params.m) / reserveA.mul(10 ** 18);
+        } else {
+            amountB = amountA.mul(reserveB).mul(10 ** 18) / reserveA.mul(params.m);
+        }
     }
 
     function getAmountOutWithParams(uint amountIn, uint reserveIn, uint reserveOut, address tokenA, address tokenB)
@@ -450,6 +457,11 @@ contract UniswapV2Router02 is IUniswapV2Router03, Power {
         uint numerator = reserveIn.mul(amountOut).mul(1000);
         uint denominator = reserveOut.sub(amountOut).mul(1000 - params.fee);
         amountIn = (numerator / denominator).add(1);
+        if (tokenB == params.baseToken) {
+            amountIn = (amountIn * (10 ** 18)) / params.m;
+        } else {
+            amountIn = (amountIn * params.m) / (10 ** 18);
+        }
     }
 
     function getAmountsOutWithParams(uint amountIn, address[] memory path)
