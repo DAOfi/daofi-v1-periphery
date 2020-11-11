@@ -40,23 +40,23 @@ console.log('cont slope 1 exp 1')
 initCont(1, 1, 1)
 sellTokens(buyTokens(100))
 
-console.log('cont slope 1 exp 2')
+console.log('\ncont slope 1 exp 2')
 initCont(1, 1, 2)
 sellTokens(buyTokens(100))
 
-console.log('cont slope 1/2 exp 1')
+console.log('\ncont slope 1/2 exp 1')
 initCont(1, 2, 1)
 sellTokens(buyTokens(100))
 
-console.log('cont slope 1/2 exp 2')
+console.log('\ncont slope 1/2 exp 2')
 initCont(1, 2, 2)
 sellTokens(buyTokens(100))
 
-console.log('cont slope 2 exp 1')
+console.log('\ncont slope 2 exp 1')
 initCont(2, 1, 1)
 sellTokens(buyTokens(100))
 
-console.log('cont slope 2 exp 2')
+console.log('\ncont slope 2 exp 2')
 initCont(2, 1, 2)
 sellTokens(buyTokens(100))
 
@@ -103,26 +103,26 @@ function swapToQuote(baseIn: number) {
   return quoteOut
 }
 
-console.log('res slope 1 exp 1')
+console.log('\nres slope 1 exp 1')
 initRes(1, 1, 1, 1000, 1000)
 swapToQuote(swapToBase(100))
 
-console.log('res slope 1 exp 2')
+console.log('\nres slope 1 exp 2')
 initRes(1, 1, 2, 1000, 1000)
 swapToQuote(swapToBase(100))
 
-console.log('res slope 1/2 exp 1')
+console.log('\nres slope 1/2 exp 1')
 initRes(1, 2, 1, 1000, 1000)
 swapToQuote(swapToBase(100))
 
-console.log('res slope 1/2 exp 2')
+console.log('\nres slope 1/2 exp 2')
 initRes(1, 2, 2, 1000, 1000)
 swapToQuote(swapToBase(100))
 
-console.log('res slope 2 exp 1')
+console.log('\nres slope 2 exp 1')
 initRes(2, 1, 1, 1000, 1000)
 swapToQuote(swapToBase(100))
 
-console.log('res slope 2 exp 2')
+console.log('\nres slope 2 exp 2')
 initRes(2, 1, 2, 1000, 1000)
 swapToQuote(swapToBase(100))
