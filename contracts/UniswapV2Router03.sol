@@ -9,9 +9,17 @@ import './libraries/UniswapV2Library.sol';
 import './libraries/SafeMath.sol';
 import './interfaces/IERC20.sol';
 import './interfaces/IWETH.sol';
+import './Power.sol';
 
-contract UniswapV2Router02 is IUniswapV2Router02 {
+contract UniswapV2Router03 is IUniswapV2Router03, Power {
     using SafeMath for uint;
+
+    struct CurveParams {
+        address baseToken;
+        uint256 m;
+        uint n;
+        uint fee;
+    }
 
     address public immutable override factory;
     address public immutable override WETH;
@@ -229,7 +237,7 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         address to,
         uint deadline
     ) external virtual override ensure(deadline) returns (uint[] memory amounts) {
-        amounts = UniswapV2Library.getAmountsOut(factory, amountIn, path);
+        amounts = getAmountsOutWithParams(amountIn, path);
         require(amounts[amounts.length - 1] >= amountOutMin, 'UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, UniswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]
@@ -243,7 +251,7 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         address to,
         uint deadline
     ) external virtual override ensure(deadline) returns (uint[] memory amounts) {
-        amounts = UniswapV2Library.getAmountsIn(factory, amountOut, path);
+        amounts = getAmountsInWithParams(amountOut, path);
         require(amounts[0] <= amountInMax, 'UniswapV2Router: EXCESSIVE_INPUT_AMOUNT');
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, UniswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]
@@ -259,7 +267,7 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         returns (uint[] memory amounts)
     {
         require(path[0] == WETH, 'UniswapV2Router: INVALID_PATH');
-        amounts = UniswapV2Library.getAmountsOut(factory, msg.value, path);
+        amounts = getAmountsOutWithParams(msg.value, path);
         require(amounts[amounts.length - 1] >= amountOutMin, 'UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
         IWETH(WETH).deposit{value: amounts[0]}();
         assert(IWETH(WETH).transfer(UniswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]));
@@ -273,7 +281,7 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         returns (uint[] memory amounts)
     {
         require(path[path.length - 1] == WETH, 'UniswapV2Router: INVALID_PATH');
-        amounts = UniswapV2Library.getAmountsIn(factory, amountOut, path);
+        amounts = getAmountsInWithParams(amountOut, path);
         require(amounts[0] <= amountInMax, 'UniswapV2Router: EXCESSIVE_INPUT_AMOUNT');
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, UniswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]
@@ -290,7 +298,7 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         returns (uint[] memory amounts)
     {
         require(path[path.length - 1] == WETH, 'UniswapV2Router: INVALID_PATH');
-        amounts = UniswapV2Library.getAmountsOut(factory, amountIn, path);
+        amounts = getAmountsOutWithParams(amountIn, path);
         require(amounts[amounts.length - 1] >= amountOutMin, 'UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, UniswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]
@@ -308,7 +316,7 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         returns (uint[] memory amounts)
     {
         require(path[0] == WETH, 'UniswapV2Router: INVALID_PATH');
-        amounts = UniswapV2Library.getAmountsIn(factory, amountOut, path);
+        amounts = getAmountsInWithParams(amountOut, path);
         require(amounts[0] <= msg.value, 'UniswapV2Router: EXCESSIVE_INPUT_AMOUNT');
         IWETH(WETH).deposit{value: amounts[0]}();
         assert(IWETH(WETH).transfer(UniswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]));
@@ -328,9 +336,9 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
             uint amountOutput;
             { // scope to avoid stack too deep errors
             (uint reserve0, uint reserve1,) = pair.getReserves();
-            (uint reserveInput, uint reserveOutput) = input == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
-            amountInput = IERC20(input).balanceOf(address(pair)).sub(reserveInput);
-            amountOutput = UniswapV2Library.getAmountOut(amountInput, reserveInput, reserveOutput);
+            (uint reserveIn, uint reserveOut) = input == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
+            amountInput = IERC20(input).balanceOf(address(pair)).sub(reserveIn);
+            amountOutput = getAmountOutWithParams(amountInput, reserveIn, reserveOut, input, output);
             }
             (uint amount0Out, uint amount1Out) = input == token0 ? (uint(0), amountOutput) : (amountOutput, uint(0));
             address to = i < path.length - 2 ? UniswapV2Library.pairFor(factory, output, path[i + 2]) : _to;
@@ -401,6 +409,109 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
     }
 
     // **** LIBRARY FUNCTIONS ****
+    function quoteWithParams(uint amountA, uint reserveA, uint reserveB, address tokenA, address tokenB)
+        public
+        view
+        override
+        returns (uint amountB)
+    {
+        require(amountA > 0, 'UniswapV2Router: INSUFFICIENT_AMOUNT');
+        require(reserveA > 0 && reserveB > 0, 'UniswapV2Router: INSUFFICIENT_LIQUIDITY');
+        CurveParams memory params = abi.decode(UniswapV2Library.getCurveParams(factory, tokenA, tokenB), (CurveParams));
+        if (tokenB == params.baseToken) {
+            amountB = amountA.mul(reserveB).mul(params.m) / reserveA.mul(10 ** 18);
+        } else {
+            amountB = amountA.mul(reserveB).mul(10 ** 18) / reserveA.mul(params.m);
+        }
+    }
+
+    function getAmountOutWithParams(uint amountIn, uint reserveIn, uint reserveOut, address tokenA, address tokenB)
+        public
+        view
+        override
+        returns (uint amountOut)
+    {
+        require(amountIn > 0, 'UniswapV2Router: INSUFFICIENT_INPUT_AMOUNT');
+        require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Router: INSUFFICIENT_LIQUIDITY');
+        CurveParams memory params = abi.decode(UniswapV2Library.getCurveParams(factory, tokenA, tokenB), (CurveParams));
+        uint amountInWithFee = amountIn.mul(1000 - params.fee);
+        if (tokenB == params.baseToken) {
+            (uint256 resultA, uint8 precisionA) = power(
+                (10 ** 18) * (params.n + 1) * (amountInWithFee + (reserveIn * 1000)),
+                (params.m * 1000),
+                1,
+                uint32(params.n + 1));
+            (uint256 resultB, uint8 precisionB) = power(
+                (reserveIn * (10 ** 18)),
+                (reserveOut * params.m),
+                1,
+                uint32(params.n));
+            amountOut = (resultA >> precisionA) - (resultB >> precisionB);
+        } else {
+            (uint256 resultA, uint8 precisionA) = power(
+                (reserveOut * (10 ** 18)),
+                (reserveIn * params.m),
+                1,
+                uint32(params.n));
+            (uint256 resultB, uint8 precisionB) = power(
+                ((resultA >> precisionA) * 1000) - amountInWithFee,
+                1000,
+                uint32(params.n + 1),
+                1);
+            amountOut = reserveOut - (((resultB >> precisionB) * params.m) / ((10 ** 18) * (params.n + 1)));
+        }
+    }
+
+    function getAmountInWithParams(uint amountOut, uint reserveIn, uint reserveOut, address tokenA, address tokenB)
+        public
+        view
+        override
+        returns (uint amountIn)
+    {
+        require(amountOut > 0, 'UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
+        require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Router: INSUFFICIENT_LIQUIDITY');
+        CurveParams memory params = abi.decode(UniswapV2Library.getCurveParams(factory, tokenA, tokenB), (CurveParams));
+        uint numerator = reserveIn.mul(amountOut).mul(1000);
+        uint denominator = reserveOut.sub(amountOut).mul(1000 - params.fee);
+        amountIn = (numerator / denominator).add(1);
+        if (tokenB == params.baseToken) {
+            amountIn = (amountIn * (10 ** 18)) / params.m;
+        } else {
+            amountIn = (amountIn * params.m) / (10 ** 18);
+        }
+    }
+
+    function getAmountsOutWithParams(uint amountIn, address[] memory path)
+        public
+        view
+        override
+        returns (uint[] memory amounts)
+    {
+        require(path.length >= 2, 'UniswapV2Router: INVALID_PATH');
+        amounts = new uint[](path.length);
+        amounts[0] = amountIn;
+        for (uint i; i < path.length - 1; i++) {
+            (uint reserveIn, uint reserveOut) = UniswapV2Library.getReserves(factory, path[i], path[i + 1]);
+            amounts[i + 1] = getAmountOutWithParams(amounts[i], reserveIn, reserveOut, path[i], path[i + 1]);
+        }
+    }
+
+    function getAmountsInWithParams(uint amountOut, address[] memory path)
+        public
+        view
+        override
+        returns (uint[] memory amounts)
+    {
+        require(path.length >= 2, 'UniswapV2Router: INVALID_PATH');
+        amounts = new uint[](path.length);
+        amounts[amounts.length - 1] = amountOut;
+        for (uint i = path.length - 1; i > 0; i--) {
+            (uint reserveIn, uint reserveOut) = UniswapV2Library.getReserves(factory, path[i - 1], path[i]);
+            amounts[i - 1] = getAmountInWithParams(amounts[i], reserveIn, reserveOut, path[i - 1], path[i]);
+        }
+    }
+
+    // v2 functions
     function quote(uint amountA, uint reserveA, uint reserveB) public pure virtual override returns (uint amountB) {
         return UniswapV2Library.quote(amountA, reserveA, reserveB);
     }

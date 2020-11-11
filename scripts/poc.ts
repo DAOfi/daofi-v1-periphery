@@ -74,7 +74,7 @@ initRes(1, 1, 1, 1000, 1000)
 uniswap(uniswap(100, true), false)
 
 console.log('\nparameterized reserve slope 1 n 1:')
-initRes(1, 1, 1, 1000, getReserveForStartPrice(1, 1, 1, 1))
+initRes(1, 1, 1, 1000, 0)
 swapToQuote(swapToBase(100))
 
 // console.log('\nres slope 1 exp 2')
