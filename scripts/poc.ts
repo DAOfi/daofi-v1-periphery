@@ -2,7 +2,6 @@
 let baseReserve = 0
 let quoteReserve = 0
 let s = 0
-const feePct = 0.003
 
 function logRes(useS: boolean = false) {
   console.log(`base reserve: ${baseReserve}, quote reserve: ${quoteReserve}` + (useS ? `, s: ${s}` : ''))
@@ -23,21 +22,19 @@ function initRes(
 }
 
 function uniswap(amountIn: number, isQuote: boolean) {
-  let fee = amountIn * feePct;
-  amountIn -= fee
-
-  let amountOut = isQuote ? (amountIn / quoteReserve) * baseReserve :
-    (amountIn / baseReserve) * quoteReserve
+  let amountOut = isQuote ? (amountIn * baseReserve) / (quoteReserve + amountIn) :
+    (amountIn * quoteReserve) / (baseReserve + amountIn)
 
   if (isQuote) {
-    quoteReserve += amountIn + fee
+    quoteReserve += amountIn
     baseReserve -= amountOut
-    console.log(`swapped ${amountIn + fee} quote for ${amountOut} base`)
+    console.log(`swapped ${amountIn} quote for ${amountOut} base`)
   } else {
     quoteReserve -= amountOut
-    baseReserve += amountIn + fee
-    console.log(`swapped ${amountIn + fee} base for ${amountOut} quote`)
+    baseReserve += amountIn
+    console.log(`swapped ${amountIn} base for ${amountOut} quote`)
   }
+
   logRes()
   return amountOut
 }
@@ -77,25 +74,25 @@ console.log('\nparameterized reserve slope 1 n 1:')
 initRes(1, 1, 1, 1000, 0)
 swapToQuote(swapToBase(100))
 
-// console.log('\nres slope 1 exp 2')
-// initRes(1, 1, 2, 1000, 1000)
-// swapToQuote(swapToBase(100))
+console.log('\nparameterized reserve slope 1 exp 2')
+initRes(1, 1, 2, 1000, 0)
+swapToQuote(swapToBase(100))
 
-// console.log('\nres slope 1/2 exp 1')
-// initRes(1, 2, 1, 1000, 1000)
-// swapToQuote(swapToBase(100))
+console.log('\nparameterized reserve slope 1/2 exp 1')
+initRes(1, 2, 1, 1000, 0)
+swapToQuote(swapToBase(100))
 
-// console.log('\nres slope 1/2 exp 2')
-// initRes(1, 2, 2, 1000, 1000)
-// swapToQuote(swapToBase(100))
+console.log('\nparameterized reserve slope 1/2 exp 2')
+initRes(1, 2, 2, 1000, 0)
+swapToQuote(swapToBase(100))
 
-// console.log('\nres slope 2 exp 1')
-// initRes(2, 1, 1, 1000, 1000)
-// swapToQuote(swapToBase(100))
+console.log('\nparameterized reserve slope 2 exp 1')
+initRes(2, 1, 1, 1000, 0)
+swapToQuote(swapToBase(100))
 
-// console.log('\nres slope 2 exp 2')
-// initRes(2, 1, 2, 1000, 1000)
-// swapToQuote(swapToBase(100))
+console.log('\nparameterized reserve slope 2 exp 2')
+initRes(2, 1, 2, 1000, 0)
+swapToQuote(swapToBase(100))
 
 // continuous token model
 let tokensMinted = 0
@@ -140,25 +137,25 @@ console.log('\ncontinous slope 1 n 1:')
 initCont(1, 1, 1)
 sellTokens(buyTokens(100))
 
-// console.log('\ncont slope 1 exp 2')
-// initCont(1, 1, 2)
-// sellTokens(buyTokens(100))
+console.log('\ncontinuous slope 1 exp 2')
+initCont(1, 1, 2)
+sellTokens(buyTokens(100))
 
-// console.log('\ncont slope 1/2 exp 1')
-// initCont(1, 2, 1)
-// sellTokens(buyTokens(100))
+console.log('\ncontinuous slope 1/2 exp 1')
+initCont(1, 2, 1)
+sellTokens(buyTokens(100))
 
-// console.log('\ncont slope 1/2 exp 2')
-// initCont(1, 2, 2)
-// sellTokens(buyTokens(100))
+console.log('\ncontinuous slope 1/2 exp 2')
+initCont(1, 2, 2)
+sellTokens(buyTokens(100))
 
-// console.log('\ncont slope 2 exp 1')
-// initCont(2, 1, 1)
-// sellTokens(buyTokens(100))
+console.log('\ncontinuous slope 2 exp 1')
+initCont(2, 1, 1)
+sellTokens(buyTokens(100))
 
-// console.log('\ncont slope 2 exp 2')
-// initCont(2, 1, 2)
-// sellTokens(buyTokens(100))
+console.log('\ncontinuous slope 2 exp 2')
+initCont(2, 1, 2)
+sellTokens(buyTokens(100))
 
 
 
