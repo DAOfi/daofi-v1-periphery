@@ -415,8 +415,8 @@ contract UniswapV2Router02 is IUniswapV2Router03, Power {
         override
         returns (uint amountB)
     {
-        require(amountA > 0, 'UniswapV2Library: INSUFFICIENT_AMOUNT');
-        require(reserveA > 0 && reserveB > 0, 'UniswapV2Library: INSUFFICIENT_LIQUIDITY');
+        require(amountA > 0, 'UniswapV2Router: INSUFFICIENT_AMOUNT');
+        require(reserveA > 0 && reserveB > 0, 'UniswapV2Router: INSUFFICIENT_LIQUIDITY');
         CurveParams memory params = abi.decode(UniswapV2Library.getCurveParams(factory, tokenA, tokenB), (CurveParams));
         if (tokenB == params.baseToken) {
             amountB = amountA.mul(reserveB).mul(params.m) / reserveA.mul(10 ** 18);
@@ -431,17 +431,34 @@ contract UniswapV2Router02 is IUniswapV2Router03, Power {
         override
         returns (uint amountOut)
     {
-        require(amountIn > 0, 'UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT');
-        require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Library: INSUFFICIENT_LIQUIDITY');
+        require(amountIn > 0, 'UniswapV2Router: INSUFFICIENT_INPUT_AMOUNT');
+        require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Router: INSUFFICIENT_LIQUIDITY');
         CurveParams memory params = abi.decode(UniswapV2Library.getCurveParams(factory, tokenA, tokenB), (CurveParams));
         uint amountInWithFee = amountIn.mul(1000 - params.fee);
-        uint numerator = amountInWithFee.mul(reserveOut);
-        uint denominator = reserveIn.mul(1000).add(amountInWithFee);
-        amountOut = numerator / denominator;
         if (tokenB == params.baseToken) {
-            amountOut = (amountOut * params.m) / (10 ** 18);
+            (uint256 resultA, uint8 precisionA) = power(
+                (10 ** 18) * (params.n + 1) * (amountInWithFee + (reserveIn * 1000)),
+                (params.m * 1000),
+                1,
+                uint32(params.n + 1));
+            (uint256 resultB, uint8 precisionB) = power(
+                (reserveIn * (10 ** 18)),
+                (reserveOut * params.m),
+                1,
+                uint32(params.n));
+            amountOut = (resultA >> precisionA) - (resultB >> precisionB);
         } else {
-            amountOut = (amountOut * (10 ** 18)) / params.m;
+            (uint256 resultA, uint8 precisionA) = power(
+                (reserveOut * (10 ** 18)),
+                (reserveIn * params.m),
+                1,
+                uint32(params.n));
+            (uint256 resultB, uint8 precisionB) = power(
+                ((resultA >> precisionA) * 1000) - amountInWithFee,
+                1000,
+                uint32(params.n + 1),
+                1);
+            amountOut = reserveOut - (((resultB >> precisionB) * params.m) / ((10 ** 18) * (params.n + 1)));
         }
     }
 
@@ -451,8 +468,8 @@ contract UniswapV2Router02 is IUniswapV2Router03, Power {
         override
         returns (uint amountIn)
     {
-        require(amountOut > 0, 'UniswapV2Library: INSUFFICIENT_OUTPUT_AMOUNT');
-        require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Library: INSUFFICIENT_LIQUIDITY');
+        require(amountOut > 0, 'UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
+        require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Router: INSUFFICIENT_LIQUIDITY');
         CurveParams memory params = abi.decode(UniswapV2Library.getCurveParams(factory, tokenA, tokenB), (CurveParams));
         uint numerator = reserveIn.mul(amountOut).mul(1000);
         uint denominator = reserveOut.sub(amountOut).mul(1000 - params.fee);
@@ -470,7 +487,7 @@ contract UniswapV2Router02 is IUniswapV2Router03, Power {
         override
         returns (uint[] memory amounts)
     {
-        require(path.length >= 2, 'UniswapV2Library: INVALID_PATH');
+        require(path.length >= 2, 'UniswapV2Router: INVALID_PATH');
         amounts = new uint[](path.length);
         amounts[0] = amountIn;
         for (uint i; i < path.length - 1; i++) {
@@ -485,7 +502,7 @@ contract UniswapV2Router02 is IUniswapV2Router03, Power {
         override
         returns (uint[] memory amounts)
     {
-        require(path.length >= 2, 'UniswapV2Library: INVALID_PATH');
+        require(path.length >= 2, 'UniswapV2Router: INVALID_PATH');
         amounts = new uint[](path.length);
         amounts[amounts.length - 1] = amountOut;
         for (uint i = path.length - 1; i > 0; i--) {
