@@ -46,7 +46,7 @@ function getReserveForStartPrice(price: number, slopeN: number, slopeD: number, 
 
 // y = mx^n
 
-function swapToBase(quoteIn: number) {
+function exchangeQuote(quoteIn: number) {
   let baseOut = (((quoteReserve + quoteIn) / (slope / (n + 1))) ** (1 / (n + 1))) - s
   s += baseOut
   quoteReserve += quoteIn
@@ -56,7 +56,7 @@ function swapToBase(quoteIn: number) {
   return baseOut
 }
 
-function swapToQuote(baseIn: number) {
+function exchangeBase(baseIn: number) {
   let quoteOut = quoteReserve - ((slope / (n + 1)) * ((s - baseIn) ** (n + 1)))
   s -= baseIn
   baseReserve += baseIn
@@ -72,27 +72,27 @@ uniswap(uniswap(100, true), false)
 
 console.log('\nparameterized reserve slope 1 n 1:')
 initRes(1, 1, 1, 1000, 0)
-swapToQuote(swapToBase(100))
+exchangeBase(exchangeQuote(100))
 
 console.log('\nparameterized reserve slope 1 exp 2')
 initRes(1, 1, 2, 1000, 0)
-swapToQuote(swapToBase(100))
+exchangeBase(exchangeQuote(100))
 
 console.log('\nparameterized reserve slope 1/2 exp 1')
 initRes(1, 2, 1, 1000, 0)
-swapToQuote(swapToBase(100))
+exchangeBase(exchangeQuote(100))
 
 console.log('\nparameterized reserve slope 1/2 exp 2')
 initRes(1, 2, 2, 1000, 0)
-swapToQuote(swapToBase(100))
+exchangeBase(exchangeQuote(100))
 
 console.log('\nparameterized reserve slope 2 exp 1')
 initRes(2, 1, 1, 1000, 0)
-swapToQuote(swapToBase(100))
+exchangeBase(exchangeQuote(100))
 
 console.log('\nparameterized reserve slope 2 exp 2')
 initRes(2, 1, 2, 1000, 0)
-swapToQuote(swapToBase(100))
+exchangeBase(exchangeQuote(100))
 
 // continuous token model
 let tokensMinted = 0
