@@ -13,6 +13,9 @@ import './Power.sol';
 
 contract DAOfiV1Router01 is IDAOfiV1Router01, Power {
     using SafeMath for uint;
+    using SafeMath for uint8;
+    using SafeMath for uint32;
+    using SafeMath for uint256;
 
     struct CurveParams {
         address baseToken;
@@ -24,7 +27,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01, Power {
     address public immutable override factory;
     address public immutable override WETH;
 
-    modifier ensure(uint deadline) {
+    modifier ensure(uint32 deadline) {
         require(deadline >= block.timestamp, 'DAOfiV1Router: EXPIRED');
         _;
     }
