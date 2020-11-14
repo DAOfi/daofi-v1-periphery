@@ -4,8 +4,8 @@ import { deployContract } from 'ethereum-waffle'
 
 import { expandTo18Decimals } from './utilities'
 
-import UniswapV2Factory from '@daofi/uniswap-v2-core/build/UniswapV2Factory.json'
-import IUniswapV2Pair from '@daofi/uniswap-v2-core/build/IUniswapV2Pair.json'
+import UniswapV2Factory from '@daofi/daofi-v1-core/build/UniswapV2Factory.json'
+import IUniswapV2Pair from '@daofi/daofi-v1-core/build/IUniswapV2Pair.json'
 
 import ERC20 from '../../build/ERC20.json'
 import WETH9 from '../../build/WETH9.json'

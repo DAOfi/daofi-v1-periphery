@@ -1,8 +1,8 @@
 pragma solidity =0.6.6;
 pragma experimental ABIEncoderV2;
 
-import '@daofi/uniswap-v2-core/contracts/interfaces/IUniswapV2Factory.sol';
-import '@daofi/uniswap-v2-core/contracts/interfaces/IUniswapV2Pair.sol';
+import '@daofi/daofi-v1-core/contracts/interfaces/IUniswapV2Factory.sol';
+import '@daofi/daofi-v1-core/contracts/interfaces/IUniswapV2Pair.sol';
 import '@uniswap/lib/contracts/libraries/FixedPoint.sol';
 
 import '../libraries/SafeMath.sol';

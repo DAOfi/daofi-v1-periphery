@@ -1,21 +1,21 @@
 {
-  "name": "@daofi/uniswap-v2-periphery",
-  "version": "1.3.3-linear",
-  "description": "🎚 Peripheral smart contracts for interacting with Uniswap V2",
+  "name": "@daofi/daofi-v1-periphery",
+  "version": "1.4.0-rc.1",
+  "description": "🎚 Peripheral smart contracts for interacting with DAOfi V1",
   "engines": {
     "node": ">=10"
   },
-  "homepage": "https://uniswap.org",
+  "homepage": "https://github.com/DAOfi",
   "repository": {
     "type": "git",
-    "url": "https://github.com/DAOfi/uniswap-v2-periphery"
+    "url": "https://github.com/DAOfi/daofi-v1-periphery"
   },
   "files": [
     "build",
     "contracts"
   ],
   "dependencies": {
-    "@daofi/uniswap-v2-core": "1.3.3",
+    "@daofi/daofi-v1-core": "1.4.0-rc.1",
     "@uniswap/lib": "1.1.1"
   },
   "devDependencies": {

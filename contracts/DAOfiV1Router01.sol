@@ -1,7 +1,7 @@
 pragma solidity =0.6.6;
 pragma experimental ABIEncoderV2;
 
-import '@daofi/uniswap-v2-core/contracts/interfaces/IUniswapV2Factory.sol';
+import '@daofi/daofi-v1-core/contracts/interfaces/IUniswapV2Factory.sol';
 import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
 
 import './interfaces/IUniswapV2Router03.sol';
