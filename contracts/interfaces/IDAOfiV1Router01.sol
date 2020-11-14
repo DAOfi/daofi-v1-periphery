@@ -4,7 +4,6 @@ pragma experimental ABIEncoderV2;
 interface IDAOfiV1Router01 {
     function factory() external pure returns (address);
     function WETH() external pure returns (address);
-
     function addLiquidity(
         address tokenA,
         address tokenB,
@@ -15,6 +14,7 @@ interface IDAOfiV1Router01 {
         address to,
         uint deadline
     ) external returns (uint amountA, uint amountB, uint liquidity);
+
     function addLiquidityETH(
         address token,
         uint amountTokenDesired,
@@ -126,8 +126,8 @@ interface IDAOfiV1Router01 {
         uint deadline
     ) external;
     function quote(uint amountA, uint reserveA, uint reserveB, address tokenA, address tokenB) external view returns (uint amountB);
-    function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut, address tokenA, address tokenB) external pure returns (uint amountOut);
-    function getAmountIn(uint amountOut, uint reserveIn, uint reserveOut, address tokenA, address tokenB) external pure returns (uint amountIn);
+    function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut, address tokenA, address tokenB) external view returns (uint amountOut);
+    function getAmountIn(uint amountOut, uint reserveIn, uint reserveOut, address tokenA, address tokenB) external view returns (uint amountIn);
     function getAmountsOut(uint amountIn, address[] calldata path) external view returns (uint[] memory amounts);
     function getAmountsIn(uint amountOut, address[] calldata path) external view returns (uint[] memory amounts);
 }
