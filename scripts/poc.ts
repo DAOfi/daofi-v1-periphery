@@ -1,6 +1,8 @@
-// reserve pool
+// reserve balances for uniswap style and bonding curve
 let baseReserve = 0
 let quoteReserve = 0
+let slope = 1
+let n = 1
 let s = 0
 
 function logRes(useS: boolean = false) {
@@ -18,9 +20,12 @@ function initRes(
   quoteReserve = quoteR
   slope = slopeN / slopeD
   n = exp
+  // y' = (slopeN * x ** (n + 1)) / (slopeD * (n + 1))
+  // given y' = quoteReserve and x = s, solve for s
   s = (quoteReserve / (slope / (n + 1))) ** (1 / (n + 1))
 }
 
+// amountOut = (amountIn x reserveOut) / (amountIn + reserveIn)
 function uniswap(amountIn: number, isQuote: boolean) {
   let amountOut = isQuote ? (amountIn * baseReserve) / (quoteReserve + amountIn) :
     (amountIn * quoteReserve) / (baseReserve + amountIn)
@@ -39,13 +44,21 @@ function uniswap(amountIn: number, isQuote: boolean) {
   return amountOut
 }
 
+
+// y = mx ** n
+// given y = price and x = s, solve for s
+// then plug s into the antiderivative
+// y' = (slopeN * x ** (n + 1)) / (slopeD * (n + 1))
+// y' = quote reserve at price
 function getReserveForStartPrice(price: number, slopeN: number, slopeD: number, exp: number) {
   let s = (price * (slopeD / slopeN)) ** (1 / exp)
   return (slope * (s ** (n + 1))) / (n + 1)
 }
 
-// y = mx^n
-
+// y = mx ** n
+// y' = (slopeN * x ** (n + 1)) / (slopeD * (n + 1))
+// given y' = (quote in + quote reserve) and x = s, solve for s
+// subtract from previous s to get net base
 function exchangeQuote(quoteIn: number) {
   let baseOut = (((quoteReserve + quoteIn) / (slope / (n + 1))) ** (1 / (n + 1))) - s
   s += baseOut
@@ -56,6 +69,10 @@ function exchangeQuote(quoteIn: number) {
   return baseOut
 }
 
+// y = mx ** n
+// y' = (slopeN * x ** (n + 1)) / (slopeD * (n + 1))
+// given y'(s) = quoteReserve
+// subtract y'(s) - y'(s - k)
 function exchangeBase(baseIn: number) {
   let quoteOut = quoteReserve - ((slope / (n + 1)) * ((s - baseIn) ** (n + 1)))
   s -= baseIn
@@ -97,8 +114,6 @@ exchangeBase(exchangeQuote(100))
 // continuous token model
 let tokensMinted = 0
 let poolBalance = 0
-let slope = 1
-let n = 1
 
 function logCont() {
   console.log(`tokens minted: ${tokensMinted}, pool balance: ${poolBalance}`)
