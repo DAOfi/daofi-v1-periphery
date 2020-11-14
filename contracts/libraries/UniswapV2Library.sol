@@ -1,7 +1,7 @@
 pragma solidity >=0.5.0;
 pragma experimental ABIEncoderV2;
 
-import '@daofi/daofi-v1-core/contracts/interfaces/IUniswapV2Pair.sol';
+import '@daofi/daofi-v1-core/contracts/interfaces/IDAOfiV1Pair.sol';
 import "./SafeMath.sol";
 
 library UniswapV2Library {
@@ -28,13 +28,13 @@ library UniswapV2Library {
     // fetches and sorts the reserves for a pair
     function getReserves(address factory, address tokenA, address tokenB) internal view returns (uint reserveA, uint reserveB) {
         (address token0,) = sortTokens(tokenA, tokenB);
-        (uint reserve0, uint reserve1,) = IUniswapV2Pair(pairFor(factory, tokenA, tokenB)).getReserves();
+        (uint reserve0, uint reserve1,) = IDAOfiV1Pair(pairFor(factory, tokenA, tokenB)).getReserves();
         (reserveA, reserveB) = tokenA == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
     }
 
     // get params
     function getCurveParams(address factory, address tokenA, address tokenB) internal view returns (bytes memory) {
-        return IUniswapV2Pair(pairFor(factory, tokenA, tokenB)).getCurveParams();
+        return IDAOfiV1Pair(pairFor(factory, tokenA, tokenB)).getCurveParams();
     }
 
     // given some amount of an asset and pair reserves, returns an equivalent amount of the other asset

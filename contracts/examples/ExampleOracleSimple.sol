@@ -1,8 +1,8 @@
 pragma solidity =0.6.6;
 pragma experimental ABIEncoderV2;
 
-import '@daofi/daofi-v1-core/contracts/interfaces/IUniswapV2Factory.sol';
-import '@daofi/daofi-v1-core/contracts/interfaces/IUniswapV2Pair.sol';
+import '@daofi/daofi-v1-core/contracts/interfaces/IDAOfiV1Factory.sol';
+import '@daofi/daofi-v1-core/contracts/interfaces/IDAOfiV1Pair.sol';
 import '@uniswap/lib/contracts/libraries/FixedPoint.sol';
 
 import '../libraries/UniswapV2OracleLibrary.sol';
@@ -15,7 +15,7 @@ contract ExampleOracleSimple {
 
     uint public constant PERIOD = 24 hours;
 
-    IUniswapV2Pair immutable pair;
+    IDAOfiV1Pair immutable pair;
     address public immutable token0;
     address public immutable token1;
 
@@ -26,7 +26,7 @@ contract ExampleOracleSimple {
     FixedPoint.uq112x112 public price1Average;
 
     constructor(address factory, address tokenA, address tokenB) public {
-        IUniswapV2Pair _pair = IUniswapV2Pair(UniswapV2Library.pairFor(factory, tokenA, tokenB));
+        IDAOfiV1Pair _pair = IDAOfiV1Pair(UniswapV2Library.pairFor(factory, tokenA, tokenB));
         pair = _pair;
         token0 = _pair.token0();
         token1 = _pair.token1();

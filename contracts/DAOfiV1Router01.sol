@@ -1,17 +1,17 @@
 pragma solidity =0.6.6;
 pragma experimental ABIEncoderV2;
 
-import '@daofi/daofi-v1-core/contracts/interfaces/IUniswapV2Factory.sol';
+import '@daofi/daofi-v1-core/contracts/interfaces/IDAOfiV1Factory.sol';
 import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
 
-import './interfaces/IUniswapV2Router03.sol';
+import './interfaces/IDAOfiV1Router01.sol';
 import './libraries/UniswapV2Library.sol';
 import './libraries/SafeMath.sol';
 import './interfaces/IERC20.sol';
 import './interfaces/IWETH.sol';
 import './Power.sol';
 
-contract UniswapV2Router03 is IUniswapV2Router03, Power {
+contract DAOfiV1Router01 is IDAOfiV1Router01, Power {
     using SafeMath for uint;
 
     struct CurveParams {
@@ -48,8 +48,8 @@ contract UniswapV2Router03 is IUniswapV2Router03, Power {
         uint amountBMin
     ) internal virtual returns (uint amountA, uint amountB) {
         // create the pair if it doesn't exist yet
-        if (IUniswapV2Factory(factory).getPair(tokenA, tokenB) == address(0)) {
-            IUniswapV2Factory(factory).createPair(tokenA, tokenB, tokenA, msg.sender, 10**18, 1, 3);
+        if (IDAOfiV1Factory(factory).getPair(tokenA, tokenB) == address(0)) {
+            IDAOfiV1Factory(factory).createPair(tokenA, tokenB, tokenA, msg.sender, 10**18, 1, 3);
         }
         (uint reserveA, uint reserveB) = UniswapV2Library.getReserves(factory, tokenA, tokenB);
         if (reserveA == 0 && reserveB == 0) {
@@ -81,7 +81,7 @@ contract UniswapV2Router03 is IUniswapV2Router03, Power {
         address pair = UniswapV2Library.pairFor(factory, tokenA, tokenB);
         TransferHelper.safeTransferFrom(tokenA, msg.sender, pair, amountA);
         TransferHelper.safeTransferFrom(tokenB, msg.sender, pair, amountB);
-        liquidity = IUniswapV2Pair(pair).mint(to);
+        liquidity = IDAOfiV1Pair(pair).mint(to);
     }
     function addLiquidityETH(
         address token,
@@ -103,7 +103,7 @@ contract UniswapV2Router03 is IUniswapV2Router03, Power {
         TransferHelper.safeTransferFrom(token, msg.sender, pair, amountToken);
         IWETH(WETH).deposit{value: amountETH}();
         assert(IWETH(WETH).transfer(pair, amountETH));
-        liquidity = IUniswapV2Pair(pair).mint(to);
+        liquidity = IDAOfiV1Pair(pair).mint(to);
         // refund dust eth, if any
         if (msg.value > amountETH) TransferHelper.safeTransferETH(msg.sender, msg.value - amountETH);
     }
@@ -119,8 +119,8 @@ contract UniswapV2Router03 is IUniswapV2Router03, Power {
         uint deadline
     ) public virtual override ensure(deadline) returns (uint amountA, uint amountB) {
         address pair = UniswapV2Library.pairFor(factory, tokenA, tokenB);
-        IUniswapV2Pair(pair).transferFrom(msg.sender, pair, liquidity); // send liquidity to pair
-        (uint amount0, uint amount1) = IUniswapV2Pair(pair).burn(to);
+        IDAOfiV1Pair(pair).transferFrom(msg.sender, pair, liquidity); // send liquidity to pair
+        (uint amount0, uint amount1) = IDAOfiV1Pair(pair).burn(to);
         (address token0,) = UniswapV2Library.sortTokens(tokenA, tokenB);
         (amountA, amountB) = tokenA == token0 ? (amount0, amount1) : (amount1, amount0);
         require(amountA >= amountAMin, 'UniswapV2Router: INSUFFICIENT_A_AMOUNT');
@@ -159,7 +159,7 @@ contract UniswapV2Router03 is IUniswapV2Router03, Power {
     ) external virtual override returns (uint amountA, uint amountB) {
         address pair = UniswapV2Library.pairFor(factory, tokenA, tokenB);
         uint value = approveMax ? uint(-1) : liquidity;
-        IUniswapV2Pair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
+        IDAOfiV1Pair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
         (amountA, amountB) = removeLiquidity(tokenA, tokenB, liquidity, amountAMin, amountBMin, to, deadline);
     }
     function removeLiquidityETHWithPermit(
@@ -173,7 +173,7 @@ contract UniswapV2Router03 is IUniswapV2Router03, Power {
     ) external virtual override returns (uint amountToken, uint amountETH) {
         address pair = UniswapV2Library.pairFor(factory, token, WETH);
         uint value = approveMax ? uint(-1) : liquidity;
-        IUniswapV2Pair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
+        IDAOfiV1Pair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
         (amountToken, amountETH) = removeLiquidityETH(token, liquidity, amountTokenMin, amountETHMin, to, deadline);
     }
 
@@ -210,7 +210,7 @@ contract UniswapV2Router03 is IUniswapV2Router03, Power {
     ) external virtual override returns (uint amountETH) {
         address pair = UniswapV2Library.pairFor(factory, token, WETH);
         uint value = approveMax ? uint(-1) : liquidity;
-        IUniswapV2Pair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
+        IDAOfiV1Pair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
         amountETH = removeLiquidityETHSupportingFeeOnTransferTokens(
             token, liquidity, amountTokenMin, amountETHMin, to, deadline
         );
@@ -225,7 +225,7 @@ contract UniswapV2Router03 is IUniswapV2Router03, Power {
             uint amountOut = amounts[i + 1];
             (uint amount0Out, uint amount1Out) = input == token0 ? (uint(0), amountOut) : (amountOut, uint(0));
             address to = i < path.length - 2 ? UniswapV2Library.pairFor(factory, output, path[i + 2]) : _to;
-            IUniswapV2Pair(UniswapV2Library.pairFor(factory, input, output)).swap(
+            IDAOfiV1Pair(UniswapV2Library.pairFor(factory, input, output)).swap(
                 amount0Out, amount1Out, to, new bytes(0)
             );
         }
@@ -331,7 +331,7 @@ contract UniswapV2Router03 is IUniswapV2Router03, Power {
         for (uint i; i < path.length - 1; i++) {
             (address input, address output) = (path[i], path[i + 1]);
             (address token0,) = UniswapV2Library.sortTokens(input, output);
-            IUniswapV2Pair pair = IUniswapV2Pair(UniswapV2Library.pairFor(factory, input, output));
+            IDAOfiV1Pair pair = IDAOfiV1Pair(UniswapV2Library.pairFor(factory, input, output));
             uint amountInput;
             uint amountOutput;
             { // scope to avoid stack too deep errors
