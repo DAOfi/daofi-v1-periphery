@@ -25,8 +25,8 @@ contract ExampleOracleSimple {
     FixedPoint.uq112x112 public price0Average;
     FixedPoint.uq112x112 public price1Average;
 
-    constructor(address factory, address tokenA, address tokenB) public {
-        IDAOfiV1Pair _pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB));
+    constructor(address factory, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee) public {
+        IDAOfiV1Pair _pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee));
         pair = _pair;
         token0 = _pair.token0();
         token1 = _pair.token1();

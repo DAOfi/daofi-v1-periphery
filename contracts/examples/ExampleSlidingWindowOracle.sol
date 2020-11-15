@@ -67,8 +67,8 @@ contract ExampleSlidingWindowOracle {
 
     // update the cumulative price for the observation at the current timestamp. each observation is updated at most
     // once per epoch period.
-    function update(address tokenA, address tokenB) external {
-        address pair = DAOfiV1Library.pairFor(factory, tokenA, tokenB);
+    function update(address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee) external {
+        address pair = DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee);
 
         // populate the array with empty observations (first call only)
         for (uint i = pairObservations[pair].length; i < granularity; i++) {
@@ -105,8 +105,8 @@ contract ExampleSlidingWindowOracle {
     // returns the amount out corresponding to the amount in for a given token using the moving average over the time
     // range [now - [windowSize, windowSize - periodSize * 2], now]
     // update must have been called for the bucket corresponding to timestamp `now - windowSize`
-    function consult(address tokenIn, uint amountIn, address tokenOut) external view returns (uint amountOut) {
-        address pair = DAOfiV1Library.pairFor(factory, tokenIn, tokenOut);
+    function consult(address tokenIn, uint amountIn, address tokenOut, uint32 m, uint32 n, uint32 fee) external view returns (uint amountOut) {
+        address pair = DAOfiV1Library.pairFor(factory, tokenIn, tokenOut, m, n, fee);
         Observation storage firstObservation = getFirstObservationInWindow(pair);
 
         uint timeElapsed = block.timestamp - firstObservation.timestamp;

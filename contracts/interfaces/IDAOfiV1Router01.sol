@@ -52,19 +52,18 @@ interface IDAOfiV1Router01 {
     function swapExactTokensForTokens(
         uint256 amountIn,
         uint256 amountOutMin,
-        address[] calldata path,
+        bytes[] calldata path,
         address to,
         uint deadline
     ) external;
 
-    function swapExactETHForTokens(uint256 amountOutMin, address[] calldata path, address to, uint deadline)
+    function swapExactETHForTokens(uint256 amountOutMin, bytes[] calldata path, address to, uint deadline)
         external
         payable;
 
-    function swapExactTokensForETH(uint256 amountIn, uint256 amountOutMin, address[] calldata path, address to, uint deadline)
+    function swapExactTokensForETH(uint256 amountIn, uint256 amountOutMin, bytes[] calldata path, address to, uint deadline)
         external;
 
-    // Library wrappers
     function getBaseOut(uint256 amountQuoteIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
         external view returns (uint256 amountBaseOut);
 
@@ -77,9 +76,9 @@ interface IDAOfiV1Router01 {
     function getQuoteIn(uint256 amountBaseOut, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
         external view returns (uint256 amountQuoteIn);
 
-    function getAmountsOut(uint256 amountIn, address[] calldata path)
+    function getAmountsOut(uint256 amountIn, bytes[] calldata path)
         external view returns (uint256[] memory amounts);
 
-    function getAmountsIn(uint256 amountOut, address[] calldata path)
+    function getAmountsIn(uint256 amountOut, bytes[] calldata path)
         external view returns (uint256[] memory amounts);
 }
