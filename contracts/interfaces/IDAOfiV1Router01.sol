@@ -65,12 +65,6 @@ interface IDAOfiV1Router01 {
         external;
 
     // Library wrappers
-    function quote(uint256 amountBaseIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
-        external view returns (uint256 amountQuoteOut);
-
-    function base(uint256 amountQuoteIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
-        external view returns (uint256 amountBaseOut);
-
     function getBaseOut(uint256 amountQuoteIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
         external view returns (uint256 amountBaseOut);
 

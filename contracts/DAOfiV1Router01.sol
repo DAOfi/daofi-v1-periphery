@@ -10,9 +10,8 @@ import './interfaces/IERC20.sol';
 import './interfaces/IWETH.sol';
 import './libraries/DAOfiV1Library.sol';
 import './libraries/SafeMath.sol';
-import './Power.sol';
 
-contract DAOfiV1Router01 is IDAOfiV1Router01, Power {
+contract DAOfiV1Router01 is IDAOfiV1Router01 {
     using SafeMath for uint;
     using SafeMath for uint8;
     using SafeMath for uint32;
@@ -222,18 +221,6 @@ contract DAOfiV1Router01 is IDAOfiV1Router01, Power {
     }
 
     /**** LIBRARY */
-    function quote(uint256 amountBaseIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
-        public view override returns (uint256 amountQuoteOut)
-    {
-        return DAOfiV1Library.quote(amountBaseIn, factory, tokenA, tokenB, m, n, fee);
-    }
-
-    function base(uint256 amountQuoteIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
-        public view override returns (uint256 amountBaseOut)
-    {
-        return DAOfiV1Library.base(amountQuoteIn, factory, tokenA, tokenB, m, n, fee);
-    }
-
     function getBaseOut(uint256 amountQuoteIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
         public view override returns (uint256 amountBaseOut)
     {

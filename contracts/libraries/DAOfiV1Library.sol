@@ -6,6 +6,18 @@ import "./SafeMath.sol";
 
 library DAOfiV1Library {
     using SafeMath for uint;
+    using SafeMath for uint8;
+    using SafeMath for uint32;
+    using SafeMath for uint256;
+
+    struct CurveParams {
+        address pairOwner;
+        address baseToken;
+        uint32 m;
+        uint32 n;
+        uint32 fee;
+        uint256 s;
+    }
 
     // returns sorted token addresses, used to handle return values from pairs sorted in this order
     function sortTokens(address tokenA, address tokenB)
@@ -43,19 +55,7 @@ library DAOfiV1Library {
         return IDAOfiV1Pair(pairFor(factory, tokenA, tokenB, m, n, fee)).getCurveParams();
     }
 
-        // given some amount of an asset and pair reserves, returns an equivalent amount of the other asset
-    function quote(uint256 amountBaseIn, address factory, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
-        internal view returns (uint256)
-    {
-        return IDAOfiV1Pair(pairFor(factory, tokenA, tokenB, m, n, fee)).quote(amountBaseIn);
-    }
-
-     function base(uint256 amountQuoteIn, address factory, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
-        internal view returns (uint256 amountBaseOut)
-    {
-        return IDAOfiV1Pair(pairFor(factory, tokenA, tokenB, m, n, fee)).base(amountQuoteIn);
-    }
-
+    // given some amount of base or quote, return the amount of quote or base, in and out.
     function getBaseOut(uint256 amountQuoteIn, address factory, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
         internal view returns (uint256 amountBaseOut)
     {
@@ -65,19 +65,19 @@ library DAOfiV1Library {
     function getQuoteOut(uint256 amountBaseIn, address factory, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
         internal view returns (uint256 amountQuoteOut)
     {
-        return IDAOfiV1Pair(pairFor(factory, tokenA, tokenB, m, n, fee)).getBaseOut(amountQuoteIn);
+        return IDAOfiV1Pair(pairFor(factory, tokenA, tokenB, m, n, fee)).getBaseOut(amountBaseIn);
     }
 
     function getBaseIn(uint256 amountQuoteOut, address factory, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
         internal view returns (uint256 amountBaseIn)
     {
-        return DAOfiV1Library.getBaseIn(amountQuoteOut, tokenA, tokenB, m, n, fee);
+        return IDAOfiV1Pair(pairFor(factory, tokenA, tokenB, m, n, fee)).getBaseIn(amountQuoteOut);
     }
 
     function getQuoteIn(uint256 amountBaseOut, address factory, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
         internal view returns (uint256 amountQuoteIn)
     {
-        return DAOfiV1Library.getQuoteIn(amountBaseOut, tokenA, tokenB, m, n, fee);
+        return IDAOfiV1Pair(pairFor(factory, tokenA, tokenB, m, n, fee)).getQuoteIn(amountBaseOut);
     }
 
     // performs chained getAmountOut calculations on any number of pairs
