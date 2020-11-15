@@ -1,6 +1,6 @@
 {
   "name": "@daofi/daofi-v1-periphery",
-  "version": "1.4.0-rc.1",
+  "version": "1.4.0-rc.2",
   "description": "🎚 Peripheral smart contracts for interacting with DAOfi V1",
   "engines": {
     "node": ">=10"
@@ -15,7 +15,7 @@
     "contracts"
   ],
   "dependencies": {
-    "@daofi/daofi-v1-core": "1.4.0-rc.1",
+    "@daofi/daofi-v1-core": "1.4.0-rc.2",
     "@uniswap/lib": "1.1.1"
   },
   "devDependencies": {
