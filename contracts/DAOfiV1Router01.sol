@@ -61,7 +61,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         uint256 amountBIn,
         address to,
         uint deadline
-    ) external virtual override ensure(deadline) returns (uint256 amountBase) {
+    ) external override ensure(deadline) returns (uint256 amountBase) {
         if (IDAOfiV1Factory(factory).getPair(tokenA, tokenB, m, n, fee) == address(0)) {
             IDAOfiV1Factory(factory).createPair(tokenA, tokenB, tokenA, msg.sender, m, n, fee);
         }
@@ -80,7 +80,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         uint256 amountETHIn,
         address to,
         uint deadline
-    ) external virtual override payable ensure(deadline) returns (uint256 amountBase) {
+    ) external override payable ensure(deadline) returns (uint256 amountBase) {
         if (IDAOfiV1Factory(factory).getPair(token, WETH, m, n, fee) == address(0)) {
             IDAOfiV1Factory(factory).createPair(token, WETH, token, msg.sender, m, n, fee);
         }
@@ -101,7 +101,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         uint32 fee,
         address to,
         uint deadline
-    ) public virtual override ensure(deadline) returns (uint amountBase, uint amountQuote) {
+    ) public override ensure(deadline) returns (uint amountBase, uint amountQuote) {
         address pair = DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee);
         (amountBase, amountQuote) = IDAOfiV1Pair(pair).close(to);
     }
@@ -113,7 +113,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         uint32 fee,
         address to,
         uint deadline
-    ) public virtual override ensure(deadline) returns (uint amountToken, uint amountETH) {
+    ) public override ensure(deadline) returns (uint amountToken, uint amountETH) {
         address pair = DAOfiV1Library.pairFor(factory, token, WETH, m, n, fee);
         (amountToken, amountETH) = IDAOfiV1Pair(pair).close(to);
         TransferHelper.safeTransfer(token, to, amountToken);
@@ -123,7 +123,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
 
     // **** SWAP (supporting fee-on-transfer tokens) ****
     // requires the initial amount to have already been sent to the first pair
-    function _swap(bytes[] memory path, address _to) internal virtual {
+    function _swap(bytes[] memory path, address _to) internal {
         for (uint i; i < path.length - 1; i++) {
             SwapParams memory spIn = abi.decode(path[i], (SwapParams));
             SwapParams memory spOut = abi.decode(path[i + 1], (SwapParams));
@@ -163,7 +163,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         bytes[] calldata path,
         address to,
         uint deadline
-    ) external virtual override ensure(deadline) {
+    ) external override ensure(deadline) {
         SwapParams memory spIn = abi.decode(path[0], (SwapParams));
         SwapParams memory spOut = abi.decode(path[1], (SwapParams));
         TransferHelper.safeTransferFrom(
@@ -253,7 +253,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
     function getAmountsOut(uint256 amountIn, bytes[] memory path)
         public view override returns (uint256[] memory amounts)
     {
-        require(path.length >= 2, 'DAOfiV1Router01: INVALID_PATH');
+        require(path.length >= 2, 'DAOfiV1Router: INVALID_PATH');
         amounts = new uint256[](path.length);
         amounts[0] = amountIn;
         for (uint256 i; i < path.length - 1; i++) {
@@ -273,7 +273,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
     function getAmountsIn(uint256 amountOut, bytes[] memory path)
         public view override returns (uint256[] memory amounts)
     {
-        require(path.length >= 2, 'DAOfiV1Router01: INVALID_PATH');
+        require(path.length >= 2, 'DAOfiV1Router: INVALID_PATH');
         amounts = new uint256[](path.length);
         amounts[amounts.length - 1] = amountOut;
         for (uint i = path.length - 1; i > 0; i--) {
