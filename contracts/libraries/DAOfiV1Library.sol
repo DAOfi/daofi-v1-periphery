@@ -8,80 +8,101 @@ library DAOfiV1Library {
     using SafeMath for uint;
 
     // returns sorted token addresses, used to handle return values from pairs sorted in this order
-    function sortTokens(address tokenA, address tokenB) internal pure returns (address token0, address token1) {
+    function sortTokens(address tokenA, address tokenB)
+        internal pure returns (address token0, address token1)
+    {
         require(tokenA != tokenB, 'DAOfiV1Library: IDENTICAL_ADDRESSES');
         (token0, token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
         require(token0 != address(0), 'DAOfiV1Library: ZERO_ADDRESS');
     }
 
     // calculates the CREATE2 address for a pair without making any external calls
-    function pairFor(address factory, address tokenA, address tokenB) internal pure returns (address pair) {
+    function pairFor(address factory, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        internal pure returns (address pair)
+    {
         (address token0, address token1) = sortTokens(tokenA, tokenB);
         pair = address(uint(keccak256(abi.encodePacked(
                 hex'ff',
                 factory,
-                keccak256(abi.encodePacked(token0, token1)),
+                keccak256(abi.encodePacked(token0, token1, m, n, fee)),
                 hex'6a2dbde525d74120f78de7646d79785d9db48aaba527b33804ceb6078e4e5ed2' // init code hash
             ))));
     }
 
     // fetches and sorts the reserves for a pair
-    function getReserves(address factory, address tokenA, address tokenB) internal view returns (uint reserveA, uint reserveB) {
-        (address token0,) = sortTokens(tokenA, tokenB);
-        (uint reserve0, uint reserve1,) = IDAOfiV1Pair(pairFor(factory, tokenA, tokenB)).getReserves();
-        (reserveA, reserveB) = tokenA == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
+    function getReserves(address factory, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        internal view returns (uint256, uint256)
+    {
+        return IDAOfiV1Pair(pairFor(factory, tokenA, tokenB, m, n, fee)).getReserves();
     }
 
     // get params
-    function getCurveParams(address factory, address tokenA, address tokenB) internal view returns (bytes memory) {
-        return IDAOfiV1Pair(pairFor(factory, tokenA, tokenB)).getCurveParams();
+    function getCurveParams(address factory, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        internal view returns (bytes memory)
+    {
+        return IDAOfiV1Pair(pairFor(factory, tokenA, tokenB, m, n, fee)).getCurveParams();
     }
 
-    // given some amount of an asset and pair reserves, returns an equivalent amount of the other asset
-    function quote(uint amountA, uint reserveA, uint reserveB) internal pure returns (uint amountB) {
-        require(amountA > 0, 'DAOfiV1Library: INSUFFICIENT_AMOUNT');
-        require(reserveA > 0 && reserveB > 0, 'DAOfiV1Library: INSUFFICIENT_LIQUIDITY');
-        amountB = amountA.mul(reserveB) / reserveA;
+        // given some amount of an asset and pair reserves, returns an equivalent amount of the other asset
+    function quote(uint256 amountBaseIn, address factory, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        internal view returns (uint256)
+    {
+        return IDAOfiV1Pair(pairFor(factory, tokenA, tokenB, m, n, fee)).quote(amountBaseIn);
     }
 
-    // given an input amount of an asset and pair reserves, returns the maximum output amount of the other asset
-    function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut) internal pure returns (uint amountOut) {
-        require(amountIn > 0, 'DAOfiV1Library: INSUFFICIENT_INPUT_AMOUNT');
-        require(reserveIn > 0 && reserveOut > 0, 'DAOfiV1Library: INSUFFICIENT_LIQUIDITY');
-        uint amountInWithFee = amountIn.mul(997);
-        uint numerator = amountInWithFee.mul(reserveOut);
-        uint denominator = reserveIn.mul(1000).add(amountInWithFee);
-        amountOut = numerator / denominator;
+     function base(uint256 amountQuoteIn, address factory, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        internal view returns (uint256 amountBaseOut)
+    {
+        return IDAOfiV1Pair(pairFor(factory, tokenA, tokenB, m, n, fee)).base(amountQuoteIn);
     }
 
-    // given an output amount of an asset and pair reserves, returns a required input amount of the other asset
-    function getAmountIn(uint amountOut, uint reserveIn, uint reserveOut) internal pure returns (uint amountIn) {
-        require(amountOut > 0, 'DAOfiV1Library: INSUFFICIENT_OUTPUT_AMOUNT');
-        require(reserveIn > 0 && reserveOut > 0, 'DAOfiV1Library: INSUFFICIENT_LIQUIDITY');
-        uint numerator = reserveIn.mul(amountOut).mul(1000);
-        uint denominator = reserveOut.sub(amountOut).mul(997);
-        amountIn = (numerator / denominator).add(1);
+    function getBaseOut(uint256 amountQuoteIn, address factory, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        internal view returns (uint256 amountBaseOut)
+    {
+        return IDAOfiV1Pair(pairFor(factory, tokenA, tokenB, m, n, fee)).getBaseOut(amountQuoteIn);
+    }
+
+    function getQuoteOut(uint256 amountBaseIn, address factory, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        internal view returns (uint256 amountQuoteOut)
+    {
+        return IDAOfiV1Pair(pairFor(factory, tokenA, tokenB, m, n, fee)).getBaseOut(amountQuoteIn);
+    }
+
+    function getBaseIn(uint256 amountQuoteOut, address factory, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        internal view returns (uint256 amountBaseIn)
+    {
+        return DAOfiV1Library.getBaseIn(amountQuoteOut, tokenA, tokenB, m, n, fee);
+    }
+
+    function getQuoteIn(uint256 amountBaseOut, address factory, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        internal view returns (uint256 amountQuoteIn)
+    {
+        return DAOfiV1Library.getQuoteIn(amountBaseOut, tokenA, tokenB, m, n, fee);
     }
 
     // performs chained getAmountOut calculations on any number of pairs
-    function getAmountsOut(address factory, uint amountIn, address[] memory path) internal view returns (uint[] memory amounts) {
-        require(path.length >= 2, 'DAOfiV1Library: INVALID_PATH');
-        amounts = new uint[](path.length);
-        amounts[0] = amountIn;
-        for (uint i; i < path.length - 1; i++) {
-            (uint reserveIn, uint reserveOut) = getReserves(factory, path[i], path[i + 1]);
-            amounts[i + 1] = getAmountOut(amounts[i], reserveIn, reserveOut);
-        }
+    function getAmountsOut(uint256 amountIn, address factory, address[] memory path)
+        internal view returns (uint256[] memory amounts)
+    {
+        // require(path.length >= 2, 'UniswapV2Library: INVALID_PATH');
+        // amounts = new uint256[](path.length);
+        // amounts[0] = amountIn;
+        // for (uint256 i; i < path.length - 1; i++) {
+        //     (uint reserveIn, uint reserveOut) = getReserves(factory, path[i], path[i + 1]);
+        //     amounts[i + 1] = getAmountOut(amounts[i], reserveIn, reserveOut);
+        // }
     }
 
     // performs chained getAmountIn calculations on any number of pairs
-    function getAmountsIn(address factory, uint amountOut, address[] memory path) internal view returns (uint[] memory amounts) {
-        require(path.length >= 2, 'DAOfiV1Library: INVALID_PATH');
-        amounts = new uint[](path.length);
-        amounts[amounts.length - 1] = amountOut;
-        for (uint i = path.length - 1; i > 0; i--) {
-            (uint reserveIn, uint reserveOut) = getReserves(factory, path[i - 1], path[i]);
-            amounts[i - 1] = getAmountIn(amounts[i], reserveIn, reserveOut);
-        }
+    function getAmountsIn(uint256 amountOut, address factory, address[] memory path)
+        internal view returns (uint256[] memory amounts)
+    {
+        // require(path.length >= 2, 'UniswapV2Library: INVALID_PATH');
+        // amounts = new uint[](path.length);
+        // amounts[amounts.length - 1] = amountOut;
+        // for (uint i = path.length - 1; i > 0; i--) {
+        //     (uint reserveIn, uint reserveOut) = getReserves(factory, path[i - 1], path[i]);
+        //     amounts[i - 1] = getAmountIn(amounts[i], reserveIn, reserveOut);
+        // }
     }
 }

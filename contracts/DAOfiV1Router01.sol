@@ -2,6 +2,7 @@ pragma solidity =0.6.6;
 pragma experimental ABIEncoderV2;
 
 import '@daofi/daofi-v1-core/contracts/interfaces/IDAOfiV1Factory.sol';
+import '@daofi/daofi-v1-core/contracts/interfaces/IDAOfiV1Pair.sol';
 import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
 
 import './interfaces/IDAOfiV1Router01.sol';
@@ -16,13 +17,6 @@ contract DAOfiV1Router01 is IDAOfiV1Router01, Power {
     using SafeMath for uint8;
     using SafeMath for uint32;
     using SafeMath for uint256;
-
-    struct CurveParams {
-        address baseToken;
-        uint32 m;
-        uint32 n;
-        uint32 fee;
-    }
 
     address public immutable override factory;
     address public immutable override WETH;
@@ -39,6 +33,35 @@ contract DAOfiV1Router01 is IDAOfiV1Router01, Power {
 
     receive() external payable {
         assert(msg.sender == WETH); // only accept ETH via fallback from the WETH contract
+    }
+
+    function sortTokens(address tokenA, address tokenB) internal pure returns (address token0, address token1) {
+        require(tokenA != tokenB, 'DAOfiV1Library: IDENTICAL_ADDRESSES');
+        (token0, token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
+        require(token0 != address(0), 'DAOfiV1Library: ZERO_ADDRESS');
+    }
+
+    // calculates the CREATE2 address for a pair without making any external calls
+    function pairFor(address factory, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee) internal pure returns (address pair) {
+        (address token0, address token1) = sortTokens(tokenA, tokenB);
+        pair = address(uint(keccak256(abi.encodePacked(
+            hex'ff',
+            factory,
+            keccak256(abi.encodePacked(token0, token1, m, n, fee)),
+            hex'6a2dbde525d74120f78de7646d79785d9db48aaba527b33804ceb6078e4e5ed2' // init code hash
+        ))));
+    }
+
+    // fetches and sorts the reserves for a pair
+    function getReserves(address factory, address tokenA, address tokenB) internal view returns (uint reserveA, uint reserveB) {
+        (address token0,) = sortTokens(tokenA, tokenB);
+        (uint reserve0, uint reserve1,) = IDAOfiV1Pair(pairFor(factory, tokenA, tokenB)).getReserves();
+        (reserveA, reserveB) = tokenA == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
+    }
+
+    // get params
+    function getCurveParams(address factory, address tokenA, address tokenB) internal view returns (bytes memory) {
+        return IDAOfiV1Pair(pairFor(factory, tokenA, tokenB)).getCurveParams();
     }
 
     function addLiquidity(
@@ -199,107 +222,51 @@ contract DAOfiV1Router01 is IDAOfiV1Router01, Power {
     }
 
     /**** LIBRARY */
-    function quote(uint amountA, uint reserveA, uint reserveB, address tokenA, address tokenB)
-        public
-        view
-        override
-        returns (uint amountB)
+    function quote(uint256 amountBaseIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        public view override returns (uint256 amountQuoteOut)
     {
-        require(amountA > 0, 'DAOfiV1Router: INSUFFICIENT_AMOUNT');
-        require(reserveA > 0 && reserveB > 0, 'DAOfiV1Router: INSUFFICIENT_LIQUIDITY');
-        CurveParams memory params = abi.decode(DAOfiV1Library.getCurveParams(factory, tokenA, tokenB), (CurveParams));
-        if (tokenB == params.baseToken) {
-            amountB = amountA.mul(reserveB).mul(params.m) / reserveA.mul(10 ** 6);
-        } else {
-            amountB = amountA.mul(reserveB).mul(10 ** 6) / reserveA.mul(params.m);
-        }
+        return DAOfiV1Library.quote(amountBaseIn, factory, tokenA, tokenB, m, n, fee);
     }
 
-    function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut, address tokenA, address tokenB)
-        public
-        view
-        override
-        returns (uint amountOut)
+    function base(uint256 amountQuoteIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        public view override returns (uint256 amountBaseOut)
     {
-        require(amountIn > 0, 'DAOfiV1Router: INSUFFICIENT_INPUT_AMOUNT');
-        require(reserveIn > 0 && reserveOut > 0, 'DAOfiV1Router: INSUFFICIENT_LIQUIDITY');
-        CurveParams memory params = abi.decode(DAOfiV1Library.getCurveParams(factory, tokenA, tokenB), (CurveParams));
-        uint amountInWithFee = amountIn.mul(1000 - params.fee);
-        if (tokenB == params.baseToken) {
-            (uint256 resultA, uint8 precisionA) = power(
-                (10 ** 6) * (params.n + 1) * (amountInWithFee + (reserveIn * 1000)),
-                (params.m * 1000),
-                1,
-                uint32(params.n + 1));
-            (uint256 resultB, uint8 precisionB) = power(
-                (reserveIn * (10 ** 6)),
-                (reserveOut * params.m),
-                1,
-                uint32(params.n));
-            amountOut = (resultA >> precisionA) - (resultB >> precisionB);
-        } else {
-            (uint256 resultA, uint8 precisionA) = power(
-                (reserveOut * (10 ** 6)),
-                (reserveIn * params.m),
-                1,
-                uint32(params.n));
-            (uint256 resultB, uint8 precisionB) = power(
-                ((resultA >> precisionA) * 1000) - amountInWithFee,
-                1000,
-                uint32(params.n + 1),
-                1);
-            amountOut = reserveOut - (((resultB >> precisionB) * params.m) / ((10 ** 6) * (params.n + 1)));
-        }
+        return DAOfiV1Library.base(amountQuoteIn, factory, tokenA, tokenB, m, n, fee);
     }
 
-    function getAmountIn(uint amountOut, uint reserveIn, uint reserveOut, address tokenA, address tokenB)
-        public
-        view
-        override
-        returns (uint amountIn)
+    function getBaseOut(uint256 amountQuoteIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        public view override returns (uint256 amountBaseOut)
     {
-        require(amountOut > 0, 'DAOfiV1Router: INSUFFICIENT_OUTPUT_AMOUNT');
-        require(reserveIn > 0 && reserveOut > 0, 'DAOfiV1Router: INSUFFICIENT_LIQUIDITY');
-        CurveParams memory params = abi.decode(DAOfiV1Library.getCurveParams(factory, tokenA, tokenB), (CurveParams));
-        uint numerator = reserveIn.mul(amountOut).mul(1000);
-        uint denominator = reserveOut.sub(amountOut).mul(1000 - params.fee);
-        amountIn = (numerator / denominator).add(1);
-        if (tokenB == params.baseToken) {
-            amountIn = (amountIn * (10 ** 6)) / params.m;
-        } else {
-            amountIn = (amountIn * params.m) / (10 ** 6);
-        }
+        return DAOfiV1Library.getBaseOut(amountQuoteIn, factory, tokenA, tokenB, m, n, fee);
     }
 
-    function getAmountsOut(uint amountIn, address[] memory path)
-        public
-        view
-        virtual
-        override
-        returns (uint[] memory amounts)
+    function getQuoteOut(uint256 amountBaseIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        public view override returns (uint256 amountQuoteOut)
     {
-        require(path.length >= 2, 'DAOfiV1Router: INVALID_PATH');
-        amounts = new uint[](path.length);
-        amounts[0] = amountIn;
-        for (uint i; i < path.length - 1; i++) {
-            (uint reserveIn, uint reserveOut) = DAOfiV1Library.getReserves(factory, path[i], path[i + 1]);
-            amounts[i + 1] = getAmountOut(amounts[i], reserveIn, reserveOut, path[i], path[i + 1]);
-        }
+        return DAOfiV1Library.getQuoteOut(amountBaseIn, factory, tokenA, tokenB, m, n, fee);
     }
 
-    function getAmountsIn(uint amountOut, address[] memory path)
-        public
-        view
-        virtual
-        override
-        returns (uint[] memory amounts)
+    function getBaseIn(uint256 amountQuoteOut, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        public view override returns (uint256 amountBaseIn)
     {
-        require(path.length >= 2, 'DAOfiV1Router: INVALID_PATH');
-        amounts = new uint[](path.length);
-        amounts[amounts.length - 1] = amountOut;
-        for (uint i = path.length - 1; i > 0; i--) {
-            (uint reserveIn, uint reserveOut) = DAOfiV1Library.getReserves(factory, path[i - 1], path[i]);
-            amounts[i - 1] = getAmountIn(amounts[i], reserveIn, reserveOut, path[i - 1], path[i]);
-        }
+        return DAOfiV1Library.getBaseIn(amountQuoteOut, factory, tokenA, tokenB, m, n, fee);
+    }
+
+    function getQuoteIn(uint256 amountBaseOut, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        public view override returns (uint256 amountQuoteIn)
+    {
+        return DAOfiV1Library.getQuoteIn(amountBaseOut, factory, tokenA, tokenB, m, n, fee);
+    }
+
+    function getAmountsOut(uint256 amountIn, factory, address[] memory path)
+        public view override returns (uint256[] memory amounts)
+    {
+        return DAOfiV1Library.getAmountsOut(amountIn, factory, path);
+    }
+
+    function getAmountsIn(uint256 amountOut, address[] memory path)
+        public view override returns (uint256[] memory amounts)
+    {
+        return DAOfiV1Library.getAmountsIn(amountOut, factory, path);
     }
 }

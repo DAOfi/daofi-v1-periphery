@@ -3,12 +3,8 @@ pragma experimental ABIEncoderV2;
 
 interface IDAOfiV1Router01 {
     function factory() external pure returns (address);
+
     function WETH() external pure returns (address);
-    function quote(uint256 amountA, uint256 reserveA, uint256 reserveB, address tokenA, address tokenB) external view returns (uint256 amountB);
-    function getAmountOut(uint256 amountIn, uint256 reserveIn, uint256 reserveOut, address tokenA, address tokenB) external view returns (uint256 amountOut);
-    function getAmountIn(uint256 amountOut, uint256 reserveIn, uint256 reserveOut, address tokenA, address tokenB) external view returns (uint256 amountIn);
-    function getAmountsOut(uint256 amountIn, address[] calldata path) external view returns (uint[] memory amounts);
-    function getAmountsIn(uint256 amountOut, address[] calldata path) external view returns (uint[] memory amounts);
 
     function addLiquidity(
         address tokenA,
@@ -67,4 +63,29 @@ interface IDAOfiV1Router01 {
 
     function swapExactTokensForETH(uint256 amountIn, uint256 amountOutMin, address[] calldata path, address to, uint deadline)
         external;
+
+    // Library wrappers
+    function quote(uint256 amountBaseIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        external view returns (uint256 amountQuoteOut);
+
+    function base(uint256 amountQuoteIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        external view returns (uint256 amountBaseOut);
+
+    function getBaseOut(uint256 amountQuoteIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        external view returns (uint256 amountBaseOut);
+
+    function getQuoteOut(uint256 amountBaseIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        external view returns (uint256 amountQuoteOut);
+
+    function getBaseIn(uint256 amountQuoteOut, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        external view returns (uint256 amountBaseIn);
+
+    function getQuoteIn(uint256 amountBaseOut, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        external view returns (uint256 amountQuoteIn);
+
+    function getAmountsOut(uint256 amountIn, address[] calldata path)
+        external view returns (uint256[] memory amounts);
+
+    function getAmountsIn(uint256 amountOut, address[] calldata path)
+        external view returns (uint256[] memory amounts);
 }
