@@ -35,7 +35,7 @@ export async function getFixtureWithParams(provider: Web3Provider, [wallet]: Wal
   const WETHPartner = await deployContract(wallet, ERC20, [expandTo18Decimals(10000)])
 
   // deploy factory
-  const factory = await deployContract(wallet, DAOfiV1Router01, [])
+  const factory = await deployContract(wallet, DAOfiV1Factory, [])
 
   // deploy router
   const router = await deployContract(wallet, DAOfiV1Router01, [factory.address, WETH.address], overrides)
