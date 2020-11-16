@@ -16,9 +16,8 @@ const overrides = {
 }
 
 interface DAOfiV1Fixture {
-  token0: Contract
-  token1: Contract
   tokenBase: Contract
+  tokenQuote: Contract
   WETH: Contract
   WETHPartner: Contract
   factory: Contract
@@ -29,10 +28,10 @@ interface DAOfiV1Fixture {
 
 export async function getFixtureWithParams(provider: Web3Provider, [wallet]: Wallet[], m: number, n: number, fee: number): Promise<DAOfiV1Fixture> {
   // deploy tokens
-  const tokenA = await deployContract(wallet, ERC20, [expandTo18Decimals(10000)])
-  const tokenB = await deployContract(wallet, ERC20, [expandTo18Decimals(10000)])
+  const tokenA = await deployContract(wallet, ERC20, [expandTo18Decimals(1e6)])
+  const tokenB = await deployContract(wallet, ERC20, [expandTo18Decimals(1e6)])
   const WETH = await deployContract(wallet, WETH9)
-  const WETHPartner = await deployContract(wallet, ERC20, [expandTo18Decimals(10000)])
+  const WETHPartner = await deployContract(wallet, ERC20, [expandTo18Decimals(1e6)])
 
   // deploy factory
   const factory = await deployContract(wallet, DAOfiV1Factory, [])
@@ -45,19 +44,16 @@ export async function getFixtureWithParams(provider: Web3Provider, [wallet]: Wal
   const pairAddress = await factory.getPair(tokenA.address, tokenB.address, m, n, fee)
   const pair = new Contract(pairAddress, JSON.stringify(IDAOfiV1Pair.abi), provider).connect(wallet)
 
-  const token0Address = await pair.token0()
-  const token0 = tokenA.address === token0Address ? tokenA : tokenB
-  const token1 = tokenA.address === token0Address ? tokenB : tokenA
   const tokenBase = tokenA
+  const tokenQuote = tokenB
 
   await factory.createPair(WETH.address, WETHPartner.address, WETHPartner.address, wallet.address, m, n, fee)
   const WETHPairAddress = await factory.getPair(WETH.address, WETHPartner.address, m, n, fee)
   const WETHPair = new Contract(WETHPairAddress, JSON.stringify(IDAOfiV1Pair.abi), provider).connect(wallet)
 
   return {
-    token0,
-    token1,
     tokenBase,
+    tokenQuote,
     WETH,
     WETHPartner,
     factory,

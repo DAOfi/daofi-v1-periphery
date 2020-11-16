@@ -15,6 +15,16 @@ chai.use(solidity)
 const overrides = {
   gasLimit: 9999999
 }
+const zero = bigNumberify(0)
+
+let tokenBase: Contract
+let tokenQuote: Contract
+let WETH: Contract
+let WETHPartner: Contract
+let factory: Contract
+let router: Contract
+let pair: Contract
+let WETHPair: Contract
 
 describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
   const provider = new MockProvider({
@@ -24,19 +34,32 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
   })
   const [wallet] = provider.getWallets()
 
-  let token0: Contract
-  let tokenBase: Contract
-  let WETH: Contract
-  let WETHPartner: Contract
-  let factory: Contract
-  let router: Contract
-  let pair: Contract
-  let WETHPair: Contract
+  async function addLiquidityForPrice(
+    price: number,
+    tokenBase: Contract,
+    tokenQuote: Contract,
+    baseReserve: BigNumber,
+    pair: Contract
+  ) {
+    // solve for s as a float, then convert to bignum
+    const slopeN = await pair.m()
+    const n = await pair.n()
+    const s = (price * (1e6 / slopeN)) ** (1 / n)
+    const quoteReserveFloat = Math.floor((slopeN * (s ** (n + 1))) / (1e6 * (n + 1)))
+    const quoteReserve = expandTo18Decimals(quoteReserveFloat)
+    const baseAmountOut = await pair.getBaseOut(quoteReserve)
+    await tokenBase.transfer(pair.address, baseReserve)
+    await tokenQuote.transfer(pair.address, quoteReserve)
+    await pair.deposit(wallet.address, overrides)
+    const reserves = await pair.getReserves()
+    expect(reserves[0]).to.eq(baseReserve.sub(baseAmountOut))
+    expect(reserves[1]).to.eq(quoteReserve)
+  }
 
   beforeEach(async function() {
     const fixture = await getFixtureWithParams(provider, [wallet], 1e6, 1, 3)
-    token0 = fixture.token0
     tokenBase = fixture.tokenBase
+    tokenQuote = fixture.tokenQuote
     WETH = fixture.WETH
     WETHPartner = fixture.WETHPartner
     factory = fixture.factory
@@ -45,84 +68,23 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
     WETHPair = fixture.WETHPair
   })
 
-  it.only('quote', async () => {
-    // expect(await router.quote(bigNumberify(1), bigNumberify(100), bigNumberify(200))).to.eq(bigNumberify(2))
-    // expect(await router.quote(bigNumberify(2), bigNumberify(200), bigNumberify(100))).to.eq(bigNumberify(1))
-    // await expect(router.quote(bigNumberify(0), bigNumberify(100), bigNumberify(200))).to.be.revertedWith(
-    //   'DAOfiV1Library: INSUFFICIENT_AMOUNT'
-    // )
-    // await expect(router.quote(bigNumberify(1), bigNumberify(0), bigNumberify(200))).to.be.revertedWith(
-    //   'DAOfiV1Library: INSUFFICIENT_LIQUIDITY'
-    // )
-    // await expect(router.quote(bigNumberify(1), bigNumberify(100), bigNumberify(0))).to.be.revertedWith(
-    //   'DAOfiV1Library: INSUFFICIENT_LIQUIDITY'
-    // )
+  it('getBaseOut', async () => {
+    const quoteAmountIn = expandTo18Decimals(20)
+    const baseAmountOut = bigNumberify('6231586573')
+    expect(await router.getBaseOut(quoteAmountIn, tokenBase.address, tokenQuote.address, 1e6, 1, 3))
+      .to.eq(baseAmountOut)
   })
 
-  // it('getAmountOut', async () => {
-  //   expect(await router.getAmountOut(bigNumberify(2), bigNumberify(100), bigNumberify(100))).to.eq(bigNumberify(1))
-  //   await expect(router.getAmountOut(bigNumberify(0), bigNumberify(100), bigNumberify(100))).to.be.revertedWith(
-  //     'DAOfiV1Library: INSUFFICIENT_INPUT_AMOUNT'
-  //   )
-  //   await expect(router.getAmountOut(bigNumberify(2), bigNumberify(0), bigNumberify(100))).to.be.revertedWith(
-  //     'DAOfiV1Library: INSUFFICIENT_LIQUIDITY'
-  //   )
-  //   await expect(router.getAmountOut(bigNumberify(2), bigNumberify(100), bigNumberify(0))).to.be.revertedWith(
-  //     'DAOfiV1Library: INSUFFICIENT_LIQUIDITY'
-  //   )
-  // })
-
-  // it('getAmountOut: fee == 1', async () => {
-  //   expect(await router.getAmountOut(bigNumberify(2), bigNumberify(100), bigNumberify(100), token0.address, token1.address)).to.eq(bigNumberify(1))
-  //   await expect(router.getAmountOut(bigNumberify(0), bigNumberify(100), bigNumberify(100), token0.address, token1.address)).to.be.revertedWith(
-  //     'DAOfiV1Library: INSUFFICIENT_INPUT_AMOUNT'
-  //   )
-  //   await expect(router.getAmountOut(bigNumberify(2), bigNumberify(0), bigNumberify(100), token0.address, token1.address)).to.be.revertedWith(
-  //     'DAOfiV1Library: INSUFFICIENT_LIQUIDITY'
-  //   )
-  //   await expect(router.getAmountOut(bigNumberify(2), bigNumberify(100), bigNumberify(0), token0.address, token1.address)).to.be.revertedWith(
-  //     'DAOfiV1Library: INSUFFICIENT_LIQUIDITY'
-  //   )
-  // })
-
-  // it('getAmountOut: fee == 10', async () => {
-  //   expect(await router.getAmountOut(bigNumberify(2), bigNumberify(100), bigNumberify(100), token0.address, token1.address)).to.eq(bigNumberify(1))
-  //   await expect(router.getAmountOut(bigNumberify(0), bigNumberify(100), bigNumberify(100), token0.address, token1.address)).to.be.revertedWith(
-  //     'DAOfiV1Library: INSUFFICIENT_INPUT_AMOUNT'
-  //   )
-  //   await expect(router.getAmountOut(bigNumberify(2), bigNumberify(0), bigNumberify(100), token0.address, token1.address)).to.be.revertedWith(
-  //     'DAOfiV1Library: INSUFFICIENT_LIQUIDITY'
-  //   )
-  //   await expect(router.getAmountOut(bigNumberify(2), bigNumberify(100), bigNumberify(0), token0.address, token1.address)).to.be.revertedWith(
-  //     'DAOfiV1Library: INSUFFICIENT_LIQUIDITY'
-  //   )
-  // })
-
-  // it('getAmountIn', async () => {
-  //   expect(await router.getAmountIn(bigNumberify(1), bigNumberify(100), bigNumberify(100))).to.eq(bigNumberify(2))
-  //   await expect(router.getAmountIn(bigNumberify(0), bigNumberify(100), bigNumberify(100))).to.be.revertedWith(
-  //     'DAOfiV1Library: INSUFFICIENT_OUTPUT_AMOUNT'
-  //   )
-  //   await expect(router.getAmountIn(bigNumberify(1), bigNumberify(0), bigNumberify(100))).to.be.revertedWith(
-  //     'DAOfiV1Library: INSUFFICIENT_LIQUIDITY'
-  //   )
-  //   await expect(router.getAmountIn(bigNumberify(1), bigNumberify(100), bigNumberify(0))).to.be.revertedWith(
-  //     'DAOfiV1Library: INSUFFICIENT_LIQUIDITY'
-  //   )
-  // })
-
-  // it('getAmountIn: fee == 1', async () => {
-  //   expect(await router.getAmountIn(bigNumberify(1), bigNumberify(100), bigNumberify(100), token0.address, token1.address)).to.eq(bigNumberify(2))
-  //   await expect(router.getAmountIn(bigNumberify(0), bigNumberify(100), bigNumberify(100), token0.address, token1.address)).to.be.revertedWith(
-  //     'DAOfiV1Library: INSUFFICIENT_OUTPUT_AMOUNT'
-  //   )
-  //   await expect(router.getAmountIn(bigNumberify(1), bigNumberify(0), bigNumberify(100), token0.address, token1.address)).to.be.revertedWith(
-  //     'DAOfiV1Library: INSUFFICIENT_LIQUIDITY'
-  //   )
-  //   await expect(router.getAmountIn(bigNumberify(1), bigNumberify(100), bigNumberify(0), token0.address, token1.address)).to.be.revertedWith(
-  //     'DAOfiV1Library: INSUFFICIENT_LIQUIDITY'
-  //   )
-  // })
+  it('getQuoteOut', async () => {
+    // 50 quote in liquidity
+    await addLiquidityForPrice(10, tokenBase, tokenQuote, expandTo18Decimals(1e6), pair)
+    // aproximately the amount of base issued
+    const baseAmountIn = bigNumberify('1000000') // TODO fix precision
+    // slightly less than 50 quote (50 / (1 + fee factor))
+    const quoteAmountOut = bigNumberify('48660781379230785338')
+    expect(await router.getQuoteOut(baseAmountIn, tokenBase.address, tokenQuote.address, 1e6, 1, 3))
+      .to.eq(quoteAmountOut)
+  })
 
   // it('getAmountIn: fee == 10', async () => {
   //   expect(await router.getAmountIn(bigNumberify(1), bigNumberify(100), bigNumberify(100), token0.address, token1.address)).to.eq(bigNumberify(2))
