@@ -124,37 +124,24 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
 
     // **** SWAP (supporting fee-on-transfer tokens) ****
     // requires the initial amount to have already been sent to the first pair
-    function _swap(bytes[] memory path, address _to) internal {
-        for (uint i; i < path.length - 1; i++) {
-            SwapParams memory spIn = abi.decode(path[i], (SwapParams));
-            SwapParams memory spOut = abi.decode(path[i + 1], (SwapParams));
-            IDAOfiV1Pair pair = IDAOfiV1Pair(
-                DAOfiV1Library.pairFor(factory,  spIn.token, spOut.token, spIn.m, spIn.n, spIn.fee)
-            );
-            uint256 amountBaseOutput;
-            uint256 amountQuoteOutput;
-            { // scope to avoid stack too deep errors
-            (uint reserveBase, uint reserveQuote,) = pair.getReserves();
-            CurveParams memory params = abi.decode(pair.getCurveParams(), (CurveParams));
-            if (params.baseToken == spOut.token) {
-                uint256 amountInput = IERC20(spIn.token).balanceOf(address(pair)).sub(reserveQuote).mul(1000 - params.fee) / 1000;
-                amountBaseOutput = pair.getBaseOut(amountInput);
-            } else {
-                uint256 amountInput = IERC20(spIn.token).balanceOf(address(pair)).sub(reserveBase).mul(1000 - params.fee) / 1000;
-                amountQuoteOutput = pair.getQuoteOut(amountInput);
-            }
-            }
-            address to = _to;
-            if (i < path.length - 2) {
-                SwapParams memory spNext = abi.decode(path[i + 2], (SwapParams));
-                to = DAOfiV1Library.pairFor(factory, spOut.token, spNext.token, spOut.m, spOut.n, spOut.fee);
-            }
-            pair.swap(
-                amountBaseOutput,
-                amountQuoteOutput,
-                to,
-                new bytes(0)
-            );
+    function _swap(bytes memory path0, bytes memory path1, address to) internal view returns (uint256 amountBaseOut, uint256 amountQuoteOut) {
+        SwapParams memory spIn = abi.decode(path0, (SwapParams));
+        SwapParams memory spOut = abi.decode(path1, (SwapParams));
+        IDAOfiV1Pair pair = IDAOfiV1Pair(
+            DAOfiV1Library.pairFor(factory,  spIn.token, spOut.token, spIn.m, spIn.n, spIn.fee)
+        );
+        uint256 amountBaseOutput;
+        uint256 amountQuoteOutput;
+        { // scope to avoid stack too deep errors
+        (uint reserveBase, uint reserveQuote,) = pair.getReserves();
+        CurveParams memory params = abi.decode(pair.getCurveParams(), (CurveParams));
+        if (params.baseToken == spOut.token) {
+            uint256 amountInput = IERC20(spIn.token).balanceOf(address(pair)).sub(reserveQuote).mul(1000 - params.fee) / 1000;
+            amountBaseOut = pair.getBaseOut(amountInput);
+        } else {
+            uint256 amountInput = IERC20(spIn.token).balanceOf(address(pair)).sub(reserveBase).mul(1000 - params.fee) / 1000;
+            amountQuoteOut = pair.getQuoteOut(amountInput);
+        }
         }
     }
 
@@ -165,18 +152,33 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         address to,
         uint deadline
     ) external override ensure(deadline) {
-        SwapParams memory spIn = abi.decode(path[0], (SwapParams));
-        SwapParams memory spOut = abi.decode(path[1], (SwapParams));
+        SwapParams memory sp0 = abi.decode(path[0], (SwapParams));
+        SwapParams memory sp1 = abi.decode(path[1], (SwapParams));
+        address pair = DAOfiV1Library.pairFor(factory, sp0.token, sp1.token, sp0.m, sp0.n, sp0.fee);
         TransferHelper.safeTransferFrom(
-            spIn.token, msg.sender, DAOfiV1Library.pairFor(factory, spIn.token, spOut.token, spIn.m, spIn.n, spIn.fee), amountIn
+            sp0.token, msg.sender, pair, amountIn
         );
         SwapParams memory spFinal = abi.decode(path[path.length - 1], (SwapParams));
         uint balanceBefore = IERC20(spFinal.token).balanceOf(to);
-        _swap(path, to);
-        // require(
-        //     IERC20(spFinal.token).balanceOf(to).sub(balanceBefore) >= amountOutMin,
-        //     'DAOfiV1Router: INSUFFICIENT_OUTPUT_AMOUNT'
-        // );
+        for (uint i; i < path.length - 1; i++) {
+            (uint256 amountBaseOut, uint256 amountQuoteOut) = _swap(path[i], path[i + 1], to);
+            SwapParams memory spOut = abi.decode(path[i + 1], (SwapParams));
+            address _to = to;
+            if (i < path.length - 2) {
+                SwapParams memory spNext = abi.decode(path[i + 2], (SwapParams));
+                _to = DAOfiV1Library.pairFor(factory, spOut.token, spNext.token, spOut.m, spOut.n, spOut.fee);
+            }
+            IDAOfiV1Pair(pair).swap(
+                amountBaseOut,
+                amountQuoteOut,
+                _to,
+                new bytes(0)
+            );
+        }
+        require(
+            IERC20(spFinal.token).balanceOf(to).sub(balanceBefore) >= amountOutMin,
+            'DAOfiV1Router: INSUFFICIENT_OUTPUT_AMOUNT'
+        );
     }
 
     function swapExactETHForTokens(
