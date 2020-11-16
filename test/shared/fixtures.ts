@@ -4,96 +4,64 @@ import { deployContract } from 'ethereum-waffle'
 
 import { expandTo18Decimals } from './utilities'
 
-import UniswapV2Factory from '@daofi/daofi-v1-core/build/UniswapV2Factory.json'
-import IUniswapV2Pair from '@daofi/daofi-v1-core/build/IUniswapV2Pair.json'
+import DAOfiV1Factory from '@daofi/daofi-v1-core/build/DAOfiV1Factory.json'
+import IDAOfiV1Pair from '@daofi/daofi-v1-core/build/IDAOfiV1Pair.json'
 
 import ERC20 from '../../build/ERC20.json'
 import WETH9 from '../../build/WETH9.json'
-import UniswapV1Exchange from '../../build/UniswapV1Exchange.json'
-import UniswapV1Factory from '../../build/UniswapV1Factory.json'
-import UniswapV2Router01 from '../../build/UniswapV2Router01.json'
-import UniswapV2Migrator from '../../build/UniswapV2Migrator.json'
-import UniswapV2Router02 from '../../build/UniswapV2Router02.json'
-import RouterEventEmitter from '../../build/RouterEventEmitter.json'
+import DAOfiV1Router01 from '../../build/DAOfiV1Router01.json'
 
 const overrides = {
   gasLimit: 9999999
 }
 
-interface V2Fixture {
+interface DAOfiV1Fixture {
   token0: Contract
   token1: Contract
+  tokenBase: Contract
   WETH: Contract
   WETHPartner: Contract
-  factoryV1: Contract
-  factoryV2: Contract
-  router01: Contract
-  router02: Contract
-  routerEventEmitter: Contract
+  factory: Contract
   router: Contract
-  migrator: Contract
-  WETHExchangeV1: Contract
   pair: Contract
   WETHPair: Contract
 }
 
-export async function v2Fixture(provider: Web3Provider, [wallet]: Wallet[]): Promise<V2Fixture> {
+export async function getFixtureWithParams(provider: Web3Provider, [wallet]: Wallet[], m: number, n: number, fee: number): Promise<DAOfiV1Fixture> {
   // deploy tokens
   const tokenA = await deployContract(wallet, ERC20, [expandTo18Decimals(10000)])
   const tokenB = await deployContract(wallet, ERC20, [expandTo18Decimals(10000)])
   const WETH = await deployContract(wallet, WETH9)
   const WETHPartner = await deployContract(wallet, ERC20, [expandTo18Decimals(10000)])
 
-  // deploy V1
-  const factoryV1 = await deployContract(wallet, UniswapV1Factory, [])
-  await factoryV1.initializeFactory((await deployContract(wallet, UniswapV1Exchange, [])).address)
+  // deploy factory
+  const factory = await deployContract(wallet, DAOfiV1Router01, [])
 
-  // deploy V2
-  const factoryV2 = await deployContract(wallet, UniswapV2Factory, [wallet.address])
+  // deploy router
+  const router = await deployContract(wallet, DAOfiV1Router01, [factory.address, WETH.address], overrides)
 
-  // deploy routers
-  const router01 = await deployContract(wallet, UniswapV2Router01, [factoryV2.address, WETH.address], overrides)
-  const router02 = await deployContract(wallet, UniswapV2Router02, [factoryV2.address, WETH.address], overrides)
-
-  // event emitter for testing
-  const routerEventEmitter = await deployContract(wallet, RouterEventEmitter, [])
-
-  // deploy migrator
-  const migrator = await deployContract(wallet, UniswapV2Migrator, [factoryV1.address, router01.address], overrides)
-
-  // initialize V1
-  await factoryV1.createExchange(WETHPartner.address, overrides)
-  const WETHExchangeV1Address = await factoryV1.getExchange(WETHPartner.address)
-  const WETHExchangeV1 = new Contract(WETHExchangeV1Address, JSON.stringify(UniswapV1Exchange.abi), provider).connect(
-    wallet
-  )
-
-  // initialize V2
-  await factoryV2.createPair(tokenA.address, tokenB.address, tokenA.address, wallet.address, expandTo18Decimals(1), 1, 3)
-  const pairAddress = await factoryV2.getPair(tokenA.address, tokenB.address)
-  const pair = new Contract(pairAddress, JSON.stringify(IUniswapV2Pair.abi), provider).connect(wallet)
+  // initialize
+  await factory.createPair(tokenA.address, tokenB.address, tokenA.address, wallet.address, m, n, fee)
+  const pairAddress = await factory.getPair(tokenA.address, tokenB.address, m, n, fee)
+  const pair = new Contract(pairAddress, JSON.stringify(IDAOfiV1Pair.abi), provider).connect(wallet)
 
   const token0Address = await pair.token0()
   const token0 = tokenA.address === token0Address ? tokenA : tokenB
   const token1 = tokenA.address === token0Address ? tokenB : tokenA
+  const tokenBase = tokenA
 
-  await factoryV2.createPair(WETH.address, WETHPartner.address, WETH.address, wallet.address, expandTo18Decimals(1), 1, 3)
-  const WETHPairAddress = await factoryV2.getPair(WETH.address, WETHPartner.address)
-  const WETHPair = new Contract(WETHPairAddress, JSON.stringify(IUniswapV2Pair.abi), provider).connect(wallet)
+  await factory.createPair(WETH.address, WETHPartner.address, WETHPartner.address, wallet.address, m, n, fee)
+  const WETHPairAddress = await factory.getPair(WETH.address, WETHPartner.address, m, n, fee)
+  const WETHPair = new Contract(WETHPairAddress, JSON.stringify(IDAOfiV1Pair.abi), provider).connect(wallet)
 
   return {
     token0,
     token1,
+    tokenBase,
     WETH,
     WETHPartner,
-    factoryV1,
-    factoryV2,
-    router01,
-    router02,
-    router: router02, // the default router, 01 had a minor bug
-    routerEventEmitter,
-    migrator,
-    WETHExchangeV1,
+    factory,
+    router,
     pair,
     WETHPair
   }

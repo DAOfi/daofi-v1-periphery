@@ -1,10 +1,10 @@
 import chai, { expect } from 'chai'
 import { Contract } from 'ethers'
 import { BigNumber } from 'ethers/utils'
-import { solidity, MockProvider, createFixtureLoader, deployContract } from 'ethereum-waffle'
+import { solidity, MockProvider, deployContract } from 'ethereum-waffle'
 
 import { expandTo18Decimals, mineBlock, encodePrice } from './shared/utilities'
-import { v2Fixture } from './shared/fixtures'
+import { getFixtureWithParams } from './shared/fixtures'
 
 import ExampleOracleSimple from '../build/ExampleOracleSimple.json'
 
@@ -24,7 +24,6 @@ describe('ExampleOracleSimple', () => {
     gasLimit: 9999999
   })
   const [wallet] = provider.getWallets()
-  const loadFixture = createFixtureLoader(provider, [wallet])
 
   let token0: Contract
   let token1: Contract
