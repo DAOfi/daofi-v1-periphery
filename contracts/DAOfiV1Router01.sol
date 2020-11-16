@@ -1,4 +1,5 @@
-pragma solidity =0.6.6;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity =0.7.4;
 pragma experimental ABIEncoderV2;
 
 import '@daofi/daofi-v1-core/contracts/interfaces/IDAOfiV1Factory.sol';
@@ -41,7 +42,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         _;
     }
 
-    constructor(address _factory, address _WETH) public {
+    constructor(address _factory, address _WETH) {
         factory = _factory;
         WETH = _WETH;
     }
@@ -172,10 +173,10 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         SwapParams memory spFinal = abi.decode(path[path.length - 1], (SwapParams));
         uint balanceBefore = IERC20(spFinal.token).balanceOf(to);
         _swap(path, to);
-        require(
-            IERC20(spFinal.token).balanceOf(to).sub(balanceBefore) >= amountOutMin,
-            'DAOfiV1Router: INSUFFICIENT_OUTPUT_AMOUNT'
-        );
+        // require(
+        //     IERC20(spFinal.token).balanceOf(to).sub(balanceBefore) >= amountOutMin,
+        //     'DAOfiV1Router: INSUFFICIENT_OUTPUT_AMOUNT'
+        // );
     }
 
     function swapExactETHForTokens(
@@ -184,22 +185,22 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         address to,
         uint deadline
     ) external override payable ensure(deadline) {
-        SwapParams memory spIn = abi.decode(path[0], (SwapParams));
-        require(spIn.token == WETH, 'DAOfiV1Router: INVALID_PATH');
-        SwapParams memory spOut = abi.decode(path[1], (SwapParams));
-        uint amountIn = msg.value;
-        IWETH(WETH).deposit{value: amountIn}();
-        assert(IWETH(WETH).transfer(
-            DAOfiV1Library.pairFor(factory, spIn.token, spOut.token, spIn.m, spIn.n, spIn.fee),
-            amountIn
-        ));
-        SwapParams memory spFinal = abi.decode(path[path.length - 1], (SwapParams));
-        uint balanceBefore = IERC20(spFinal.token).balanceOf(to);
-        _swap(path, to);
-        require(
-            IERC20(spFinal.token).balanceOf(to).sub(balanceBefore) >= amountOutMin,
-            'DAOfiV1Router: INSUFFICIENT_OUTPUT_AMOUNT'
-        );
+        // SwapParams memory spIn = abi.decode(path[0], (SwapParams));
+        // require(spIn.token == WETH, 'DAOfiV1Router: INVALID_PATH');
+        // SwapParams memory spOut = abi.decode(path[1], (SwapParams));
+        // uint amountIn = msg.value;
+        // IWETH(WETH).deposit{value: amountIn}();
+        // assert(IWETH(WETH).transfer(
+        //     DAOfiV1Library.pairFor(factory, spIn.token, spOut.token, spIn.m, spIn.n, spIn.fee),
+        //     amountIn
+        // ));
+        // SwapParams memory spFinal = abi.decode(path[path.length - 1], (SwapParams));
+        // uint balanceBefore = IERC20(spFinal.token).balanceOf(to);
+        // _swap(path, to);
+        // require(
+        //     IERC20(spFinal.token).balanceOf(to).sub(balanceBefore) >= amountOutMin,
+        //     'DAOfiV1Router: INSUFFICIENT_OUTPUT_AMOUNT'
+        // );
     }
 
     function swapExactTokensForETH(
@@ -209,21 +210,21 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         address to,
         uint deadline
     ) external override ensure(deadline) {
-        SwapParams memory spFinal = abi.decode(path[path.length - 1], (SwapParams));
-        require(spFinal.token == WETH, 'DAOfiV1Router: INVALID_PATH');
-        SwapParams memory spIn = abi.decode(path[0], (SwapParams));
-        SwapParams memory spOut = abi.decode(path[1], (SwapParams));
-        TransferHelper.safeTransferFrom(
-            spIn.token,
-            msg.sender,
-            DAOfiV1Library.pairFor(factory, spIn.token, spOut.token, spIn.m, spIn.n, spIn.fee),
-            amountIn
-        );
-        _swap(path, address(this));
-        uint amountOut = IERC20(WETH).balanceOf(address(this));
-        require(amountOut >= amountOutMin, 'DAOfiV1Router: INSUFFICIENT_OUTPUT_AMOUNT');
-        IWETH(WETH).withdraw(amountOut);
-        TransferHelper.safeTransferETH(to, amountOut);
+        // SwapParams memory spFinal = abi.decode(path[path.length - 1], (SwapParams));
+        // require(spFinal.token == WETH, 'DAOfiV1Router: INVALID_PATH');
+        // SwapParams memory spIn = abi.decode(path[0], (SwapParams));
+        // SwapParams memory spOut = abi.decode(path[1], (SwapParams));
+        // TransferHelper.safeTransferFrom(
+        //     spIn.token,
+        //     msg.sender,
+        //     DAOfiV1Library.pairFor(factory, spIn.token, spOut.token, spIn.m, spIn.n, spIn.fee),
+        //     amountIn
+        // );
+        // _swap(path, address(this));
+        // uint amountOut = IERC20(WETH).balanceOf(address(this));
+        // require(amountOut >= amountOutMin, 'DAOfiV1Router: INSUFFICIENT_OUTPUT_AMOUNT');
+        // IWETH(WETH).withdraw(amountOut);
+        // TransferHelper.safeTransferETH(to, amountOut);
     }
 
     function getBaseOut(uint256 amountQuoteIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
@@ -253,39 +254,39 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
     function getAmountsOut(uint256 amountIn, bytes[] memory path)
         public view override returns (uint256[] memory amounts)
     {
-        require(path.length >= 2, 'DAOfiV1Router: INVALID_PATH');
-        amounts = new uint256[](path.length);
-        amounts[0] = amountIn;
-        for (uint256 i; i < path.length - 1; i++) {
-            SwapParams memory spIn = abi.decode(path[i], (SwapParams));
-            SwapParams memory spOut = abi.decode(path[i + 1], (SwapParams));
-            address pair = DAOfiV1Library.pairFor(factory, spIn.token, spOut.token, spIn.m, spIn.n, spIn.fee);
-            CurveParams memory params = abi.decode(IDAOfiV1Pair(pair).getCurveParams(), (CurveParams));
-            uint256 amountInWithFees = amounts[i].mul(1000 - params.fee) / 1000;
-            if (params.baseToken == spOut.token) {
-                amounts[i + 1] = IDAOfiV1Pair(pair).getBaseOut(amountInWithFees);
-            } else {
-                amounts[i + 1] = IDAOfiV1Pair(pair).getQuoteOut(amountInWithFees);
-            }
-        }
+        // require(path.length >= 2, 'DAOfiV1Router: INVALID_PATH');
+        // amounts = new uint256[](path.length);
+        // amounts[0] = amountIn;
+        // for (uint256 i; i < path.length - 1; i++) {
+        //     SwapParams memory spIn = abi.decode(path[i], (SwapParams));
+        //     SwapParams memory spOut = abi.decode(path[i + 1], (SwapParams));
+        //     address pair = DAOfiV1Library.pairFor(factory, spIn.token, spOut.token, spIn.m, spIn.n, spIn.fee);
+        //     CurveParams memory params = abi.decode(IDAOfiV1Pair(pair).getCurveParams(), (CurveParams));
+        //     uint256 amountInWithFees = amounts[i].mul(1000 - params.fee) / 1000;
+        //     if (params.baseToken == spOut.token) {
+        //         amounts[i + 1] = IDAOfiV1Pair(pair).getBaseOut(amountInWithFees);
+        //     } else {
+        //         amounts[i + 1] = IDAOfiV1Pair(pair).getQuoteOut(amountInWithFees);
+        //     }
+        // }
     }
 
     function getAmountsIn(uint256 amountOut, bytes[] memory path)
         public view override returns (uint256[] memory amounts)
     {
-        require(path.length >= 2, 'DAOfiV1Router: INVALID_PATH');
-        amounts = new uint256[](path.length);
-        amounts[amounts.length - 1] = amountOut;
-        for (uint i = path.length - 1; i > 0; i--) {
-            SwapParams memory spIn = abi.decode(path[i - 1], (SwapParams));
-            SwapParams memory spOut = abi.decode(path[i], (SwapParams));
-            address pair = DAOfiV1Library.pairFor(factory, spIn.token, spOut.token, spIn.m, spIn.n, spIn.fee);
-            CurveParams memory params = abi.decode(IDAOfiV1Pair(pair).getCurveParams(), (CurveParams));
-            if (params.baseToken == spOut.token) {
-                amounts[i - 1] = IDAOfiV1Pair(pair).getQuoteIn(amounts[i]).mul(1000 + params.fee) / 1000;
-            } else {
-                amounts[i - 1] = IDAOfiV1Pair(pair).getBaseIn(amounts[i]).mul(1000 + params.fee) / 1000;
-            }
-        }
+        // require(path.length >= 2, 'DAOfiV1Router: INVALID_PATH');
+        // amounts = new uint256[](path.length);
+        // amounts[amounts.length - 1] = amountOut;
+        // for (uint i = path.length - 1; i > 0; i--) {
+        //     SwapParams memory spIn = abi.decode(path[i - 1], (SwapParams));
+        //     SwapParams memory spOut = abi.decode(path[i], (SwapParams));
+        //     address pair = DAOfiV1Library.pairFor(factory, spIn.token, spOut.token, spIn.m, spIn.n, spIn.fee);
+        //     CurveParams memory params = abi.decode(IDAOfiV1Pair(pair).getCurveParams(), (CurveParams));
+        //     if (params.baseToken == spOut.token) {
+        //         amounts[i - 1] = IDAOfiV1Pair(pair).getQuoteIn(amounts[i]).mul(1000 + params.fee) / 1000;
+        //     } else {
+        //         amounts[i - 1] = IDAOfiV1Pair(pair).getBaseIn(amounts[i]).mul(1000 + params.fee) / 1000;
+        //     }
+        // }
     }
 }

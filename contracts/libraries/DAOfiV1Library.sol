@@ -1,4 +1,5 @@
-pragma solidity =0.6.6;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity =0.7.4;
 pragma experimental ABIEncoderV2;
 
 library DAOfiV1Library {
@@ -20,7 +21,7 @@ library DAOfiV1Library {
                 hex'ff',
                 factory,
                 keccak256(abi.encodePacked(token0, token1, m, n, fee)),
-                hex'6a2dbde525d74120f78de7646d79785d9db48aaba527b33804ceb6078e4e5ed2' // init code hash
+                hex'7d47d7ac88306fca109d6b88c813fd561c00bef26bef8dc80d76c735f353c50c' // init code hash
             ))));
     }
 }

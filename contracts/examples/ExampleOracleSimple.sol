@@ -1,4 +1,5 @@
-pragma solidity =0.6.6;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity =0.7.4;
 pragma experimental ABIEncoderV2;
 
 import '@daofi/daofi-v1-core/contracts/interfaces/IDAOfiV1Factory.sol';
@@ -25,7 +26,7 @@ contract ExampleOracleSimple {
     FixedPoint.uq112x112 public price0Average;
     FixedPoint.uq112x112 public price1Average;
 
-    constructor(address factory, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee) public {
+    constructor(address factory, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee) {
         IDAOfiV1Pair _pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee));
         pair = _pair;
         token0 = _pair.token0();
