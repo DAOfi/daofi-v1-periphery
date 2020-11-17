@@ -1,11 +1,4 @@
-# Uniswap V2
-
-[![Actions Status](https://github.com/Uniswap/uniswap-v2-periphery/workflows/CI/badge.svg)](https://github.com/Uniswap/uniswap-v2-periphery/actions)
-[![npm](https://img.shields.io/npm/v/@daofi/uniswap-v2-periphery?style=flat-square)](https://npmjs.com/package/@daofi/uniswap-v2-periphery)
-
-In-depth documentation on Uniswap V2 is available at [uniswap.org](https://uniswap.org/docs).
-
-The built contract artifacts can be browsed via [unpkg.com](https://unpkg.com/browse/@daofi/uniswap-v2-periphery@latest/).
+# DAOfi V1
 
 # Local Development
 

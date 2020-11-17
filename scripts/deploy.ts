@@ -1,6 +1,6 @@
 import { ethers } from 'ethers'
 import { deployContract } from 'ethereum-waffle'
-import UniswapV2Router02 from '../build/UniswapV2Router02.json'
+import DAOfiV1Router01 from '../build/DAOfiV1Router01.json'
 
 async function main() {
   const provider = new ethers.providers.JsonRpcProvider('https://dai.poa.network', 100)
@@ -8,9 +8,11 @@ async function main() {
   console.log('wallet', wallet.address)
   const router = await deployContract(
     wallet,
-    UniswapV2Router02,
+    DAOfiV1Router01,
     [
-      '0x5CE34689DFdE06053e048ba11A76198c4E4e7A77',
+      // factory
+      '0x62ceD5aD2B57e0cb3b9c0D98dD5ad24418028Db5',
+      // WXDAI
       '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d'
     ],
     {
