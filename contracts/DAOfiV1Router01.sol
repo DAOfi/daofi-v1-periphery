@@ -260,41 +260,41 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
     function priceQuote(uint256 amountBaseIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
         external view override returns (uint256 amountQuoteOut)
     {
-        return IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getQuoteOut(amountBaseIn);
+        amountQuoteOut = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getQuoteOut(amountBaseIn);
     }
 
     function priceBase(uint256 amountQuoteIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
         external view override returns (uint256 amountBaseOut)
     {
-        return IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getBaseOut(amountQuoteIn);
+        amountBaseOut = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getBaseOut(amountQuoteIn);
     }
 
     function getBaseOut(uint256 amountQuoteIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
         public view override returns (uint256 amountBaseOut)
     {
         amountQuoteIn = amountQuoteIn.mul(1000 - fee) / 1000;
-        return IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getBaseOut(amountQuoteIn);
+        amountBaseOut = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getBaseOut(amountQuoteIn);
     }
 
     function getQuoteOut(uint256 amountBaseIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
         public view override returns (uint256 amountQuoteOut)
     {
         amountBaseIn = amountBaseIn.mul(1000 - fee) / 1000;
-        return IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getQuoteOut(amountBaseIn);
+        amountQuoteOut = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getQuoteOut(amountBaseIn);
     }
 
     function getBaseIn(uint256 amountQuoteOut, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
         public view override returns (uint256 amountBaseIn)
     {
         amountQuoteOut = amountQuoteOut.mul(1000 + fee) / 1000;
-        return IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getBaseIn(amountQuoteOut);
+        amountBaseIn = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getBaseIn(amountQuoteOut);
     }
 
     function getQuoteIn(uint256 amountBaseOut, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
         public view override returns (uint256 amountQuoteIn)
     {
         amountBaseOut = amountBaseOut.mul(1000 + fee) / 1000;
-        return IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getQuoteIn(amountBaseOut);
+        amountQuoteIn = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getQuoteIn(amountBaseOut);
     }
 
     function getAmountsOut(uint256 amountIn, bytes[] memory path)
