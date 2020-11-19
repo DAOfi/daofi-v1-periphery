@@ -16,9 +16,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity =0.7.4;
 
-contract WETH9 {
+contract xDAI9 {
     string public name     = "Wrapped Ether";
-    string public symbol   = "WETH";
+    string public symbol   = "xDAI";
     uint8  public decimals = 18;
 
     event  Approval(address indexed src, address indexed guy, uint wad);

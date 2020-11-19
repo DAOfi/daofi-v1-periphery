@@ -5,7 +5,7 @@ pragma experimental ABIEncoderV2;
 interface IDAOfiV1Router01 {
     function factory() external view returns (address);
 
-    function WETH() external view returns (address);
+    function xDAI() external view returns (address);
 
     function addLiquidity(
         address tokenA,
@@ -20,13 +20,13 @@ interface IDAOfiV1Router01 {
         uint deadline
     ) external returns (uint256 amountBase);
 
-    function addLiquidityETH(
+    function addLiquidityxDAI(
         address token,
         uint32 m,
         uint32 n,
         uint32 fee,
         uint256 amountTokenIn,
-        uint256 amountETHIn,
+        uint256 amountxDAIIn,
         address to,
         uint deadline
     ) external payable returns (uint256 amountBase);
@@ -41,14 +41,14 @@ interface IDAOfiV1Router01 {
         uint deadline
     ) external returns (uint256 amountBase, uint256 amountQuote);
 
-    function removeLiquidityETH(
+    function removeLiquidityxDAI(
         address token,
         uint32 m,
         uint32 n,
         uint32 fee,
         address to,
         uint deadline
-    ) external returns (uint256 amountToken, uint256 amountETH);
+    ) external returns (uint256 amountToken, uint256 amountxDAI);
 
     function swapExactTokensForTokens(
         uint256 amountIn,
@@ -58,11 +58,11 @@ interface IDAOfiV1Router01 {
         uint deadline
     ) external;
 
-    function swapExactETHForTokens(uint256 amountOutMin, bytes[] calldata path, address to, uint deadline)
+    function swapExactxDAIForTokens(uint256 amountOutMin, bytes[] calldata path, address to, uint deadline)
         external
         payable;
 
-    function swapExactTokensForETH(uint256 amountIn, uint256 amountOutMin, bytes[] calldata path, address to, uint deadline)
+    function swapExactTokensForxDAI(uint256 amountIn, uint256 amountOutMin, bytes[] calldata path, address to, uint deadline)
         external;
 
     function getBaseOut(uint256 amountQuoteIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)

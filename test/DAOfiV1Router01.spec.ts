@@ -19,12 +19,12 @@ const zero = bigNumberify(0)
 
 let tokenBase: Contract
 let tokenQuote: Contract
-let WETH: Contract
-let WETHPartner: Contract
+let xDAI: Contract
+let xDAIPartner: Contract
 let factory: Contract
 let router: Contract
 let pair: Contract
-let WETHPair: Contract
+let xDAIPair: Contract
 
 describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
   const provider = new MockProvider({
@@ -60,12 +60,12 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
     const fixture = await getFixtureWithParams(provider, [wallet], 1e6, 1, 3)
     tokenBase = fixture.tokenBase
     tokenQuote = fixture.tokenQuote
-    WETH = fixture.WETH
-    WETHPartner = fixture.WETHPartner
+    xDAI = fixture.xDAI
+    xDAIPartner = fixture.xDAIPartner
     factory = fixture.factory
     router = fixture.router
     pair = fixture.pair
-    WETHPair = fixture.WETHPair
+    xDAIPair = fixture.xDAIPair
   })
 
   it('getBaseOut', async () => {
@@ -154,20 +154,20 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
 //   const loadFixture = createFixtureLoader(provider, [wallet])
 
 //   let DTT: Contract
-//   let WETH: Contract
+//   let xDAI: Contract
 //   let router: Contract
 //   let pair: Contract
 //   beforeEach(async function() {
 //     const fixture = await loadFixture(v2Fixture)
 
-//     WETH = fixture.WETH
+//     xDAI = fixture.xDAI
 //     router = fixture.router02
 
 //     DTT = await deployContract(wallet, DeflatingERC20, [expandTo18Decimals(10000)])
 
-//     // make a DTT<>WETH pair
-//     await fixture.factoryV2.createPair(DTT.address, WETH.address, WETH.address, wallet.address, expandTo18Decimals(1), 1, 3)
-//     const pairAddress = await fixture.factoryV2.getPair(DTT.address, WETH.address)
+//     // make a DTT<>xDAI pair
+//     await fixture.factoryV2.createPair(DTT.address, xDAI.address, xDAI.address, wallet.address, expandTo18Decimals(1), 1, 3)
+//     const pairAddress = await fixture.factoryV2.getPair(DTT.address, xDAI.address)
 //     pair = new Contract(pairAddress, JSON.stringify(IUniswapV2Pair.abi), provider).connect(wallet)
 //   })
 
@@ -175,44 +175,44 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
 //     expect(await provider.getBalance(router.address)).to.eq(0)
 //   })
 
-//   async function addLiquidity(DTTAmount: BigNumber, WETHAmount: BigNumber) {
+//   async function addLiquidity(DTTAmount: BigNumber, xDAIAmount: BigNumber) {
 //     await DTT.approve(router.address, MaxUint256)
-//     await router.addLiquidityETH(DTT.address, DTTAmount, DTTAmount, WETHAmount, wallet.address, MaxUint256, {
+//     await router.addLiquidityxDAI(DTT.address, DTTAmount, DTTAmount, xDAIAmount, wallet.address, MaxUint256, {
 //       ...overrides,
-//       value: WETHAmount
+//       value: xDAIAmount
 //     })
 //   }
 
-//   it('removeLiquidityETHSupportingFeeOnTransferTokens', async () => {
+//   it('removeLiquidityxDAISupportingFeeOnTransferTokens', async () => {
 //     const DTTAmount = expandTo18Decimals(1)
-//     const ETHAmount = expandTo18Decimals(4)
-//     await addLiquidity(DTTAmount, ETHAmount)
+//     const xDAIAmount = expandTo18Decimals(4)
+//     await addLiquidity(DTTAmount, xDAIAmount)
 
 //     const DTTInPair = await DTT.balanceOf(pair.address)
-//     const WETHInPair = await WETH.balanceOf(pair.address)
+//     const xDAIInPair = await xDAI.balanceOf(pair.address)
 //     const liquidity = await pair.balanceOf(wallet.address)
 //     const totalSupply = await pair.totalSupply()
 //     const NaiveDTTExpected = DTTInPair.mul(liquidity).div(totalSupply)
-//     const WETHExpected = WETHInPair.mul(liquidity).div(totalSupply)
+//     const xDAIExpected = xDAIInPair.mul(liquidity).div(totalSupply)
 
 //     await pair.approve(router.address, MaxUint256)
-//     await router.removeLiquidityETHSupportingFeeOnTransferTokens(
+//     await router.removeLiquidityxDAISupportingFeeOnTransferTokens(
 //       DTT.address,
 //       liquidity,
 //       NaiveDTTExpected,
-//       WETHExpected,
+//       xDAIExpected,
 //       wallet.address,
 //       MaxUint256,
 //       overrides
 //     )
 //   })
 
-//   it('removeLiquidityETHWithPermitSupportingFeeOnTransferTokens', async () => {
+//   it('removeLiquidityxDAIWithPermitSupportingFeeOnTransferTokens', async () => {
 //     const DTTAmount = expandTo18Decimals(1)
 //       .mul(100)
 //       .div(99)
-//     const ETHAmount = expandTo18Decimals(4)
-//     await addLiquidity(DTTAmount, ETHAmount)
+//     const xDAIAmount = expandTo18Decimals(4)
+//     await addLiquidity(DTTAmount, xDAIAmount)
 
 //     const expectedLiquidity = expandTo18Decimals(2)
 
@@ -226,18 +226,18 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
 //     const { v, r, s } = ecsign(Buffer.from(digest.slice(2), 'hex'), Buffer.from(wallet.privateKey.slice(2), 'hex'))
 
 //     const DTTInPair = await DTT.balanceOf(pair.address)
-//     const WETHInPair = await WETH.balanceOf(pair.address)
+//     const xDAIInPair = await xDAI.balanceOf(pair.address)
 //     const liquidity = await pair.balanceOf(wallet.address)
 //     const totalSupply = await pair.totalSupply()
 //     const NaiveDTTExpected = DTTInPair.mul(liquidity).div(totalSupply)
-//     const WETHExpected = WETHInPair.mul(liquidity).div(totalSupply)
+//     const xDAIExpected = xDAIInPair.mul(liquidity).div(totalSupply)
 
 //     await pair.approve(router.address, MaxUint256)
-//     await router.removeLiquidityETHWithPermitSupportingFeeOnTransferTokens(
+//     await router.removeLiquidityxDAIWithPermitSupportingFeeOnTransferTokens(
 //       DTT.address,
 //       liquidity,
 //       NaiveDTTExpected,
-//       WETHExpected,
+//       xDAIExpected,
 //       wallet.address,
 //       MaxUint256,
 //       false,
@@ -252,35 +252,35 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
 //     const DTTAmount = expandTo18Decimals(5)
 //       .mul(100)
 //       .div(99)
-//     const ETHAmount = expandTo18Decimals(10)
+//     const xDAIAmount = expandTo18Decimals(10)
 //     const amountIn = expandTo18Decimals(1)
 
 //     beforeEach(async () => {
-//       await addLiquidity(DTTAmount, ETHAmount)
+//       await addLiquidity(DTTAmount, xDAIAmount)
 //     })
 
-//     it('DTT -> WETH', async () => {
+//     it('DTT -> xDAI', async () => {
 //       await DTT.approve(router.address, MaxUint256)
 
 //       await router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
 //         amountIn,
 //         0,
-//         [DTT.address, WETH.address],
+//         [DTT.address, xDAI.address],
 //         wallet.address,
 //         MaxUint256,
 //         overrides
 //       )
 //     })
 
-//     // WETH -> DTT
-//     it('WETH -> DTT', async () => {
-//       await WETH.deposit({ value: amountIn }) // mint WETH
-//       await WETH.approve(router.address, MaxUint256)
+//     // xDAI -> DTT
+//     it('xDAI -> DTT', async () => {
+//       await xDAI.deposit({ value: amountIn }) // mint xDAI
+//       await xDAI.approve(router.address, MaxUint256)
 
 //       await router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
 //         amountIn,
 //         0,
-//         [WETH.address, DTT.address],
+//         [xDAI.address, DTT.address],
 //         wallet.address,
 //         MaxUint256,
 //         overrides
@@ -288,18 +288,18 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
 //     })
 //   })
 
-//   // ETH -> DTT
-//   it('swapExactETHForTokensSupportingFeeOnTransferTokens', async () => {
+//   // xDAI -> DTT
+//   it('swapExactxDAIForTokensSupportingFeeOnTransferTokens', async () => {
 //     const DTTAmount = expandTo18Decimals(10)
 //       .mul(100)
 //       .div(99)
-//     const ETHAmount = expandTo18Decimals(5)
+//     const xDAIAmount = expandTo18Decimals(5)
 //     const swapAmount = expandTo18Decimals(1)
-//     await addLiquidity(DTTAmount, ETHAmount)
+//     await addLiquidity(DTTAmount, xDAIAmount)
 
-//     await router.swapExactETHForTokensSupportingFeeOnTransferTokens(
+//     await router.swapExactxDAIForTokensSupportingFeeOnTransferTokens(
 //       0,
-//       [WETH.address, DTT.address],
+//       [xDAI.address, DTT.address],
 //       wallet.address,
 //       MaxUint256,
 //       {
@@ -309,21 +309,21 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
 //     )
 //   })
 
-//   // DTT -> ETH
-//   it('swapExactTokensForETHSupportingFeeOnTransferTokens', async () => {
+//   // DTT -> xDAI
+//   it('swapExactTokensForxDAISupportingFeeOnTransferTokens', async () => {
 //     const DTTAmount = expandTo18Decimals(5)
 //       .mul(100)
 //       .div(99)
-//     const ETHAmount = expandTo18Decimals(10)
+//     const xDAIAmount = expandTo18Decimals(10)
 //     const swapAmount = expandTo18Decimals(1)
 
-//     await addLiquidity(DTTAmount, ETHAmount)
+//     await addLiquidity(DTTAmount, xDAIAmount)
 //     await DTT.approve(router.address, MaxUint256)
 
-//     await router.swapExactTokensForETHSupportingFeeOnTransferTokens(
+//     await router.swapExactTokensForxDAISupportingFeeOnTransferTokens(
 //       swapAmount,
 //       0,
-//       [DTT.address, WETH.address],
+//       [DTT.address, xDAI.address],
 //       wallet.address,
 //       MaxUint256,
 //       overrides
@@ -351,7 +351,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
 //     DTT = await deployContract(wallet, DeflatingERC20, [expandTo18Decimals(10000)])
 //     DTT2 = await deployContract(wallet, DeflatingERC20, [expandTo18Decimals(10000)])
 
-//     // make a DTT<>WETH pair
+//     // make a DTT<>xDAI pair
 //     await fixture.factoryV2.createPair(DTT.address, DTT2.address, DTT2.address, wallet.address, expandTo18Decimals(1), 1, 3)
 //     const pairAddress = await fixture.factoryV2.getPair(DTT.address, DTT2.address)
 //   })
