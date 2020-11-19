@@ -65,6 +65,12 @@ interface IDAOfiV1Router01 {
     function swapExactTokensForxDAI(uint256 amountIn, uint256 amountOutMin, bytes[] calldata path, address to, uint deadline)
         external;
 
+    function priceQuote(uint256 amountBaseIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        external view returns (uint256 amountQuoteOut);
+
+    function priceBase(uint256 amountQuoteIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        external view returns (uint256 amountBaseOut);
+
     function getBaseOut(uint256 amountQuoteIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
         external view returns (uint256 amountBaseOut);
 

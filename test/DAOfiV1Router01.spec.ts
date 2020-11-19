@@ -68,21 +68,20 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
     xDAIPair = fixture.xDAIPair
   })
 
-  it('getBaseOut', async () => {
-    const quoteAmountIn = expandTo18Decimals(20)
-    const baseAmountOut = bigNumberify('6231586573')
-    expect(await router.getBaseOut(quoteAmountIn, tokenBase.address, tokenQuote.address, 1e6, 1, 3))
+  it('priceBase', async () => {
+    const quoteAmountIn = expandTo18Decimals(50)
+    const baseAmountOut = bigNumberify('9810134194000000000')
+    expect(await router.priceBase(quoteAmountIn, tokenBase.address, tokenQuote.address, 1e6, 1, 3))
       .to.eq(baseAmountOut)
   })
 
-  it('getQuoteOut', async () => {
-    // 50 quote in liquidity
+  it('priceQuote', async () => {
+    //We get 50 quote in liquidity from price 10 quote
     await addLiquidityForPrice(10, tokenBase, tokenQuote, expandTo18Decimals(1e6), pair)
-    // aproximately the amount of base issued
-    const baseAmountIn = bigNumberify('1000000') // TODO fix precision
-    // slightly less than 50 quote (50 / (1 + fee factor))
-    const quoteAmountOut = bigNumberify('48660781379230785338')
-    expect(await router.getQuoteOut(baseAmountIn, tokenBase.address, tokenQuote.address, 1e6, 1, 3))
+    // the amount of base issued
+    const baseAmountIn = bigNumberify('9810134194000000000')
+    const quoteAmountOut = expandTo18Decimals(50)
+    expect(await router.priceQuote(baseAmountIn, tokenBase.address, tokenQuote.address, 1e6, 1, 3))
       .to.eq(quoteAmountOut)
   })
 

@@ -26,7 +26,13 @@ interface DAOfiV1Fixture {
   xDAIPair: Contract
 }
 
-export async function getFixtureWithParams(provider: Web3Provider, [wallet]: Wallet[], m: number, n: number, fee: number): Promise<DAOfiV1Fixture> {
+export async function getFixtureWithParams(
+  provider: Web3Provider,
+  [wallet]: Wallet[],
+  m: number,
+  n: number,
+  fee: number
+): Promise<DAOfiV1Fixture> {
   // deploy tokens
   const tokenA = await deployContract(wallet, ERC20, [expandTo18Decimals(1e6)])
   const tokenB = await deployContract(wallet, ERC20, [expandTo18Decimals(1e6)])
@@ -40,14 +46,14 @@ export async function getFixtureWithParams(provider: Web3Provider, [wallet]: Wal
   const router = await deployContract(wallet, DAOfiV1Router01, [factory.address, xDAI.address], overrides)
 
   // initialize
-  await factory.createPair(tokenA.address, tokenB.address, tokenA.address, wallet.address, m, n, fee)
+  await factory.createPair(wallet.address, tokenA.address, tokenB.address, tokenA.address, wallet.address, m, n, fee)
   const pairAddress = await factory.getPair(tokenA.address, tokenB.address, m, n, fee)
   const pair = new Contract(pairAddress, JSON.stringify(IDAOfiV1Pair.abi), provider).connect(wallet)
 
   const tokenBase = tokenA
   const tokenQuote = tokenB
 
-  await factory.createPair(xDAI.address, xDAIPartner.address, xDAIPartner.address, wallet.address, m, n, fee)
+  await factory.createPair(wallet.address, xDAI.address, xDAIPartner.address, xDAIPartner.address, wallet.address, m, n, fee)
   const xDAIPairAddress = await factory.getPair(xDAI.address, xDAIPartner.address, m, n, fee)
   const xDAIPair = new Contract(xDAIPairAddress, JSON.stringify(IDAOfiV1Pair.abi), provider).connect(wallet)
 

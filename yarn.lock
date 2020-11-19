@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@daofi/daofi-v1-core@1.4.0-rc.4":
-  version "1.4.0-rc.4"
-  resolved "https://registry.yarnpkg.com/@daofi/daofi-v1-core/-/daofi-v1-core-1.4.0-rc.4.tgz#9886d4fc11ba690d67f4e27f84200cbc36418160"
-  integrity sha512-15sH4HF6AHjtqKJJGB32m/1w/NEHp/fTHX8jyGEes1OyMfP1VPMUk9HJmr0UeOUWqb1odIHonnQPKgYURZpjdQ==
+"@daofi/daofi-v1-core@1.4.0-rc.5":
+  version "1.4.0-rc.5"
+  resolved "https://registry.yarnpkg.com/@daofi/daofi-v1-core/-/daofi-v1-core-1.4.0-rc.5.tgz#a102407ab377f6979bce27ef7961a7e8e8403674"
+  integrity sha512-ZamgBFppgwE9zbSewfhwfvVmQld4y1qLuNPjT/TUNBvvB4NNs9Yp3phKTHtL78L8KYSbpJC/xR7VwEuCLasD0A==
   dependencies:
     "@uniswap/lib" "1.1.1"
 

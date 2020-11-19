@@ -257,6 +257,18 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         TransferHelper.safeTransferETH(to, amountOut);
     }
 
+    function priceQuote(uint256 amountBaseIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        external view override returns (uint256 amountQuoteOut)
+    {
+        return IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getQuoteOut(amountBaseIn);
+    }
+
+    function priceBase(uint256 amountQuoteIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        external view override returns (uint256 amountBaseOut)
+    {
+        return IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getBaseOut(amountQuoteIn);
+    }
+
     function getBaseOut(uint256 amountQuoteIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
         public view override returns (uint256 amountBaseOut)
     {
