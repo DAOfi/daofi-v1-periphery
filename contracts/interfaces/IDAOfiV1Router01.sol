@@ -5,7 +5,7 @@ pragma experimental ABIEncoderV2;
 interface IDAOfiV1Router01 {
     function factory() external view returns (address);
 
-    function xDAI() external view returns (address);
+    function WxDAI() external view returns (address);
 
     function addLiquidity(
         address tokenA,

@@ -8,7 +8,7 @@ import DAOfiV1Factory from '@daofi/daofi-v1-core/build/DAOfiV1Factory.json'
 import IDAOfiV1Pair from '@daofi/daofi-v1-core/build/IDAOfiV1Pair.json'
 
 import ERC20 from '../../build/ERC20.json'
-import xDAI9 from '../../build/xDAI9.json'
+import WxDAI from '../../build/WxDAI.json'
 import DAOfiV1Router01 from '../../build/DAOfiV1Router01.json'
 
 const overrides = {
@@ -30,7 +30,7 @@ export async function getFixtureWithParams(provider: Web3Provider, [wallet]: Wal
   // deploy tokens
   const tokenA = await deployContract(wallet, ERC20, [expandTo18Decimals(1e6)])
   const tokenB = await deployContract(wallet, ERC20, [expandTo18Decimals(1e6)])
-  const xDAI = await deployContract(wallet, xDAI9)
+  const xDAI = await deployContract(wallet, WxDAI)
   const xDAIPartner = await deployContract(wallet, ERC20, [expandTo18Decimals(1e6)])
 
   // deploy factory
