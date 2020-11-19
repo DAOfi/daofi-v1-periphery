@@ -15,10 +15,11 @@
 
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity =0.7.4;
+pragma experimental ABIEncoderV2;
 
-contract xDAI9 {
-    string public name     = "Wrapped Ether";
-    string public symbol   = "xDAI";
+contract WxDAI {
+    string public name     = "Wrapped xDAI";
+    string public symbol   = "WxDAI";
     uint8  public decimals = 18;
 
     event  Approval(address indexed src, address indexed guy, uint wad);
