@@ -41,24 +41,24 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         LiquidityParams calldata lp,
         uint deadline
     ) external override ensure(deadline) returns (uint256 amountBase) {
-        if (IDAOfiV1Factory(factory).getPair(
+        require(IDAOfiV1Factory(factory).getPair(
             lp.tokenBase,
             lp.tokenQuote,
             lp.m,
             lp.n,
             lp.fee
-        ) == address(0)) {
-            IDAOfiV1Factory(factory).createPair(
-                address(this),
-                lp.tokenBase,
-                lp.tokenQuote,
-                lp.tokenBase,
-                lp.sender,
-                lp.m,
-                lp.n,
-                lp.fee
-            );
-        }
+        ) == address(0), 'DAOfiV1Router01: EXISTING_PAIR');
+        IDAOfiV1Factory(factory).createPair(
+            address(this),
+            lp.tokenBase,
+            lp.tokenQuote,
+            lp.tokenBase,
+            lp.sender,
+            lp.m,
+            lp.n,
+            lp.fee
+        );
+
         address pair = DAOfiV1Library.pairFor(
             factory, lp.tokenBase, lp.tokenQuote, lp.m, lp.n, lp.fee
         );
