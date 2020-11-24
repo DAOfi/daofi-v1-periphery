@@ -39,10 +39,11 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
     factory = fixture.factory
     router = fixture.router
     pair = fixture.pair
+    console.log('pair address:', pair.address)
     xDAIPair = fixture.xDAIPair
   })
 
-  it('priceBase', async () => {
+  it.only('priceBase', async () => {
     await addLiquidity(expandTo18Decimals(1e9), zero)
     const quoteAmountIn = expandTo18Decimals(50)
     const baseAmountOut = ethers.BigNumber.from('9999000000000000000')
