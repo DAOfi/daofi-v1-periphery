@@ -13,6 +13,8 @@ interface IDAOfiV1Router01 {
     }
 
     struct SwapParams {
+        address sender;
+        address to;
         address tokenIn;
         address tokenOut;
         uint256 amountIn;
@@ -23,11 +25,13 @@ interface IDAOfiV1Router01 {
     }
 
     struct LiquidityParams {
-        address tokenA;
-        address tokenB;
+        address sender;
+        address to;
+        address tokenBase;
+        address tokenQuote;
         address baseToken;
-        uint256 amountA;
-        uint256 amountB;
+        uint256 amountBase;
+        uint256 amountQuote;
         uint32 m;
         uint32 n;
         uint32 fee;
@@ -39,8 +43,6 @@ interface IDAOfiV1Router01 {
 
     function addLiquidity(
         LiquidityParams calldata lp,
-        address sender,
-        address to,
         uint deadline
     ) external returns (uint256 amountBase);
 
@@ -53,8 +55,6 @@ interface IDAOfiV1Router01 {
 
     function removeLiquidity(
         LiquidityParams calldata lp,
-        address sender,
-        address to,
         uint deadline
     ) external returns (uint256 amountBase, uint256 amountQuote);
 
@@ -67,8 +67,6 @@ interface IDAOfiV1Router01 {
 
     function swapExactTokensForTokens(
         SwapParams calldata sp,
-        address sender,
-        address to,
         uint deadline
     ) external;
 

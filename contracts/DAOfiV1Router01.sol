@@ -12,11 +12,9 @@ import './interfaces/IDAOfiV1Router01.sol';
 import './interfaces/IERC20.sol';
 import './interfaces/IWxDAI.sol';
 import './libraries/DAOfiV1Library.sol';
-import './libraries/Math.sol';
 import './libraries/SafeMath.sol';
-import './Power.sol';
 
-contract DAOfiV1Router01 is IDAOfiV1Router01, Power {
+contract DAOfiV1Router01 is IDAOfiV1Router01 {
     using SafeMath for uint;
     using SafeMath for uint8;
     using SafeMath for uint32;
@@ -39,59 +37,34 @@ contract DAOfiV1Router01 is IDAOfiV1Router01, Power {
         assert(msg.sender == WxDAI); // only accept WxDAI via fallback from the WxDAI contract
     }
 
-    function _fixedDiv(uint256 numer, uint256 denom) private pure returns (uint256) {
-        return FixedPoint.decode(
-            FixedPoint.fraction(
-                uint112(numer),
-                uint112(denom)
-            )
-        );
-    }
-
-    function _convertToDecimals(uint256 amountIn, int8 from, int8 to) internal pure returns (uint256 amountOut) {
-        amountOut = amountIn;
-        if (amountIn > 0) {
-            int8 diff = to - from;
-            // expand or contract resolution
-            uint factor = (10 ** Math.abs(diff));
-            if (diff < 0) {
-                amountOut = _fixedDiv(amountIn, factor);
-            } else if (diff > 0 ) {
-                amountOut = amountIn * factor;
-            }
-        }
-    }
-
     function addLiquidity(
         LiquidityParams calldata lp,
-        address sender,
-        address to,
         uint deadline
     ) external override ensure(deadline) returns (uint256 amountBase) {
         if (IDAOfiV1Factory(factory).getPair(
-            lp.tokenA,
-            lp.tokenB,
+            lp.tokenBase,
+            lp.tokenQuote,
             lp.m,
             lp.n,
             lp.fee
         ) == address(0)) {
             IDAOfiV1Factory(factory).createPair(
                 address(this),
-                lp.tokenA,
-                lp.tokenB,
-                lp.baseToken,
-                sender,
+                lp.tokenBase,
+                lp.tokenQuote,
+                lp.tokenBase,
+                lp.sender,
                 lp.m,
                 lp.n,
                 lp.fee
             );
         }
         address pair = DAOfiV1Library.pairFor(
-            factory, lp.tokenA, lp.tokenB, lp.m, lp.n, lp.fee
+            factory, lp.tokenBase, lp.tokenQuote, lp.m, lp.n, lp.fee
         );
-        TransferHelper.safeTransferFrom(lp.tokenA, sender, pair, lp.amountA);
-        TransferHelper.safeTransferFrom(lp.tokenB, sender, pair, lp.amountB);
-        amountBase = IDAOfiV1Pair(pair).deposit(to);
+        TransferHelper.safeTransferFrom(lp.tokenBase, lp.sender, pair, lp.amountBase);
+        TransferHelper.safeTransferFrom(lp.tokenQuote, lp.sender, pair, lp.amountQuote);
+        amountBase = IDAOfiV1Pair(pair).deposit(lp.to);
     }
 
     // function addLiquidityXDAI(
@@ -130,16 +103,14 @@ contract DAOfiV1Router01 is IDAOfiV1Router01, Power {
 
     function removeLiquidity(
         LiquidityParams calldata lp,
-        address sender,
-        address to,
         uint deadline
     ) external override ensure(deadline) returns (uint amountBase, uint amountQuote) {
         IDAOfiV1Pair pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(
-            factory, lp.tokenA, lp.tokenB, lp.m, lp.n, lp.fee
+            factory, lp.tokenBase, lp.tokenQuote, lp.m, lp.n, lp.fee
         ));
         CurveParams memory params = abi.decode(pair.getCurveParams(), (CurveParams));
-        require(sender == params.pairOwner, 'DAOfiV1Router: FORBIDDEN');
-        (amountBase, amountQuote) = pair.withdraw(to);
+        require(lp.sender == params.pairOwner, 'DAOfiV1Router: FORBIDDEN');
+        (amountBase, amountQuote) = pair.withdraw(lp.to);
     }
 
     // function removeLiquidityXDAI(
@@ -159,40 +130,44 @@ contract DAOfiV1Router01 is IDAOfiV1Router01, Power {
 
     function swapExactTokensForTokens(
         SwapParams calldata sp,
-        address sender,
-        address to,
         uint deadline
     ) external override ensure(deadline) {
         address pair = DAOfiV1Library.pairFor(factory, sp.tokenIn, sp.tokenOut, sp.m, sp.n, sp.fee);
         TransferHelper.safeTransferFrom(
-            sp.tokenIn, sender,
+            sp.tokenIn,
+            sp.sender,
             pair,
             sp.amountIn
         );
-        uint amountBaseOut;
-        uint amountQuoteOut;
-        uint balanceBefore = IERC20(sp.tokenOut).balanceOf(to);
+        uint balanceBefore = IERC20(sp.tokenOut).balanceOf(sp.to);
         {
-            (uint reserveBase, uint reserveQuote,) = IDAOfiV1Pair(pair).getReserves();
             CurveParams memory params = abi.decode(IDAOfiV1Pair(pair).getCurveParams(), (CurveParams));
             if (params.baseToken == sp.tokenOut) {
-                amountBaseOut = IDAOfiV1Pair(pair).getBaseOut(
+                (, uint reserveQuote,) = IDAOfiV1Pair(pair).getReserves();
+                uint amountBaseOut = IDAOfiV1Pair(pair).getBaseOut(
                     IERC20(sp.tokenIn).balanceOf(address(pair)).sub(reserveQuote).mul(1000 - params.fee) / 1000
                 );
+                IDAOfiV1Pair(pair).swap(
+                    amountBaseOut,
+                    0,
+                    sp.to,
+                    new bytes(0)
+                );
             } else {
-                amountQuoteOut = IDAOfiV1Pair(pair).getQuoteOut(
+                (uint reserveBase,,) = IDAOfiV1Pair(pair).getReserves();
+                uint amountQuoteOut = IDAOfiV1Pair(pair).getQuoteOut(
                      IERC20(sp.tokenIn).balanceOf(address(pair)).sub(reserveBase).mul(1000 - params.fee) / 1000
+                );
+                IDAOfiV1Pair(pair).swap(
+                    0,
+                    amountQuoteOut,
+                    sp.to,
+                    new bytes(0)
                 );
             }
         }
-        IDAOfiV1Pair(pair).swap(
-            amountBaseOut,
-            amountQuoteOut,
-            to,
-            new bytes(0)
-        );
         require(
-            IERC20(sp.tokenOut).balanceOf(to).sub(balanceBefore) >= sp.amountOut,
+            IERC20(sp.tokenOut).balanceOf(sp.to).sub(balanceBefore) >= sp.amountOut,
             'DAOfiV1Router: INSUFFICIENT_OUTPUT_AMOUNT'
         );
     }
