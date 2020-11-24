@@ -41,7 +41,7 @@
     "lint:fix": "yarn prettier ./test/*.ts --write",
     "clean": "rimraf ./build/",
     "precompile": "yarn clean",
-    "compile": "npx hardhat compile && node scripts/hashContract.js",
+    "compile": "npx hardhat compile && ts-node scripts/hashContract.ts",
     "pretest": "yarn compile",
     "test": "npx hardhat test",
     "prepublishOnly": "yarn compile"

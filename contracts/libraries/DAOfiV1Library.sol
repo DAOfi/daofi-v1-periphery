@@ -21,7 +21,7 @@ library DAOfiV1Library {
                 hex'ff',
                 factory,
                 keccak256(abi.encodePacked(token0, token1, m, n, fee)),
-                hex'2575d4bb7d6cfad383bb170c6221bd5524b277ae194fb2da340d92de7c02e62f' // init code hash
+                hex'1c02990d1d59f975950ed9dc394674d087938ec66e5465df3e2e8b492f31806b' // init code hash
             ))));
     }
 }

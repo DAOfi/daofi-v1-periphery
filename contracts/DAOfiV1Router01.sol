@@ -251,7 +251,6 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
     function priceBase(uint256 amountQuoteIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
         public view returns (uint256 amountBaseOut)
     {
-        console.log("pair address: %s", DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee));
         amountBaseOut = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getBaseOut(amountQuoteIn);
     }
 
