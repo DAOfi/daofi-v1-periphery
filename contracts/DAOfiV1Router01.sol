@@ -248,27 +248,31 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
     //     TransferHelper.safeTransferETH(to, amountOut);
     // }
 
-    function priceBase(uint256 amountQuoteIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
-        public view returns (uint256 amountBaseOut)
+    function basePrice(address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        public view override returns (uint256 price)
     {
-        amountBaseOut = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getBaseOut(amountQuoteIn);
+        IDAOfiV1Pair pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee));
+        CurveParams memory params = abi.decode(pair.getCurveParams(), (CurveParams));
+        price = pair.getQuoteOut((10 ** IERC20(params.baseToken).decimals()));
     }
 
-    function priceQuote(uint256 amountBaseIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
-        public view returns (uint256 amountQuoteOut)
+    function quotePrice(address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        public view override returns (uint256 price)
     {
-        amountQuoteOut = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getQuoteOut(amountBaseIn);
+        IDAOfiV1Pair pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee));
+        CurveParams memory params = abi.decode(pair.getCurveParams(), (CurveParams));
+        price = pair.getBaseOut((10 ** IERC20(params.baseToken == tokenA ? tokenB : tokenA).decimals()));
     }
 
     function getBaseOut(uint256 amountQuoteIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
-        public view  returns (uint256 amountBaseOut)
+        public view override returns (uint256 amountBaseOut)
     {
         amountQuoteIn = amountQuoteIn.mul(1000 - fee) / 1000;
         amountBaseOut = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getBaseOut(amountQuoteIn);
     }
 
     function getQuoteOut(uint256 amountBaseIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
-        public view  returns (uint256 amountQuoteOut)
+        public view override returns (uint256 amountQuoteOut)
     {
         amountBaseIn = amountBaseIn.mul(1000 - fee) / 1000;
         amountQuoteOut = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getQuoteOut(amountBaseIn);

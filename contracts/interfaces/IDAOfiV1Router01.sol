@@ -83,17 +83,17 @@ interface IDAOfiV1Router01 {
     //     uint deadline
     // ) external;
 
-    // function priceQuote(uint256 amountBaseIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
-    //     external view returns (uint256 amountQuoteOut);
+    function basePrice(address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        external view returns (uint256 price);
 
-    // function priceBase(uint256 amountQuoteIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
-    //     external view returns (uint256 amountBaseOut);
+    function quotePrice(address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        external view returns (uint256 price);
 
-    // function getBaseOut(uint256 amountQuoteIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
-    //     external view returns (uint256 amountBaseOut);
+    function getBaseOut(uint256 amountQuoteIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        external view returns (uint256 amountBaseOut);
 
-    // function getQuoteOut(uint256 amountBaseIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
-    //     external view returns (uint256 amountQuoteOut);
+    function getQuoteOut(uint256 amountBaseIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        external view returns (uint256 amountQuoteOut);
 
     // function getBaseIn(uint256 amountQuoteOut, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
     //     external view returns (uint256 amountBaseIn);
