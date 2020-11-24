@@ -56,3 +56,13 @@ export async function getApprovalDigest(
     )
   )
 }
+
+// y = mx ** n
+// given y = price and x = s, solve for s
+// then plug s into the antiderivative
+// y' = (slopeN * x ** (n + 1)) / (slopeD * (n + 1))
+// y' = quote reserve at price
+export function getReserveForStartPrice(price: number, slopeN: number, slopeD: number, n: number): number {
+  const s = (price * (slopeD / slopeN)) ** (1 / n)
+  return (slopeN * (s ** (n + 1))) / (slopeD * (n + 1))
+}
