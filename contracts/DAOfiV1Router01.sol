@@ -58,7 +58,6 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
             lp.n,
             lp.fee
         );
-
         address pair = DAOfiV1Library.pairFor(
             factory, lp.tokenBase, lp.tokenQuote, lp.m, lp.n, lp.fee
         );
@@ -251,17 +250,13 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
     function basePrice(address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
         public view override returns (uint256 price)
     {
-        IDAOfiV1Pair pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee));
-        CurveParams memory params = abi.decode(pair.getCurveParams(), (CurveParams));
-        price = pair.getQuoteOut((10 ** IERC20(params.baseToken).decimals()));
+        price = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).basePrice();
     }
 
     function quotePrice(address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
         public view override returns (uint256 price)
     {
-        IDAOfiV1Pair pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee));
-        CurveParams memory params = abi.decode(pair.getCurveParams(), (CurveParams));
-        price = pair.getBaseOut((10 ** IERC20(params.baseToken == tokenA ? tokenB : tokenA).decimals()));
+        price = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).quotePrice();
     }
 
     function getBaseOut(uint256 amountQuoteIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
