@@ -1,6 +1,6 @@
 import { ethers } from 'ethers'
 import { deployContract } from 'ethereum-waffle'
-import DAOfiV1Router01 from '../build/DAOfiV1Router01.json'
+import DAOfiV1Router01 from '../build/contracts/DAOfiV1Router01.sol/DAOfiV1Router01.json'
 
 async function main() {
   const provider = new ethers.providers.JsonRpcProvider('https://dai.poa.network', 100)

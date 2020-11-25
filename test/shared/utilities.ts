@@ -1,15 +1,15 @@
-import { Contract } from 'ethers'
-import { Web3Provider } from 'ethers/providers'
-import { BigNumber, bigNumberify, keccak256, defaultAbiCoder, toUtf8Bytes, solidityPack } from 'ethers/utils'
+import { ethers } from 'hardhat'
+import { BigNumber, Contract } from 'ethers'
+const { keccak256, defaultAbiCoder, toUtf8Bytes, solidityPack } = ethers.utils
 
-export const MINIMUM_LIQUIDITY = bigNumberify(10).pow(3)
+export const MINIMUM_LIQUIDITY = ethers.BigNumber.from(10).pow(3)
 
 const PERMIT_TYPEHASH = keccak256(
   toUtf8Bytes('Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)')
 )
 
 export function expandTo18Decimals(n: number): BigNumber {
-  return bigNumberify(n).mul(bigNumberify(10).pow(18))
+  return ethers.BigNumber.from(n).mul(ethers.BigNumber.from(10).pow(18))
 }
 
 function getDomainSeparator(name: string, tokenAddress: string) {
@@ -57,21 +57,12 @@ export async function getApprovalDigest(
   )
 }
 
-export async function mineBlock(provider: Web3Provider, timestamp: number): Promise<void> {
-  await new Promise(async (resolve, reject) => {
-    ;(provider._web3Provider.sendAsync as any)(
-      { jsonrpc: '2.0', method: 'evm_mine', params: [timestamp] },
-      (error: any, result: any): void => {
-        if (error) {
-          reject(error)
-        } else {
-          resolve(result)
-        }
-      }
-    )
-  })
-}
-
-export function encodePrice(reserve0: BigNumber, reserve1: BigNumber) {
-  return [reserve1.mul(bigNumberify(2).pow(112)).div(reserve0), reserve0.mul(bigNumberify(2).pow(112)).div(reserve1)]
+// y = mx ** n
+// given y = price and x = s, solve for s
+// then plug s into the antiderivative
+// y' = (slopeN * x ** (n + 1)) / (slopeD * (n + 1))
+// y' = quote reserve at price
+export function getReserveForStartPrice(price: number, slopeN: number, slopeD: number, n: number): number {
+  const s = (price * (slopeD / slopeN)) ** (1 / n)
+  return (slopeN * (s ** (n + 1))) / (slopeD * (n + 1))
 }
