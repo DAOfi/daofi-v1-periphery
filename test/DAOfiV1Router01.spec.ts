@@ -2,24 +2,19 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-wit
 import { expect } from 'chai'
 import { BigNumber, Contract } from 'ethers'
 import { ethers } from 'hardhat'
-import { getFixtureWithParams, getFixtureWithParamsForPeriphery } from './shared/fixtures'
+import { DAOfiV1Fixture, getFixtureWithParams } from './shared/fixtures'
 import { expandTo18Decimals, getReserveForStartPrice } from './shared/utilities'
 
 const zero = ethers.BigNumber.from(0)
 const MaxUint256 = ethers.constants.MaxUint256
 
-let tokenBase: Contract
-let tokenQuote: Contract
-let xDAI: Contract
-let xDAIPartner: Contract
-let factory: Contract
-let router: Contract
-let pair: Contract
-let xDAIPair: Contract
+let walletFixture: DAOfiV1Fixture
+let routerFixture: DAOfiV1Fixture
 let wallet: SignerWithAddress
 
 describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
   async function addLiquidity(baseReserve: BigNumber, quoteReserve: BigNumber) {
+    const { tokenBase, tokenQuote, pair } = walletFixture
     if (baseReserve.gt(zero)) await tokenBase.transfer(pair.address, baseReserve)
     if (quoteReserve.gt(zero)) await tokenQuote.transfer(pair.address, quoteReserve)
     await pair.deposit(wallet.address)
@@ -27,54 +22,23 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
 
   beforeEach(async function () {
     wallet = (await ethers.getSigners())[0]
-    const fixture = await getFixtureWithParams(wallet, 1e6, 1, 3)
-    tokenBase = fixture.tokenBase
-    tokenQuote = fixture.tokenQuote
-    xDAI = fixture.xDAI
-    xDAIPartner = fixture.xDAIPartner
-    factory = fixture.factory
-    router = fixture.router
-    pair = fixture.pair
-    xDAIPair = fixture.xDAIPair
+    walletFixture = await getFixtureWithParams(wallet, 1e6, 1, 3)
+    routerFixture = await getFixtureWithParams(wallet, 1e6, 1, 3, false)
   })
 
   it('addLiquidity: base only', async () => {
-    // hack, override normal fixture creation
-    wallet = (await ethers.getSigners())[0]
-    const fixture = await getFixtureWithParamsForPeriphery(wallet, 1e6, 1, 3)
-    tokenBase = fixture.tokenBase
-    tokenQuote = fixture.tokenQuote
-    xDAI = fixture.xDAI
-    xDAIPartner = fixture.xDAIPartner
-    factory = fixture.factory
-    router = fixture.router
-    pair = fixture.pair
-    xDAIPair = fixture.xDAIPair
-
+    const { router, tokenBase, tokenQuote, pair } = routerFixture
     const baseSupply = expandTo18Decimals(1e9)
-    //const baseSupply = ethers.utils.parseEther('10')
-    const quoteSupply = ethers.utils.parseEther('10')
 
-    await tokenBase.approve(router.address, ethers.utils.parseEther('1000000000'))
-    await tokenQuote.approve(router.address, ethers.utils.parseEther('10'))
-
-    // address sender;
-    // address to;
-    // address tokenBase;
-    // address tokenQuote;
-    // uint256 amountBase;
-    // uint256 amountQuote;
-    // uint32 m;
-    // uint32 n;
-    // uint32 fee;
-
+    await tokenBase.approve(router.address, baseSupply)
+    await tokenQuote.approve(router.address, zero)
     await expect(router.addLiquidity({
+      sender: wallet.address,
+      to: wallet.address,
       tokenBase: tokenBase.address,
       tokenQuote: tokenQuote.address,
       amountBase: baseSupply,
       amountQuote: zero,
-      sender: wallet.address,
-      to: wallet.address,
       m: 1e6,
       n: 1,
       fee: 3
@@ -84,18 +48,21 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
   })
 
   it('basePrice:', async () => {
+    const { tokenBase, tokenQuote, router } = walletFixture
     await addLiquidity(expandTo18Decimals(1e9), expandTo18Decimals(50)) // 50 quote reserve = price 10
     const quotePrice = ethers.BigNumber.from('9998000000000000000') // price 10
     expect(await router.basePrice(tokenBase.address, tokenQuote.address, 1e6, 1, 3)).to.eq(quotePrice)
   })
 
   it('quotePrice:', async () => {
+    const { tokenBase, tokenQuote, router } = walletFixture
     await addLiquidity(expandTo18Decimals(1e9), expandTo18Decimals(50)) // 50 quote reserve = price 10
     const basePrice = ethers.BigNumber.from('100000000000000000') // price 0.10
     expect(await router.quotePrice(tokenBase.address, tokenQuote.address, 1e6, 1, 3)).to.eq(basePrice)
   })
 
   it('getBaseOut:', async () => {
+    const { tokenBase, tokenQuote, router } = walletFixture
     await addLiquidity(expandTo18Decimals(1e9), zero)
     const quoteAmountIn = expandTo18Decimals(50)
     const baseAmountOut = ethers.BigNumber.from('9984000000000000000')
@@ -105,6 +72,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
   })
 
   it('getQuoteOut:', async () => {
+    const { tokenBase, tokenQuote, router } = walletFixture
     // need a starting price to sell base for quote
     await addLiquidity(expandTo18Decimals(1e9), expandTo18Decimals(50)) // 50 quote reserve = price 10
     const baseAmountIn = ethers.BigNumber.from('100000000000000000')
