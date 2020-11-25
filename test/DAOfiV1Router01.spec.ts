@@ -44,14 +44,14 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
 
   it('basePrice', async () => {
     await addLiquidity(expandTo18Decimals(1e9), expandTo18Decimals(50)) // 50 quote reserve = price 10
-    const quotePrice = ethers.BigNumber.from('49999999999959533326') // price 10
+    const quotePrice = ethers.BigNumber.from('9998000000000000000') // price 10
     expect(await router.basePrice(tokenBase.address, tokenQuote.address, 1e6, 1, 3))
       .to.eq(quotePrice)
   })
 
   it('quotePrice', async () => {
     await addLiquidity(expandTo18Decimals(1e9), expandTo18Decimals(50)) // 50 quote reserve = price 10
-    const basePrice = ethers.BigNumber.from('100000000000000000') // price 10
+    const basePrice = ethers.BigNumber.from('100000000000000000') // price 0.10
     expect(await router.quotePrice(tokenBase.address, tokenQuote.address, 1e6, 1, 3))
       .to.eq(basePrice)
   })
