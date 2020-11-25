@@ -2,7 +2,7 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-wit
 import { expect } from 'chai'
 import { BigNumber, Contract } from 'ethers'
 import { ethers } from 'hardhat'
-import { getFixtureWithParams } from './shared/fixtures'
+import { getFixtureWithParams, getFixtureWithParamsForPeriphery } from './shared/fixtures'
 import { expandTo18Decimals, getReserveForStartPrice } from './shared/utilities'
 
 const zero = ethers.BigNumber.from(0)
@@ -39,15 +39,23 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
   })
 
   it('addLiquidity: base only', async () => {
-    //const baseSupply = expandTo18Decimals(1e9)
-    const baseSupply = ethers.utils.parseEther('10')
-    const quoteSupply = ethers.utils.parseEther('10')
-    let bal = await tokenBase.balanceOf(wallet.address)
-    console.log('balance: ' + bal.toString())
-    bal = await tokenQuote.balanceOf(wallet.address)
-    console.log('balance: ' + bal.toString())
+    // hack, override normal fixture creation
+    wallet = (await ethers.getSigners())[0]
+    const fixture = await getFixtureWithParamsForPeriphery(wallet, 1e6, 1, 3)
+    tokenBase = fixture.tokenBase
+    tokenQuote = fixture.tokenQuote
+    xDAI = fixture.xDAI
+    xDAIPartner = fixture.xDAIPartner
+    factory = fixture.factory
+    router = fixture.router
+    pair = fixture.pair
+    xDAIPair = fixture.xDAIPair
 
-    await tokenBase.approve(router.address, ethers.utils.parseEther('10'))
+    const baseSupply = expandTo18Decimals(1e9)
+    //const baseSupply = ethers.utils.parseEther('10')
+    const quoteSupply = ethers.utils.parseEther('10')
+
+    await tokenBase.approve(router.address, ethers.utils.parseEther('1000000000'))
     await tokenQuote.approve(router.address, ethers.utils.parseEther('10'))
 
     // address sender;
@@ -72,7 +80,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       fee: 3
     }, MaxUint256))
       .to.emit(pair, 'Deposit')
-      .withArgs(wallet.address, baseSupply, zero, zero, wallet.address)
+      .withArgs(router.address, baseSupply, zero, zero, wallet.address)
   })
 
   it('basePrice:', async () => {
