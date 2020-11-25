@@ -50,25 +50,71 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
   it('addLiquidity: base and quote', async () => {
     const { router, tokenBase, tokenQuote, pair } = routerFixture
     const baseSupply = expandTo18Decimals(1e9) // total supply
-    const quoteLiquidity = getReserveForStartPrice(10, 1, 1, 1) // 50
-    const expectedBaseOutput = ethers.BigNumber.from('1000000000000000')
+    const quoteReserveFloat = getReserveForStartPrice(10, 1, 1, 1) // 50
+    const quoteReserve = expandTo18Decimals(quoteReserveFloat)
+    const expectedBaseOutput = ethers.BigNumber.from('9999000000000000000')
     const expectedBaseReserve = baseSupply.sub(expectedBaseOutput)
 
     await tokenBase.approve(router.address, baseSupply)
-    await tokenQuote.approve(router.address, quoteLiquidity)
+    await tokenQuote.approve(router.address, quoteReserve)
     await expect(router.addLiquidity({
       sender: wallet.address,
       to: wallet.address,
       tokenBase: tokenBase.address,
       tokenQuote: tokenQuote.address,
       amountBase: baseSupply,
-      amountQuote: quoteLiquidity,
+      amountQuote: quoteReserve,
       m: 1e6,
       n: 1,
       fee: 3
     }, MaxUint256))
       .to.emit(pair, 'Deposit')
-      .withArgs(router.address, expectedBaseReserve, quoteLiquidity, expectedBaseOutput, wallet.address)
+      .withArgs(router.address, expectedBaseReserve, quoteReserve, expectedBaseOutput, wallet.address)
+  })
+
+  it('removeLiquidity:', async () => {
+    const { router, tokenBase, tokenQuote, pair } = routerFixture
+    const baseSupply = expandTo18Decimals(1e9)
+    const quoteReserveFloat = getReserveForStartPrice(10, 1, 1, 1)
+    const quoteReserve = expandTo18Decimals(quoteReserveFloat)
+    const expectedBaseOutput = ethers.BigNumber.from('9999000000000000000')
+    const expectedBaseReserve = baseSupply.sub(expectedBaseOutput)
+
+    await tokenBase.approve(router.address, baseSupply)
+    await tokenQuote.approve(router.address, quoteReserve)
+    await router.addLiquidity({
+      sender: wallet.address,
+      to: wallet.address,
+      tokenBase: tokenBase.address,
+      tokenQuote: tokenQuote.address,
+      amountBase: baseSupply,
+      amountQuote: quoteReserve,
+      m: 1e6,
+      n: 1,
+      fee: 3
+    }, MaxUint256)
+
+    await expect(router.removeLiquidity({
+      sender: wallet.address,
+      to: wallet.address,
+      tokenBase: tokenBase.address,
+      tokenQuote: tokenQuote.address,
+      amountBase: baseSupply,
+      amountQuote: quoteReserve,
+      m: 1e6,
+      n: 1,
+      fee: 3
+    }, MaxUint256))
+      .to.emit(pair, 'Withdraw')
+      .withArgs(router.address, expectedBaseReserve, quoteReserve, wallet.address)
+    expect(await tokenBase.balanceOf(wallet.address)).to.eq(baseSupply)
+    expect(await tokenQuote.balanceOf(wallet.address)).to.eq(await tokenQuote.totalSupply())
+    expect(await tokenBase.balanceOf(pair.address)).to.eq(zero)
+    expect(await tokenQuote.balanceOf(pair.address)).to.eq(zero)
+
+    const reserves = await pair.getReserves()
+    expect(reserves[0]).to.eq(zero)
+    expect(reserves[1]).to.eq(zero)
   })
 
   it('basePrice:', async () => {
