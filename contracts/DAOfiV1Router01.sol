@@ -41,7 +41,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         LiquidityParams calldata lp,
         uint deadline
     ) external override ensure(deadline) returns (uint256 amountBase) {
-        if(IDAOfiV1Factory(factory).getPair(
+        if (IDAOfiV1Factory(factory).getPair(
             lp.tokenBase,
             lp.tokenQuote,
             lp.m,
