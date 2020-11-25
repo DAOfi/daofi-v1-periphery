@@ -47,6 +47,30 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       .withArgs(router.address, baseSupply, zero, zero, wallet.address)
   })
 
+  it('addLiquidity: base and quote', async () => {
+    const { router, tokenBase, tokenQuote, pair } = routerFixture
+    const baseSupply = expandTo18Decimals(1e9) // total supply
+    const quoteLiquidity = getReserveForStartPrice(10, 1, 1, 1) // 50
+    const expectedBaseOutput = ethers.BigNumber.from('1000000000000000')
+    const expectedBaseReserve = baseSupply.sub(expectedBaseOutput)
+
+    await tokenBase.approve(router.address, baseSupply)
+    await tokenQuote.approve(router.address, quoteLiquidity)
+    await expect(router.addLiquidity({
+      sender: wallet.address,
+      to: wallet.address,
+      tokenBase: tokenBase.address,
+      tokenQuote: tokenQuote.address,
+      amountBase: baseSupply,
+      amountQuote: quoteLiquidity,
+      m: 1e6,
+      n: 1,
+      fee: 3
+    }, MaxUint256))
+      .to.emit(pair, 'Deposit')
+      .withArgs(router.address, expectedBaseReserve, quoteLiquidity, expectedBaseOutput, wallet.address)
+  })
+
   it('basePrice:', async () => {
     const { tokenBase, tokenQuote, router } = walletFixture
     await addLiquidity(expandTo18Decimals(1e9), expandTo18Decimals(50)) // 50 quote reserve = price 10
