@@ -39,7 +39,27 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
   })
 
   it('addLiquidity: base only', async () => {
-    const baseSupply = expandTo18Decimals(1e9)
+    //const baseSupply = expandTo18Decimals(1e9)
+    const baseSupply = ethers.utils.parseEther('10')
+    const quoteSupply = ethers.utils.parseEther('10')
+    let bal = await tokenBase.balanceOf(wallet.address)
+    console.log('balance: ' + bal.toString())
+    bal = await tokenQuote.balanceOf(wallet.address)
+    console.log('balance: ' + bal.toString())
+
+    await tokenBase.approve(router.address, ethers.utils.parseEther('10'))
+    await tokenQuote.approve(router.address, ethers.utils.parseEther('10'))
+
+    // address sender;
+    // address to;
+    // address tokenBase;
+    // address tokenQuote;
+    // uint256 amountBase;
+    // uint256 amountQuote;
+    // uint32 m;
+    // uint32 n;
+    // uint32 fee;
+
     await expect(router.addLiquidity({
       tokenBase: tokenBase.address,
       tokenQuote: tokenQuote.address,
