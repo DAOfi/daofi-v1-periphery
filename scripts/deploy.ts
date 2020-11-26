@@ -3,7 +3,9 @@ import { deployContract } from 'ethereum-waffle'
 import DAOfiV1Router01 from '../build/contracts/DAOfiV1Router01.sol/DAOfiV1Router01.json'
 
 async function main() {
-  const provider = new ethers.providers.JsonRpcProvider('https://dai.poa.network', 100)
+  const provider = new ethers.providers.JsonRpcProvider(
+    process.env.JSONRPC_URL || 'https://sokol.poa.network'
+  )
   const wallet = new ethers.Wallet(process.env.PRIVATE_KEY || '', provider)
   console.log('wallet', wallet.address)
   const router = await deployContract(
@@ -16,12 +18,12 @@ async function main() {
       '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d'
     ],
     {
-      chainId: 100,
+      chainId: process.env.CHAIN_ID ? parseInt(process.env.CHAIN_ID) : 0x4d,
       gasLimit: 9999999,
       gasPrice: ethers.utils.parseUnits('120', 'gwei')
     }
   )
-  console.log('deployed router', await router.addressPromise)
+  console.log('deployed router', await router.address)
 }
 
 main()
