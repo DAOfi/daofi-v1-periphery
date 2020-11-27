@@ -13,7 +13,7 @@ async function main() {
     DAOfiV1Router01,
     [
       // factory
-      '0x62ceD5aD2B57e0cb3b9c0D98dD5ad24418028Db5',
+      '0x63defB9BabE42ac89feb782524bb8F8971BC116C',
       // WXDAI
       '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d'
     ],
