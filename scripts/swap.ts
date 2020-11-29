@@ -63,7 +63,10 @@ async function main() {
   console.log('wallet tokenB balance before:', await tokenB.balanceOf(wallet.address))
 
   const quoteAmountIn = ethers.utils.parseEther('50')
-  const baseAmountOut = ethers.BigNumber.from('9984000000000000000')
+  //const baseAmountOut = ethers.BigNumber.from('9984000000000000000')
+  const baseAmountOut = await router.getBaseOut(quoteAmountIn, tokenA.address, tokenB.address, 1e6, 1, 3, overrides)
+  console.log('expected output:', baseAmountOut)
+
   await tokenB.approve(router.address, quoteAmountIn)
   const tx = await router.swapExactTokensForTokens({
     sender: wallet.address,
