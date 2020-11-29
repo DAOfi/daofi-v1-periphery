@@ -151,4 +151,44 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       quoteAmountOut
     )
   })
+
+  it('swap: quote for base and back to quote', async () => {
+    const { router, tokenBase, tokenQuote, pair } = routerFixture
+    const baseSupply = expandTo18Decimals(1e9)
+
+    await tokenBase.approve(router.address, baseSupply)
+    await tokenQuote.approve(router.address, zero)
+    await router.addLiquidity({
+      sender: wallet.address,
+      to: wallet.address,
+      tokenBase: tokenBase.address,
+      tokenQuote: tokenQuote.address,
+      amountBase: baseSupply,
+      amountQuote: zero,
+      m: 1e6,
+      n: 1,
+      fee: 3
+    }, MaxUint256)
+
+    const quoteAmountIn = expandTo18Decimals(50)
+    const quoteMinusFee = ethers.BigNumber.from('49850000000000000000')
+    const baseAmountOut = ethers.BigNumber.from('9984000000000000000')
+
+    await tokenQuote.approve(router.address, quoteAmountIn)
+    await expect(router.swapExactTokensForTokens({
+      sender: wallet.address,
+      to: wallet.address,
+      tokenIn: tokenQuote.address,
+      tokenOut: tokenBase.address,
+      amountIn: quoteAmountIn,
+      amountOut: baseAmountOut,
+      m: 1e6,
+      n: 1,
+      fee: 3
+    }, MaxUint256))
+      .to.emit(tokenBase, 'Transfer')
+      .withArgs(pair.address, wallet.address, baseAmountOut)
+      .to.emit(pair, 'Swap')
+      .withArgs(router.address, 0, quoteAmountIn, baseAmountOut, 0, wallet.address)
+  })
 })
