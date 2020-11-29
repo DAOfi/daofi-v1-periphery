@@ -39,24 +39,24 @@ async function main() {
   )
   console.log('connected router', router.address)
 
-  const baseSupply = ethers.utils.parseEther('1000000000')
-  const zero = ethers.BigNumber.from(0)
-  await tokenA.approve(router.address, baseSupply, overrides)
-  await tokenB.approve(router.address, zero, overrides)
+  // const baseSupply = ethers.utils.parseEther('1000000000')
+  // const zero = ethers.BigNumber.from(0)
+  // await tokenA.approve(router.address, baseSupply, overrides)
+  // await tokenB.approve(router.address, zero, overrides)
 
-  await router.addLiquidity({
-    sender: wallet.address,
-    to: wallet.address,
-    tokenBase: tokenA.address,
-    tokenQuote: tokenB.address,
-    amountBase: baseSupply,
-    amountQuote: zero,
-    m: 1e6,
-    n: 1,
-    fee: 3
-  }, ethers.constants.MaxUint256, overrides)
+  // await router.addLiquidity({
+  //   sender: wallet.address,
+  //   to: wallet.address,
+  //   tokenBase: tokenA.address,
+  //   tokenQuote: tokenB.address,
+  //   amountBase: baseSupply,
+  //   amountQuote: zero,
+  //   m: 1e6,
+  //   n: 1,
+  //   fee: 3
+  // }, ethers.constants.MaxUint256, overrides)
 
-  await sleep(12000)
+  // await sleep(12000)
 
   // balances before swap
   console.log('wallet tokenA balance before:', await tokenA.balanceOf(wallet.address))
@@ -65,7 +65,7 @@ async function main() {
   const quoteAmountIn = ethers.utils.parseEther('50')
   const baseAmountOut = ethers.BigNumber.from('9984000000000000000')
   await tokenB.approve(router.address, quoteAmountIn)
-  await router.swapExactTokensForTokens({
+  const tx = await router.swapExactTokensForTokens({
     sender: wallet.address,
     to: wallet.address,
     tokenIn: tokenB.address,
@@ -77,6 +77,7 @@ async function main() {
     fee: 3
   }, ethers.constants.MaxUint256, overrides)
 
+  console.log('tx:', tx)
   await sleep(12000)
 
   // balances after swap
