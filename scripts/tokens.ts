@@ -1,6 +1,6 @@
 import { ethers } from 'ethers'
 import { deployContract } from 'ethereum-waffle'
-import DAOfiV1Router01 from '../build/contracts/DAOfiV1Router01.sol/DAOfiV1Router01.json'
+import ERC20 from '../build/contracts/test/ERC20.sol/ERC20.json'
 
 async function main() {
   const provider = new ethers.providers.JsonRpcProvider(
@@ -8,14 +8,12 @@ async function main() {
   )
   const wallet = new ethers.Wallet(process.env.PRIVATE_KEY || '', provider)
   console.log('wallet', wallet.address)
-  const router = await deployContract(
+
+  const tokenA = await deployContract(
     wallet,
-    DAOfiV1Router01,
+    ERC20,
     [
-      // factory
-      '0xB430A74e9fC033b833f886cb28b823053526646D',
-      // WXDAI
-      '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d'
+      ethers.utils.parseEther('1000000000')
     ],
     {
       chainId: process.env.CHAIN_ID ? parseInt(process.env.CHAIN_ID) : 0x4d,
@@ -23,7 +21,21 @@ async function main() {
       gasPrice: ethers.utils.parseUnits('120', 'gwei')
     }
   )
-  console.log('deployed router', router.address)
+  console.log('deployed tokenA', tokenA.address)
+
+  const tokenB = await deployContract(
+    wallet,
+    ERC20,
+    [
+      ethers.utils.parseEther('1000000000')
+    ],
+    {
+      chainId: process.env.CHAIN_ID ? parseInt(process.env.CHAIN_ID) : 0x4d,
+      gasLimit: 9999999,
+      gasPrice: ethers.utils.parseUnits('120', 'gwei')
+    }
+  )
+  console.log('deployed tokenB', tokenB.address)
 }
 
 main()
