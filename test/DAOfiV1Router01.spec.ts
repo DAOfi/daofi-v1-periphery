@@ -52,7 +52,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
     const baseSupply = expandTo18Decimals(1e9) // total supply
     const quoteReserveFloat = getReserveForStartPrice(10, 1, 1, 1) // 50
     const quoteReserve = expandTo18Decimals(quoteReserveFloat)
-    const expectedBaseOutput = ethers.BigNumber.from('9999000000000000000')
+    const expectedBaseOutput = ethers.BigNumber.from('10000000000000000000')
     const expectedBaseReserve = baseSupply.sub(expectedBaseOutput)
 
     await tokenBase.approve(router.address, baseSupply)
@@ -77,7 +77,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
     const baseSupply = expandTo18Decimals(1e9)
     const quoteReserveFloat = getReserveForStartPrice(10, 1, 1, 1)
     const quoteReserve = expandTo18Decimals(quoteReserveFloat)
-    const expectedBaseOutput = ethers.BigNumber.from('9999000000000000000')
+    const expectedBaseOutput = ethers.BigNumber.from('10000000000000000000')
     const expectedBaseReserve = baseSupply.sub(expectedBaseOutput)
 
     await tokenBase.approve(router.address, baseSupply)
@@ -120,7 +120,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
   it('basePrice:', async () => {
     const { tokenBase, tokenQuote, router } = walletFixture
     await addLiquidity(expandTo18Decimals(1e9), expandTo18Decimals(50)) // 50 quote reserve = price 10
-    const quotePrice = ethers.BigNumber.from('9998000000000000000') // price 10
+    const quotePrice = ethers.BigNumber.from('10000000000000000000') // price 10
     expect(await router.basePrice(tokenBase.address, tokenQuote.address, 1e6, 1, 3)).to.eq(quotePrice)
   })
 
@@ -135,7 +135,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
     const { tokenBase, tokenQuote, router } = walletFixture
     await addLiquidity(expandTo18Decimals(1e9), zero)
     const quoteAmountIn = expandTo18Decimals(50)
-    const baseAmountOut = ethers.BigNumber.from('9984000000000000000')
+    const baseAmountOut = ethers.BigNumber.from('10000000000000000000')
     expect(await router.getBaseOut(quoteAmountIn, tokenBase.address, tokenQuote.address, 1e6, 1, 3)).to.eq(
       baseAmountOut
     )
@@ -145,8 +145,8 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
     const { tokenBase, tokenQuote, router } = walletFixture
     // need a starting price to sell base for quote
     await addLiquidity(expandTo18Decimals(1e9), expandTo18Decimals(50)) // 50 quote reserve = price 10
-    const baseAmountIn = ethers.BigNumber.from('100000000000000000')
-    const quoteAmountOut = ethers.BigNumber.from('49999999999951030035')
+    const baseAmountIn = ethers.BigNumber.from('10000000000000000000')
+    const quoteAmountOut = ethers.BigNumber.from('49900000000000000000')
     expect(await router.getQuoteOut(baseAmountIn, tokenBase.address, tokenQuote.address, 1e6, 1, 3)).to.eq(
       quoteAmountOut
     )
@@ -171,8 +171,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
     }, MaxUint256)
 
     const quoteAmountIn = expandTo18Decimals(50)
-    const quoteMinusFee = ethers.BigNumber.from('49850000000000000000')
-    const baseAmountOut = ethers.BigNumber.from('9984000000000000000')
+    const baseAmountOut = await router.getBaseOut(quoteAmountIn, tokenBase.address, tokenQuote.address, 1e6, 1, 3)
 
     await tokenQuote.approve(router.address, quoteAmountIn)
     await expect(router.swapExactTokensForTokens({

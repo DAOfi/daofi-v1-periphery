@@ -4,7 +4,6 @@ pragma experimental ABIEncoderV2;
 
 import '@daofi/daofi-v1-core/contracts/interfaces/IDAOfiV1Factory.sol';
 import '@daofi/daofi-v1-core/contracts/interfaces/IDAOfiV1Pair.sol';
-import '@uniswap/lib/contracts/libraries/FixedPoint.sol';
 import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
 import 'hardhat/console.sol';
 
@@ -275,19 +274,19 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         amountQuoteOut = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getQuoteOut(amountBaseIn);
     }
 
-    // function getBaseIn(uint256 amountQuoteOut, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
-    //     public view override returns (uint256 amountBaseIn)
-    // {
-    //     amountQuoteOut = amountQuoteOut.mul(1000 + fee) / 1000;
-    //     amountBaseIn = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getBaseIn(amountQuoteOut);
-    // }
+    function getBaseIn(uint256 amountQuoteOut, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        public view override returns (uint256 amountBaseIn)
+    {
+        amountQuoteOut = amountQuoteOut.mul(1000 + fee) / 1000;
+        amountBaseIn = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getBaseIn(amountQuoteOut);
+    }
 
-    // function getQuoteIn(uint256 amountBaseOut, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
-    //     public view override returns (uint256 amountQuoteIn)
-    // {
-    //     amountBaseOut = amountBaseOut.mul(1000 + fee) / 1000;
-    //     amountQuoteIn = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getQuoteIn(amountBaseOut);
-    // }
+    function getQuoteIn(uint256 amountBaseOut, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        public view override returns (uint256 amountQuoteIn)
+    {
+        amountBaseOut = amountBaseOut.mul(1000 + fee) / 1000;
+        amountQuoteIn = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getQuoteIn(amountBaseOut);
+    }
 
     // function getAmountsOut(uint256 amountIn, SwapParams[] calldata path)
     //     public view override returns (uint256[] memory amounts)
