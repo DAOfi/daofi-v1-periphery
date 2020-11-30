@@ -94,11 +94,11 @@ interface IDAOfiV1Router01 {
     function getQuoteOut(uint256 amountBaseIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
         external view returns (uint256 amountQuoteOut);
 
-    // function getBaseIn(uint256 amountQuoteOut, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
-    //     external view returns (uint256 amountBaseIn);
+    function getBaseIn(uint256 amountQuoteOut, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        external view returns (uint256 amountBaseIn);
 
-    // function getQuoteIn(uint256 amountBaseOut, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
-    //     external view returns (uint256 amountQuoteIn);
+    function getQuoteIn(uint256 amountBaseOut, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+        external view returns (uint256 amountQuoteIn);
 
     // function getAmountsOut(uint256 amountIn, SwapParams[] calldata path)
     //     external view returns (uint256[] memory amounts);
