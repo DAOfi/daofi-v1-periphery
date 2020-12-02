@@ -36,6 +36,13 @@ interface IDAOfiV1Router01 {
         uint32 fee;
     }
 
+    struct RemoveLiquidityParams {
+        uint8 v;
+        bytes32 r;
+        bytes32 s;
+        bytes32 nonce;
+    }
+
     function factory() external view returns (address);
 
     function WxDAI() external view returns (address);
@@ -54,6 +61,7 @@ interface IDAOfiV1Router01 {
 
     function removeLiquidity(
         LiquidityParams calldata lp,
+        RemoveLiquidityParams calldata rp,
         uint deadline
     ) external returns (uint256 amountBase, uint256 amountQuote);
 

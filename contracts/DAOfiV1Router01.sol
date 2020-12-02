@@ -12,6 +12,7 @@ import './interfaces/IERC20.sol';
 import './interfaces/IWxDAI.sol';
 import './libraries/DAOfiV1Library.sol';
 import './libraries/SafeMath.sol';
+import './libraries/EIP712.sol';
 
 contract DAOfiV1Router01 is IDAOfiV1Router01 {
     using SafeMath for uint;
@@ -22,14 +23,17 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
     address public immutable override factory;
     address public immutable override WxDAI;
 
+    bytes32 public DOMAIN_SEPARATOR;
+
     modifier ensure(uint deadline) {
         require(deadline >= block.timestamp, 'DAOfiV1Router: EXPIRED');
         _;
     }
 
-    constructor(address _factory, address _WxDAI) {
+    constructor(address _factory, address _WxDAI, string memory newName) {
         factory = _factory;
         WxDAI = _WxDAI;
+        DOMAIN_SEPARATOR = EIP712.makeDomainSeparator(newName, "1");
     }
 
     receive() external payable {
@@ -101,10 +105,52 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
     //     if (msg.value > lp.amountB) TransferHelper.safeTransferETH(sender, msg.value - lp.amountB);
     // }
 
+    // function _transferWithAuthorization(
+    //     address from,
+    //     address to,
+    //     uint256 value,
+    //     uint256 validAfter,
+    //     uint256 validBefore,
+    //     bytes32 nonce,
+    //     uint8 v,
+    //     bytes32 r,
+    //     bytes32 s
+    // ) internal {
+    //     _requireValidAuthorization(from, nonce, validAfter, validBefore);
+
+    //     bytes memory data = abi.encode(
+    //         TRANSFER_WITH_AUTHORIZATION_TYPEHASH,
+    //         from,
+    //         to,
+    //         value,
+    //         validAfter,
+    //         validBefore,
+    //         nonce
+    //     );
+    //     require(
+    //         EIP712.recover(DOMAIN_SEPARATOR, v, r, s, data) == from,
+    //         "BdsTokenV2: invalid signature"
+    //     );
+
+    //     _markAuthorizationAsUsed(from, nonce);
+    //     _transfer(from, to, value);
+    // }
+
     function removeLiquidity(
         LiquidityParams calldata lp,
+        RemoveLiquidityParams calldata rp,
         uint deadline
     ) external override ensure(deadline) returns (uint amountBase, uint amountQuote) {
+        bytes memory data = abi.encode(
+            lp.sender,
+            lp.to,
+            deadline,
+            rp.nonce
+        );
+        require(
+            EIP712.recover(DOMAIN_SEPARATOR, rp.v, rp.r, rp.s, data) == lp.sender,
+            "DAOfiV1Router: invalid signature"
+        );
         IDAOfiV1Pair pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(
             factory, lp.tokenBase, lp.tokenQuote, lp.m, lp.n, lp.fee
         ));

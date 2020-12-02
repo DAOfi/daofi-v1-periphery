@@ -80,6 +80,10 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
     const expectedBaseOutput = ethers.BigNumber.from('10000000000000000000')
     const expectedBaseReserve = baseSupply.sub(expectedBaseOutput)
 
+    // TODO create 712 signature
+    const DOMAIN_SEPARATOR = await router.DOMAIN_SEPARATOR();
+    console.log(DOMAIN_SEPARATOR)
+
     await tokenBase.approve(router.address, baseSupply)
     await tokenQuote.approve(router.address, quoteReserve)
     await router.addLiquidity({
@@ -93,6 +97,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       n: 1,
       fee: 3
     }, MaxUint256)
+
 
     await expect(router.removeLiquidity({
       sender: wallet.address,
