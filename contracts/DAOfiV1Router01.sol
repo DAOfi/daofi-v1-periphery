@@ -27,16 +27,26 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
     // bytes32 public constant METATX_TYPEHASH = keccak256("Permit(address holder,address spender,uint256 nonce,uint256 expiry,bool allowed)");
     bytes32 public METATX_TYPEHASH;
     mapping(address => uint256) public nonces;
+    string public constant version = "1";
 
     modifier ensure(uint deadline) {
         require(deadline >= block.timestamp, 'DAOfiV1Router: EXPIRED');
         _;
     }
 
-    constructor(address _factory, address _WxDAI, string memory newName) {
+    constructor(address _factory, address _WxDAI, string memory _name, uint256 _chainId) {
         factory = _factory;
         WxDAI = _WxDAI;
-        DOMAIN_SEPARATOR = EIP712.makeDomainSeparator(newName, "1");
+        require(_chainId != 0);
+        DOMAIN_SEPARATOR = keccak256(
+            abi.encode(
+                keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
+                keccak256(bytes(_name)),
+                keccak256(bytes(version)),
+                _chainId,
+                address(this)
+            )
+        );
         METATX_TYPEHASH = keccak256("Permit(address sender,address to,uint256 nonce,uint256 deadline)");
     }
 
