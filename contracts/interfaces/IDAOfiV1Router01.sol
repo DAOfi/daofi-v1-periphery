@@ -40,7 +40,7 @@ interface IDAOfiV1Router01 {
         uint8 v;
         bytes32 r;
         bytes32 s;
-        bytes32 nonce;
+        uint256 nonce;
     }
 
     function factory() external view returns (address);

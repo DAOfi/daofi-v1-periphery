@@ -66,3 +66,34 @@ export function getReserveForStartPrice(price: number, slopeN: number, slopeD: n
   const s = (price * (slopeD / slopeN)) ** (1 / n)
   return (slopeN * (s ** (n + 1))) / (slopeD * (n + 1))
 }
+
+const randomId = () => Math.floor(Math.random() * 10000000000);
+
+export const send = (provider: any, method: string, params?: any[]) => new Promise<any>((resolve, reject) => {
+  console.log(params)
+  let payload = {
+    id: randomId(),
+    method,
+    params,
+  };
+  let payloadString = JSON.stringify(payload)
+  console.log(payloadString)
+  const callback = (err: any, result: any) => {
+    if (err) {
+      reject(err);
+    } else if (result.error) {
+      console.error(result.error);
+      reject(result.error);
+    } else {
+      resolve(result.result);
+    }
+  };
+
+  let _provider = provider.provider || provider
+
+  if (_provider.sendAsync) {
+    _provider.sendAsync(payloadString, callback);
+  } else {
+    _provider.send(method, params);
+  }
+});

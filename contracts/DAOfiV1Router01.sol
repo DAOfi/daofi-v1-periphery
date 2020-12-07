@@ -24,6 +24,9 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
     address public immutable override WxDAI;
 
     bytes32 public DOMAIN_SEPARATOR;
+    // bytes32 public constant METATX_TYPEHASH = keccak256("Permit(address holder,address spender,uint256 nonce,uint256 expiry,bool allowed)");
+    bytes32 public METATX_TYPEHASH;
+    mapping(address => uint256) public nonces;
 
     modifier ensure(uint deadline) {
         require(deadline >= block.timestamp, 'DAOfiV1Router: EXPIRED');
@@ -34,6 +37,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         factory = _factory;
         WxDAI = _WxDAI;
         DOMAIN_SEPARATOR = EIP712.makeDomainSeparator(newName, "1");
+        METATX_TYPEHASH = keccak256("Permit(address sender,address to,uint256 nonce,uint256 deadline)");
     }
 
     receive() external payable {
@@ -136,21 +140,39 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
     //     _transfer(from, to, value);
     // }
 
+    // TODO maintain the original non metatx removal
     function removeLiquidity(
         LiquidityParams calldata lp,
         RemoveLiquidityParams calldata rp,
         uint deadline
     ) external override ensure(deadline) returns (uint amountBase, uint amountQuote) {
-        bytes memory data = abi.encode(
-            lp.sender,
-            lp.to,
-            deadline,
-            rp.nonce
+        // bytes memory data = abi.encode(
+        //     lp.sender,
+        //     lp.to,
+        //     deadline,
+        //     rp.nonce
+        // );
+        // require(
+        //     EIP712.recover(DOMAIN_SEPARATOR, rp.v, rp.r, rp.s, data) == lp.sender,
+        //     "DAOfiV1Router: invalid signature"
+        // );
+        require(lp.sender != address(0), "DAOfiV1Router: invalid spender");
+        require(lp.to != address(0), "DAOfiV1Router: invalid to address");
+        require(rp.v == 27 || rp.v == 28, "DAOfiV1Router: invalid v");
+        require(uint256(rp.s) <= 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0, "DAOfiV1Router: invalid s");
+
+        bytes32 digest = keccak256(
+            abi.encodePacked(
+                "\x19\x01",
+                DOMAIN_SEPARATOR,
+                keccak256(abi.encode(METATX_TYPEHASH, lp.sender, lp.to, rp.nonce, deadline))
+            )
         );
-        require(
-            EIP712.recover(DOMAIN_SEPARATOR, rp.v, rp.r, rp.s, data) == lp.sender,
-            "DAOfiV1Router: invalid signature"
-        );
+
+        require(lp.sender == ecrecover(digest, rp.v, rp.r, rp.s), "ecrecover failed");
+        require(rp.nonce == nonces[lp.sender]++, "nonce inequality");
+
+        // TODO: check nonce for replay attack
         IDAOfiV1Pair pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(
             factory, lp.tokenBase, lp.tokenQuote, lp.m, lp.n, lp.fee
         ));

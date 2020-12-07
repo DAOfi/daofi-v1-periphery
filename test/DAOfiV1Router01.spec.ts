@@ -3,14 +3,19 @@ import { expect } from 'chai'
 import { BigNumber, Contract } from 'ethers'
 import { ethers } from 'hardhat'
 import { DAOfiV1Fixture, getFixtureWithParams } from './shared/fixtures'
-import { expandTo18Decimals, getReserveForStartPrice } from './shared/utilities'
+import { expandTo18Decimals, getReserveForStartPrice, send } from './shared/utilities'
+import { MockProvider } from '@ethereum-waffle/provider';
 
 const zero = ethers.BigNumber.from(0)
 const MaxUint256 = ethers.constants.MaxUint256
 
+const provider = new MockProvider();
+
 let walletFixture: DAOfiV1Fixture
 let routerFixture: DAOfiV1Fixture
 let wallet: SignerWithAddress
+
+const zeros = (numZeros: number) => ''.padEnd(numZeros, '0');
 
 describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
   async function addLiquidity(baseReserve: BigNumber, quoteReserve: BigNumber) {
@@ -72,7 +77,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       .withArgs(router.address, expectedBaseReserve, quoteReserve, expectedBaseOutput, wallet.address)
   })
 
-  it('removeLiquidity:', async () => {
+  it.only('removeLiquidity:', async () => {
     const { router, tokenBase, tokenQuote, pair } = routerFixture
     const baseSupply = expandTo18Decimals(1e9)
     const quoteReserveFloat = getReserveForStartPrice(10, 1, 1, 1)
@@ -83,6 +88,125 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
     // TODO create 712 signature
     const DOMAIN_SEPARATOR = await router.DOMAIN_SEPARATOR();
     console.log(DOMAIN_SEPARATOR)
+
+    interface removeLiquidityMessage {
+      sender: string;
+      to: string;
+      nonce: number;
+      deadline: number | string;
+    }
+
+    interface Domain {
+      name: string;
+      version: string;
+      chainId: number;
+      verifyingContract: string;
+    }
+
+    const EIP712Domain = [
+      { name: "name", type: "string" },
+      { name: "version", type: "string" },
+      { name: "chainId", type: "uint256" },
+      { name: "verifyingContract", type: "address" },
+    ];
+
+    const domain: Domain = { name: 'DAOfiV1Router01', version: '1', chainId: 77, verifyingContract: router.address };
+    const nonce = await router.nonces(wallet.address);
+    const hexNonce = nonce.toHexString()
+    //let nonce = res.data.nonce.hex.toString();
+    let count = 66 - hexNonce.length
+    let formatNonce = `${'0x'}${zeros(count)}${hexNonce.substr(2)}`
+
+    console.log('nonce: '+formatNonce)
+
+    let sender = wallet.address
+    let to = wallet.address
+    //
+    const message: removeLiquidityMessage = {
+      sender: wallet.address,
+      to: wallet.address,
+      nonce: nonce,
+      deadline: MaxUint256.toString()
+    };
+
+    let typedData = {
+      "types": {
+        "EIP712Domain":[
+          {"name":"name","type":"string"},
+          {"name":"version","type":"string"},
+          {"name":"chainId","type":"uint256"},
+          {"name":"verifyingContract","type":"address"}
+        ],
+        "Permit": [
+          { "name": "sender", "type": "address" },
+          { "name": "to", "type": "address" },
+          { "name": "nonce", "type": "uint256" },
+          { "name": "deadline", "type": "uint256" }
+        ],
+      },
+      primaryType: "Permit",
+      domain: { "name": 'DAOfiV1Router01', "version": '1', "chainId": 77, "verifyingContract": router.address },
+      message: {
+        "sender": wallet.address,
+        "to": wallet.address,
+        "nonce": parseInt(nonce.toString()),
+        "deadline": MaxUint256.toString()
+      }
+    }
+    console.log(typedData)
+    let test = {
+      "types":{
+        "EIP712Domain":[
+          {"name":"name","type":"string"},
+          {"name":"version","type":"string"},
+          {"name":"chainId","type":"uint256"},
+          {"name":"verifyingContract","type":"address"}
+        ],"Person":[
+          {"name":"name","type":"string"},
+          {"name":"wallet","type":"address"}
+        ],"Mail":[
+          {"name":"from","type":"Person"},
+          {"name":"to","type":"Person"},
+          {"name":"contents","type":"string"}
+        ]
+      },
+      "primaryType":"Mail",
+      "domain":{
+        "name":"Ether Mail",
+        "version":"1",
+        "chainId":1,
+        "verifyingContract":"0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
+      },
+      "message":{
+        "from":{
+          "name":"Cow",
+          "wallet":"0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826"
+        },
+        "to":{
+          "name":"Bob",
+          "wallet":"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB"
+        },
+        "contents":"Hello, Bob!"
+      }
+    }
+    console.log(nonce)
+    //console.log(test)
+    //const typeDataString = JSON.stringify(typedData)
+    //console.log(typeDataString)
+    const params = JSON.stringify([wallet.address, typedData])
+    let fruits: any[] = [wallet.address, typedData];
+    const result = await ethers.provider.send('eth_signTypedData', [wallet.address, typedData])
+    const resultFormat = {
+      r: result.slice(0, 66),
+      s: '0x' + result.slice(66, 130),
+      v: parseInt(result.slice(130, 132), 16),
+    }
+    //const result = await send(wallet.provider, 'eth_signTypedData', fruits)
+    console.log(resultFormat)
+    console.log(wallet.address)
+
+    let typhash = await router.METATX_TYPEHASH()
+    console.log(typhash)
 
     await tokenBase.approve(router.address, baseSupply)
     await tokenQuote.approve(router.address, quoteReserve)
@@ -98,7 +222,23 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       fee: 3
     }, MaxUint256)
 
-
+    const lp = {
+      sender: wallet.address,
+      to: wallet.address,
+      tokenBase: tokenBase.address,
+      tokenQuote: tokenQuote.address,
+      amountBase: baseSupply,
+      amountQuote: quoteReserve,
+      m: 1e6,
+      n: 1,
+      fee: 3  
+    }
+    const rp = {
+      v: resultFormat.v,
+      r: resultFormat.r,
+      s: resultFormat.s,
+      nonce: parseInt(nonce.toString())
+    }
     await expect(router.removeLiquidity({
       sender: wallet.address,
       to: wallet.address,
@@ -109,7 +249,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       m: 1e6,
       n: 1,
       fee: 3
-    }, MaxUint256))
+    }, rp, MaxUint256))
       .to.emit(pair, 'Withdraw')
       .withArgs(router.address, expectedBaseReserve, quoteReserve, wallet.address)
     expect(await tokenBase.balanceOf(wallet.address)).to.eq(baseSupply)
