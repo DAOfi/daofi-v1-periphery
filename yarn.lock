@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@daofi/daofi-v1-core@0.1.0-mainnet.0":
-  version "0.1.0-mainnet.0"
-  resolved "https://registry.yarnpkg.com/@daofi/daofi-v1-core/-/daofi-v1-core-0.1.0-mainnet.0.tgz#a8408b509190cc6dee74b97f6f6a462f13fea0b3"
-  integrity sha512-aLw+cr4q1rUgzg6nMOJx2EvHzKwkjaDU4PmwbCoac65+RaEI3jEpV36FEUW1FcNAoRjsaBRA33G51XfT2l8hiw==
+"@daofi/daofi-v1-core@0.1.0-mainnet.1":
+  version "0.1.0-mainnet.1"
+  resolved "https://registry.yarnpkg.com/@daofi/daofi-v1-core/-/daofi-v1-core-0.1.0-mainnet.1.tgz#6edbd8289e250ffc83ec9ec342656ab57b99da71"
+  integrity sha512-UDdb58RDLyK/Hd20171SXjGYVqUtXMdxFtmfaDxx2/8ujVReRr58VqBC/RIK3nFeGY8WieHFBsbU76bfTrD+mw==
 
 "@ensdomains/ens@^0.4.4":
   version "0.4.5"
