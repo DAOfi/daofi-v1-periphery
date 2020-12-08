@@ -14,10 +14,7 @@ import './libraries/DAOfiV1Library.sol';
 import './libraries/SafeMath.sol';
 
 contract DAOfiV1Router01 is IDAOfiV1Router01 {
-    using SafeMath for uint;
-    using SafeMath for uint8;
-    using SafeMath for uint32;
-    using SafeMath for uint256;
+    using SafeMath for *;
 
     address public immutable override factory;
     address public immutable override WETH;
@@ -273,60 +270,4 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         amountBaseIn = amountBaseIn.mul(1000 - fee) / 1000;
         amountQuoteOut = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getQuoteOut(amountBaseIn);
     }
-
-    function getBaseIn(uint256 amountQuoteOut, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
-        public view override returns (uint256 amountBaseIn)
-    {
-        amountQuoteOut = amountQuoteOut.mul(1000 + fee) / 1000;
-        amountBaseIn = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getBaseIn(amountQuoteOut);
-    }
-
-    function getQuoteIn(uint256 amountBaseOut, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
-        public view override returns (uint256 amountQuoteIn)
-    {
-        amountBaseOut = amountBaseOut.mul(1000 + fee) / 1000;
-        amountQuoteIn = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getQuoteIn(amountBaseOut);
-    }
-
-    // function getAmountsOut(uint256 amountIn, SwapParams[] calldata path)
-    //     public view override returns (uint256[] memory amounts)
-    // {
-    //     require(path.length >= 2, 'DAOfiV1Router: INVALID_PATH');
-    //     amounts = new uint256[](path.length);
-    //     amounts[0] = amountIn;
-    //     for (uint256 i; i < path.length - 1; i++) {
-    //         SwapParams memory spIn = abi.decode(path[i], (SwapParams));
-    //         SwapParams memory spOut = abi.decode(path[i + 1], (SwapParams));
-    //         IDAOfiV1Pair pair = IDAOfiV1Pair(
-    //             DAOfiV1Library.pairFor(factory, spIn.token, spOut.token, spIn.m, spIn.n, spIn.fee)
-    //         );
-    //         CurveParams memory params = abi.decode(pair.getCurveParams(), (CurveParams));
-    //         if (params.baseToken == spOut.token) {
-    //             amounts[i + 1] = pair.getBaseOut(amounts[i].mul(1000 - params.fee) / 1000);
-    //         } else {
-    //             amounts[i + 1] = pair.getQuoteOut(amounts[i].mul(1000 - params.fee) / 1000);
-    //         }
-    //     }
-    // }
-
-    // function getAmountsIn(uint256 amountOut, SwapParams[] calldata path)
-    //     public view override returns (uint256[] memory amounts)
-    // {
-    //     require(path.length >= 2, 'DAOfiV1Router: INVALID_PATH');
-    //     amounts = new uint256[](path.length);
-    //     amounts[amounts.length - 1] = amountOut;
-    //     for (uint i = path.length - 1; i > 0; i--) {
-    //         SwapParams memory spIn = abi.decode(path[i - 1], (SwapParams));
-    //         SwapParams memory spOut = abi.decode(path[i], (SwapParams));
-    //         IDAOfiV1Pair pair = IDAOfiV1Pair(
-    //             DAOfiV1Library.pairFor(factory, spIn.token, spOut.token, spIn.m, spIn.n, spIn.fee)
-    //         );
-    //         CurveParams memory params = abi.decode(pair.getCurveParams(), (CurveParams));
-    //         if (params.baseToken == spOut.token) {
-    //             amounts[i - 1] = pair.getQuoteIn(amounts[i].mul(1000 + params.fee) / 1000);
-    //         } else {
-    //             amounts[i - 1] = pair.getBaseIn(amounts[i].mul(1000 + params.fee) / 1000);
-    //         }
-    //     }
-    // }
 }
