@@ -14,6 +14,8 @@ export interface DAOfiV1Fixture {
   router: Contract
   pair: Contract
   xDAIPair: Contract
+  WETH: Contract
+  pairETH: Contract
 }
 
 export async function getFixtureWithParams(
@@ -25,6 +27,7 @@ export async function getFixtureWithParams(
 ): Promise<DAOfiV1Fixture> {
   const Token = await ethers.getContractFactory("ERC20")
   const XDai = await ethers.getContractFactory("WxDAI")
+  const weth = await ethers.getContractFactory("WETH10")
   const Router = await ethers.getContractFactory("DAOfiV1Router01")
 
   // deploy tokens
@@ -32,18 +35,24 @@ export async function getFixtureWithParams(
   const tokenB =  await Token.deploy(ethers.BigNumber.from('0x033b2e3c9fd0803ce8000000'))
   const xDAI = await XDai.deploy()
   const xDAIPartner = await  await Token.deploy(ethers.BigNumber.from('0x033b2e3c9fd0803ce8000000'))
+  const WETH = await weth.deploy()
 
   // deploy factory
   const factory = await deployContract(wallet, DAOfiV1Factory)
 
   // deploy router
-  const router = await Router.deploy(factory.address, xDAI.address)
+  const router = await Router.deploy(factory.address, WETH.address)
 
   // initialize
   const controller = fromWallet ? wallet.address : router.address
   await factory.createPair(controller, tokenA.address, tokenB.address, tokenA.address, wallet.address, m, n, fee)
   const pairAddress = await factory.getPair(tokenA.address, tokenB.address, m, n, fee)
   const pair = new Contract(pairAddress, JSON.stringify(DAOfiV1Pair.abi)).connect(wallet)
+
+  // init eth pair
+  await factory.createPair(controller, tokenA.address, WETH.address, tokenA.address, wallet.address, m, n, fee)
+  const pairAddressETH = await factory.getPair(tokenA.address, WETH.address, m, n, fee)
+  const pairETH = new Contract(pairAddressETH, JSON.stringify(DAOfiV1Pair.abi)).connect(wallet)
 
   const tokenBase = tokenA
   const tokenQuote = tokenB
@@ -60,7 +69,9 @@ export async function getFixtureWithParams(
     factory,
     router,
     pair,
-    xDAIPair
+    xDAIPair,
+    WETH,
+    pairETH,
   }
 }
 

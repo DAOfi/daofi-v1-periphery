@@ -48,7 +48,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
                 address(this),
                 lp.tokenBase,
                 lp.tokenQuote,
-                lp.sender,
+                msg.sender,
                 lp.m,
                 lp.n,
                 lp.fee
@@ -65,8 +65,6 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
 
     function addLiquidityETH(
         LiquidityParams calldata lp,
-        address sender,
-        address to,
         uint deadline
     ) external override payable ensure(deadline) returns (uint256 amountBase) {
         if (IDAOfiV1Factory(factory).getPair(lp.tokenBase, WETH, lp.m, lp.n, lp.fee) == address(0)) {
@@ -74,7 +72,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
                 address(this),
                 lp.tokenBase,
                 WETH,
-                sender,
+                msg.sender,
                 lp.m,
                 lp.n,
                 lp.fee
@@ -88,12 +86,13 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
             lp.n,
             lp.fee
         );
-        TransferHelper.safeTransferFrom(lp.tokenBase, sender, pair, lp.amountBase);
+        require(pair != address(0));
+        TransferHelper.safeTransferFrom(lp.tokenBase, msg.sender, pair, lp.amountBase);
         IWETH10(WETH).deposit{value: lp.amountQuote}();
         assert(IWETH10(WETH).transfer(pair, lp.amountQuote));
-        amountBase = IDAOfiV1Pair(pair).deposit(to);
+        amountBase = IDAOfiV1Pair(pair).deposit(lp.to);
         // refund dust eth, if any
-        if (msg.value > lp.amountQuote) TransferHelper.safeTransferETH(sender, msg.value - lp.amountQuote);
+        if (msg.value > lp.amountQuote) TransferHelper.safeTransferETH(msg.sender, msg.value - lp.amountQuote);
     }
 
     function removeLiquidity(
@@ -109,16 +108,14 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
 
     function removeLiquidityETH(
         LiquidityParams calldata lp,
-        address sender,
-        address to,
         uint deadline
     ) external override ensure(deadline) returns (uint amountToken, uint amountETH) {
         IDAOfiV1Pair pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, lp.tokenBase, WETH, lp.m, lp.n, lp.fee));
-        require(sender == pair.pairOwner(), 'DAOfiV1Router: FORBIDDEN');
-        (amountToken, amountETH) = pair.withdraw(to);
-        TransferHelper.safeTransfer(lp.tokenBase, to, amountToken);
+        require(msg.sender == pair.pairOwner(), 'DAOfiV1Router: FORBIDDEN');
+        (amountToken, amountETH) = pair.withdraw(lp.to);
+        TransferHelper.safeTransfer(lp.tokenBase, lp.to, amountToken);
         IWETH10(WETH).withdraw(amountETH);
-        TransferHelper.safeTransferETH(to, amountETH);
+        TransferHelper.safeTransferETH(lp.to, amountETH);
     }
 
     function swapExactTokensForTokens(

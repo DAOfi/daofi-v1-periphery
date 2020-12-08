@@ -38,8 +38,6 @@ interface IDAOfiV1Router01 {
 
     function addLiquidityETH(
         LiquidityParams calldata lp,
-        address sender,
-        address to,
         uint deadline
     ) external payable returns (uint256 amountBase);
 
@@ -50,8 +48,6 @@ interface IDAOfiV1Router01 {
 
     function removeLiquidityETH(
         LiquidityParams calldata lp,
-        address sender,
-        address to,
         uint deadline
     ) external returns (uint256 amountToken, uint256 amountETH);
 
