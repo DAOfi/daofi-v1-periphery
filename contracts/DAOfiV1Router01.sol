@@ -69,8 +69,6 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
 
     function addLiquidityETH(
         LiquidityParams calldata lp,
-        address sender,
-        address to,
         uint deadline
     ) external override payable ensure(deadline) returns (uint256 amountBase) {
         if (IDAOfiV1Factory(factory).getPair(lp.tokenBase, WETH, lp.m, lp.n, lp.fee) == address(0)) {
@@ -79,7 +77,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
                 lp.tokenBase,
                 WETH,
                 lp.tokenBase,
-                sender,
+                msg.sender,
                 lp.m,
                 lp.n,
                 lp.fee
@@ -93,12 +91,12 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
             lp.n,
             lp.fee
         );
-        TransferHelper.safeTransferFrom(lp.tokenBase, sender, pair, lp.amountBase);
+        TransferHelper.safeTransferFrom(lp.tokenBase, msg.sender, pair, lp.amountBase);
         IWETH10(WETH).deposit{value: lp.amountQuote}();
         assert(IWETH10(WETH).transfer(pair, lp.amountQuote));
-        amountBase = IDAOfiV1Pair(pair).deposit(to);
+        amountBase = IDAOfiV1Pair(pair).deposit(lp.to);
         // refund dust eth, if any
-        if (msg.value > lp.amountQuote) TransferHelper.safeTransferETH(sender, msg.value - lp.amountQuote);
+        if (msg.value > lp.amountQuote) TransferHelper.safeTransferETH(msg.sender, msg.value - lp.amountQuote);
     }
 
     function removeLiquidity(
