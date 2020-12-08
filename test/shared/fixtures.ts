@@ -15,6 +15,7 @@ export interface DAOfiV1Fixture {
   pair: Contract
   xDAIPair: Contract
   WETH: Contract
+  pairETH: Contract
 }
 
 export async function getFixtureWithParams(
@@ -48,6 +49,11 @@ export async function getFixtureWithParams(
   const pairAddress = await factory.getPair(tokenA.address, tokenB.address, m, n, fee)
   const pair = new Contract(pairAddress, JSON.stringify(DAOfiV1Pair.abi)).connect(wallet)
 
+  // init eth pair
+  await factory.createPair(controller, tokenA.address, WETH.address, tokenA.address, wallet.address, m, n, fee)
+  const pairAddressETH = await factory.getPair(tokenA.address, WETH.address, m, n, fee)
+  const pairETH = new Contract(pairAddressETH, JSON.stringify(DAOfiV1Pair.abi)).connect(wallet)
+
   const tokenBase = tokenA
   const tokenQuote = tokenB
 
@@ -65,6 +71,7 @@ export async function getFixtureWithParams(
     pair,
     xDAIPair,
     WETH,
+    pairETH,
   }
 }
 

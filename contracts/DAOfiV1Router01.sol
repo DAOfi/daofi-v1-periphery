@@ -91,6 +91,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
             lp.n,
             lp.fee
         );
+        require(pair != address(0));
         TransferHelper.safeTransferFrom(lp.tokenBase, msg.sender, pair, lp.amountBase);
         IWETH10(WETH).deposit{value: lp.amountQuote}();
         assert(IWETH10(WETH).transfer(pair, lp.amountQuote));
