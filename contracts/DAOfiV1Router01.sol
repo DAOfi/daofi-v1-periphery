@@ -161,7 +161,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
             factory, lp.tokenBase, lp.tokenQuote, lp.m, lp.n, lp.fee
         ));
         CurveParams memory params = abi.decode(pair.getCurveParams(), (CurveParams));
-        require(lp.sender == params.pairOwner, 'DAOfiV1Router: FORBIDDEN');
+        require(msg.sender == params.pairOwner, 'DAOfiV1Router: FORBIDDEN');
         (amountBase, amountQuote) = pair.withdraw(lp.to);
     }
 
