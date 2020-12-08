@@ -91,7 +91,6 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
             lp.n,
             lp.fee
         );
-        require(pair != address(0));
         TransferHelper.safeTransferFrom(lp.tokenBase, msg.sender, pair, lp.amountBase);
         IWETH10(WETH).deposit{value: lp.amountQuote}();
         assert(IWETH10(WETH).transfer(pair, lp.amountQuote));
@@ -120,7 +119,6 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         CurveParams memory params = abi.decode(pair.getCurveParams(), (CurveParams));
         require(msg.sender == params.pairOwner, 'DAOfiV1Router: FORBIDDEN');
         (amountToken, amountETH) = pair.withdraw(lp.to);
-        TransferHelper.safeTransfer(lp.tokenBase, lp.to, amountToken);
         IWETH10(WETH).withdraw(amountETH);
         TransferHelper.safeTransferETH(lp.to, amountETH);
     }

@@ -142,6 +142,51 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
     expect(reserves[1]).to.eq(zero)
   })
 
+  it('removeLiquidityETH:', async () => {
+    const { router, tokenBase, WETH, pairETH } = routerFixture
+    const baseSupply = expandTo18Decimals(1e9)
+    const quoteReserveFloat = getReserveForStartPrice(10, 1, 1, 1)
+    const quoteReserve = expandTo18Decimals(quoteReserveFloat)
+    const expectedBaseOutput = ethers.BigNumber.from('10000000000000000000')
+    const expectedBaseReserve = baseSupply.sub(expectedBaseOutput)
+
+    await tokenBase.approve(router.address, baseSupply)
+    //await tokenQuote.approve(router.address, quoteReserve)
+    await router.addLiquidityETH({
+      sender: wallet.address,
+      to: wallet.address,
+      tokenBase: tokenBase.address,
+      tokenQuote: WETH.address,
+      amountBase: baseSupply,
+      amountQuote: quoteReserve,
+      m: 1e6,
+      n: 1,
+      fee: 3
+    }, MaxUint256, {value: quoteReserve})
+
+    await expect(router.removeLiquidityETH({
+      sender: wallet.address,
+      to: wallet.address,
+      tokenBase: tokenBase.address,
+      tokenQuote: WETH.address,
+      amountBase: baseSupply,
+      amountQuote: quoteReserve,
+      m: 1e6,
+      n: 1,
+      fee: 3
+    }, MaxUint256))
+      .to.emit(pairETH, 'Withdraw')
+      .withArgs(router.address, expectedBaseReserve, quoteReserve, wallet.address)
+    expect(await tokenBase.balanceOf(wallet.address)).to.eq(baseSupply)
+    expect(await WETH.balanceOf(wallet.address)).to.eq(await WETH.totalSupply())
+    expect(await tokenBase.balanceOf(pairETH.address)).to.eq(zero)
+    expect(await WETH.balanceOf(pairETH.address)).to.eq(zero)
+
+    const reserves = await pairETH.getReserves()
+    expect(reserves[0]).to.eq(zero)
+    expect(reserves[1]).to.eq(zero)
+  })
+
   it('basePrice:', async () => {
     const { tokenBase, tokenQuote, router } = walletFixture
     await addLiquidity(expandTo18Decimals(1e9), expandTo18Decimals(50)) // 50 quote reserve = price 10
