@@ -52,7 +52,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
                 lp.tokenBase,
                 lp.tokenQuote,
                 lp.tokenBase,
-                lp.sender,
+                msg.sender,
                 lp.m,
                 lp.n,
                 lp.fee
