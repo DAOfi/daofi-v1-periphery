@@ -14,6 +14,7 @@ export interface DAOfiV1Fixture {
   router: Contract
   pair: Contract
   xDAIPair: Contract
+  WETH: Contract
 }
 
 export async function getFixtureWithParams(
@@ -25,6 +26,7 @@ export async function getFixtureWithParams(
 ): Promise<DAOfiV1Fixture> {
   const Token = await ethers.getContractFactory("ERC20")
   const XDai = await ethers.getContractFactory("WxDAI")
+  const weth = await ethers.getContractFactory("WETH10")
   const Router = await ethers.getContractFactory("DAOfiV1Router01")
 
   // deploy tokens
@@ -32,6 +34,7 @@ export async function getFixtureWithParams(
   const tokenB =  await Token.deploy(ethers.BigNumber.from('0x033b2e3c9fd0803ce8000000'))
   const xDAI = await XDai.deploy()
   const xDAIPartner = await  await Token.deploy(ethers.BigNumber.from('0x033b2e3c9fd0803ce8000000'))
+  const WETH = await weth.deploy()
 
   // deploy factory
   const factory = await deployContract(wallet, DAOfiV1Factory)
@@ -60,7 +63,8 @@ export async function getFixtureWithParams(
     factory,
     router,
     pair,
-    xDAIPair
+    xDAIPair,
+    WETH,
   }
 }
 
