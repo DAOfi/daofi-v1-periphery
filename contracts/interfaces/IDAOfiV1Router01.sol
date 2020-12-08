@@ -38,31 +38,31 @@ interface IDAOfiV1Router01 {
 
     function factory() external view returns (address);
 
-    function WxDAI() external view returns (address);
+    function WETH() external view returns (address);
 
     function addLiquidity(
         LiquidityParams calldata lp,
         uint deadline
     ) external returns (uint256 amountBase);
 
-    // function addLiquidityXDAI(
-    //     LiquidityParams calldata lp,
-    //     address sender,
-    //     address to,
-    //     uint deadline
-    // ) external payable returns (uint256 amountBase);
+    function addLiquidityETH(
+        LiquidityParams calldata lp,
+        address sender,
+        address to,
+        uint deadline
+    ) external payable returns (uint256 amountBase);
 
     function removeLiquidity(
         LiquidityParams calldata lp,
         uint deadline
     ) external returns (uint256 amountBase, uint256 amountQuote);
 
-    // function removeLiquidityXDAI(
-    //     LiquidityParams calldata lp,
-    //     address sender,
-    //     address to,
-    //     uint deadline
-    // ) external returns (uint256 amountToken, uint256 amountxDAI);
+    function removeLiquidityETH(
+        LiquidityParams calldata lp,
+        address sender,
+        address to,
+        uint deadline
+    ) external returns (uint256 amountToken, uint256 amountETH);
 
     function swapExactTokensForTokens(
         SwapParams calldata sp,

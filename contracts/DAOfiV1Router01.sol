@@ -9,7 +9,7 @@ import 'hardhat/console.sol';
 
 import './interfaces/IDAOfiV1Router01.sol';
 import './interfaces/IERC20.sol';
-import './interfaces/IWxDAI.sol';
+import './interfaces/IWETH10.sol';
 import './libraries/DAOfiV1Library.sol';
 import './libraries/SafeMath.sol';
 
@@ -20,20 +20,20 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
     using SafeMath for uint256;
 
     address public immutable override factory;
-    address public immutable override WxDAI;
+    address public immutable override WETH;
 
     modifier ensure(uint deadline) {
         require(deadline >= block.timestamp, 'DAOfiV1Router: EXPIRED');
         _;
     }
 
-    constructor(address _factory, address _WxDAI) {
+    constructor(address _factory, address _WETH) {
         factory = _factory;
-        WxDAI = _WxDAI;
+        WETH = _WETH;
     }
 
     receive() external payable {
-        assert(msg.sender == WxDAI); // only accept WxDAI via fallback from the WxDAI contract
+        assert(msg.sender == WETH); // only accept WETH via fallback from the WxDAI contract
     }
 
     function addLiquidity(
@@ -67,39 +67,39 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         amountBase = IDAOfiV1Pair(pair).deposit(lp.to);
     }
 
-    // function addLiquidityXDAI(
-    //     LiquidityParams calldata lp,
-    //     address sender,
-    //     address to,
-    //     uint deadline
-    // ) external override payable ensure(deadline) returns (uint256 amountBase) {
-    //     if (IDAOfiV1Factory(factory).getPair(lp.tokenA, WxDAI, lp.m, lp.n, lp.fee) == address(0)) {
-    //         IDAOfiV1Factory(factory).createPair(
-    //             address(this),
-    //             lp.tokenA,
-    //             WxDAI,
-    //             lp.tokenA,
-    //             sender,
-    //             lp.m,
-    //             lp.n,
-    //             lp.fee
-    //         );
-    //     }
-    //     address pair = DAOfiV1Library.pairFor(
-    //         factory,
-    //         lp.tokenA,
-    //         WxDAI,
-    //         lp.m,
-    //         lp.n,
-    //         lp.fee
-    //     );
-    //     TransferHelper.safeTransferFrom(lp.tokenA, sender, pair, lp.amountA);
-    //     IWxDAI(WxDAI).deposit{value: lp.amountB}();
-    //     assert(IWxDAI(WxDAI).transfer(pair, lp.amountB));
-    //     amountBase = IDAOfiV1Pair(pair).deposit(to);
-    //     // refund dust eth, if any
-    //     if (msg.value > lp.amountB) TransferHelper.safeTransferETH(sender, msg.value - lp.amountB);
-    // }
+    function addLiquidityETH(
+        LiquidityParams calldata lp,
+        address sender,
+        address to,
+        uint deadline
+    ) external override payable ensure(deadline) returns (uint256 amountBase) {
+        if (IDAOfiV1Factory(factory).getPair(lp.tokenBase, WETH, lp.m, lp.n, lp.fee) == address(0)) {
+            IDAOfiV1Factory(factory).createPair(
+                address(this),
+                lp.tokenBase,
+                WETH,
+                lp.tokenBase,
+                sender,
+                lp.m,
+                lp.n,
+                lp.fee
+            );
+        }
+        address pair = DAOfiV1Library.pairFor(
+            factory,
+            lp.tokenBase,
+            WETH,
+            lp.m,
+            lp.n,
+            lp.fee
+        );
+        TransferHelper.safeTransferFrom(lp.tokenBase, sender, pair, lp.amountBase);
+        IWETH10(WETH).deposit{value: lp.amountQuote}();
+        assert(IWETH10(WETH).transfer(pair, lp.amountQuote));
+        amountBase = IDAOfiV1Pair(pair).deposit(to);
+        // refund dust eth, if any
+        if (msg.value > lp.amountQuote) TransferHelper.safeTransferETH(sender, msg.value - lp.amountQuote);
+    }
 
     function removeLiquidity(
         LiquidityParams calldata lp,
@@ -113,20 +113,20 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         (amountBase, amountQuote) = pair.withdraw(lp.to);
     }
 
-    // function removeLiquidityXDAI(
-    //     LiquidityParams calldata lp,
-    //     address sender,
-    //     address to,
-    //     uint deadline
-    // ) external override ensure(deadline) returns (uint amountToken, uint amountxDAI) {
-    //     IDAOfiV1Pair pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, lp.tokenA, WxDAI, lp.m, lp.n, lp.fee));
-    //     CurveParams memory params = abi.decode(pair.getCurveParams(), (CurveParams));
-    //     require(sender == params.pairOwner, 'DAOfiV1Router: FORBIDDEN');
-    //     (amountToken, amountxDAI) = pair.withdraw(to);
-    //     TransferHelper.safeTransfer(lp.tokenA, to, amountToken);
-    //     IWxDAI(WxDAI).withdraw(amountxDAI);
-    //     TransferHelper.safeTransferETH(to, amountxDAI);
-    // }
+    function removeLiquidityETH(
+        LiquidityParams calldata lp,
+        address sender,
+        address to,
+        uint deadline
+    ) external override ensure(deadline) returns (uint amountToken, uint amountETH) {
+        IDAOfiV1Pair pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, lp.tokenBase, WETH, lp.m, lp.n, lp.fee));
+        CurveParams memory params = abi.decode(pair.getCurveParams(), (CurveParams));
+        require(sender == params.pairOwner, 'DAOfiV1Router: FORBIDDEN');
+        (amountToken, amountETH) = pair.withdraw(to);
+        TransferHelper.safeTransfer(lp.tokenBase, to, amountToken);
+        IWETH10(WETH).withdraw(amountETH);
+        TransferHelper.safeTransferETH(to, amountETH);
+    }
 
     function swapExactTokensForTokens(
         SwapParams calldata sp,
