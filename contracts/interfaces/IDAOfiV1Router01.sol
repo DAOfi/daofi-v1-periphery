@@ -3,15 +3,6 @@ pragma solidity =0.7.4;
 pragma experimental ABIEncoderV2;
 
 interface IDAOfiV1Router01 {
-    struct CurveParams {
-        address pairOwner;
-        address baseToken;
-        uint32 m;
-        uint32 n;
-        uint32 fee;
-        uint256 s;
-    }
-
     struct SwapParams {
         address sender;
         address to;
@@ -78,27 +69,15 @@ interface IDAOfiV1Router01 {
     //     uint deadline
     // ) external;
 
-    function basePrice(address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+    function basePrice(address tokenBase, address tokenQuote, uint32 m, uint32 n, uint32 fee)
         external view returns (uint256 price);
 
-    function quotePrice(address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+    function quotePrice(address tokenBase, address tokenQuote, uint32 m, uint32 n, uint32 fee)
         external view returns (uint256 price);
 
-    function getBaseOut(uint256 amountQuoteIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+    function getBaseOut(uint256 amountQuoteIn, address tokenBase, address tokenQuote, uint32 m, uint32 n, uint32 fee)
         external view returns (uint256 amountBaseOut);
 
-    function getQuoteOut(uint256 amountBaseIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+    function getQuoteOut(uint256 amountBaseIn, address tokenBase, address tokenQuote, uint32 m, uint32 n, uint32 fee)
         external view returns (uint256 amountQuoteOut);
-
-    function getBaseIn(uint256 amountQuoteOut, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
-        external view returns (uint256 amountBaseIn);
-
-    function getQuoteIn(uint256 amountBaseOut, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
-        external view returns (uint256 amountQuoteIn);
-
-    // function getAmountsOut(uint256 amountIn, SwapParams[] calldata path)
-    //     external view returns (uint256[] memory amounts);
-
-    // function getAmountsIn(uint256 amountOut, SwapParams[] calldata path)
-    //     external view returns (uint256[] memory amounts);
 }

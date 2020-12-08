@@ -14,10 +14,7 @@ import './libraries/DAOfiV1Library.sol';
 import './libraries/SafeMath.sol';
 
 contract DAOfiV1Router01 is IDAOfiV1Router01 {
-    using SafeMath for uint;
-    using SafeMath for uint8;
-    using SafeMath for uint32;
-    using SafeMath for uint256;
+    using SafeMath for *;
 
     address public immutable override factory;
     address public immutable override WETH;
@@ -51,7 +48,6 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
                 address(this),
                 lp.tokenBase,
                 lp.tokenQuote,
-                lp.tokenBase,
                 msg.sender,
                 lp.m,
                 lp.n,
@@ -76,7 +72,6 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
                 address(this),
                 lp.tokenBase,
                 WETH,
-                lp.tokenBase,
                 msg.sender,
                 lp.m,
                 lp.n,
@@ -106,8 +101,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         IDAOfiV1Pair pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(
             factory, lp.tokenBase, lp.tokenQuote, lp.m, lp.n, lp.fee
         ));
-        CurveParams memory params = abi.decode(pair.getCurveParams(), (CurveParams));
-        require(msg.sender == params.pairOwner, 'DAOfiV1Router: FORBIDDEN');
+        require(msg.sender == pair.pairOwner(), 'DAOfiV1Router: FORBIDDEN');
         (amountBase, amountQuote) = pair.withdraw(lp.to);
     }
 
@@ -116,8 +110,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         uint deadline
     ) external override ensure(deadline) returns (uint amountToken, uint amountETH) {
         IDAOfiV1Pair pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, lp.tokenBase, WETH, lp.m, lp.n, lp.fee));
-        CurveParams memory params = abi.decode(pair.getCurveParams(), (CurveParams));
-        require(msg.sender == params.pairOwner, 'DAOfiV1Router: FORBIDDEN');
+        require(msg.sender == pair.pairOwner(), 'DAOfiV1Router: FORBIDDEN');
         (amountToken, amountETH) = pair.withdraw(lp.to);
         IWETH10(WETH).withdraw(amountETH);
         TransferHelper.safeTransferETH(lp.to, amountETH);
@@ -127,37 +120,52 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         SwapParams calldata sp,
         uint deadline
     ) external override ensure(deadline) {
-        address pair = DAOfiV1Library.pairFor(factory, sp.tokenIn, sp.tokenOut, sp.m, sp.n, sp.fee);
+        IDAOfiV1Pair pair = IDAOfiV1Pair(
+            DAOfiV1Library.pairFor(factory, sp.tokenIn, sp.tokenOut, sp.m, sp.n, sp.fee)
+        );
         TransferHelper.safeTransferFrom(
             sp.tokenIn,
             sp.sender,
-            pair,
+            address(pair),
             sp.amountIn
         );
         uint balanceBefore = IERC20(sp.tokenOut).balanceOf(sp.to);
         {
-            CurveParams memory params = abi.decode(IDAOfiV1Pair(pair).getCurveParams(), (CurveParams));
-            if (params.baseToken == sp.tokenOut) {
-                (, uint reserveQuote,) = IDAOfiV1Pair(pair).getReserves();
-                uint amountBaseOut = IDAOfiV1Pair(pair).getBaseOut(
-                    IERC20(sp.tokenIn).balanceOf(address(pair)).sub(reserveQuote).mul(1000 - params.fee) / 1000
+            if (pair.baseToken() == sp.tokenOut) {
+                (, uint reserveQuote) = pair.getReserves();
+                uint amountQuoteIn = IERC20(sp.tokenIn).balanceOf(address(pair)).sub(reserveQuote);
+                uint amountBaseOut = getBaseOut(
+                    amountQuoteIn,
+                    pair.baseToken(),
+                    pair.quoteToken(),
+                    pair.slopeNumerator(),
+                    pair.n(),
+                    pair.fee()
                 );
-                IDAOfiV1Pair(pair).swap(
+                pair.swap(
+                    sp.tokenIn,
+                    sp.tokenOut,
+                    amountQuoteIn,
                     amountBaseOut,
-                    0,
-                    sp.to,
-                    new bytes(0)
+                    sp.to
                 );
             } else {
-                (uint reserveBase,,) = IDAOfiV1Pair(pair).getReserves();
-                uint amountQuoteOut = IDAOfiV1Pair(pair).getQuoteOut(
-                     IERC20(sp.tokenIn).balanceOf(address(pair)).sub(reserveBase).mul(1000 - params.fee) / 1000
+                (uint reserveBase,) = pair.getReserves();
+                uint amountBaseIn = IERC20(sp.tokenIn).balanceOf(address(pair)).sub(reserveBase);
+                uint amountQuoteOut = getQuoteOut(
+                    amountBaseIn,
+                    pair.baseToken(),
+                    pair.quoteToken(),
+                    pair.slopeNumerator(),
+                    pair.n(),
+                    pair.fee()
                 );
-                IDAOfiV1Pair(pair).swap(
-                    0,
+                pair.swap(
+                    sp.tokenIn,
+                    sp.tokenOut,
+                    amountBaseIn,
                     amountQuoteOut,
-                    sp.to,
-                    new bytes(0)
+                    sp.to
                 );
             }
         }
@@ -243,85 +251,31 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
     //     TransferHelper.safeTransferETH(to, amountOut);
     // }
 
-    function basePrice(address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+    function basePrice(address tokenBase, address tokenQuote, uint32 m, uint32 n, uint32 fee)
         public view override returns (uint256 price)
     {
-        price = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).basePrice();
+        price = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenBase, tokenQuote, m, n, fee)).basePrice();
     }
 
-    function quotePrice(address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+    function quotePrice(address tokenBase, address tokenQuote, uint32 m, uint32 n, uint32 fee)
         public view override returns (uint256 price)
     {
-        price = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).quotePrice();
+        price = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenBase, tokenQuote, m, n, fee)).quotePrice();
     }
 
-    function getBaseOut(uint256 amountQuoteIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+    function getBaseOut(uint256 amountQuoteIn, address tokenBase, address tokenQuote, uint32 m, uint32 n, uint32 fee)
         public view override returns (uint256 amountBaseOut)
     {
-        amountQuoteIn = amountQuoteIn.mul(1000 - fee) / 1000;
-        amountBaseOut = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getBaseOut(amountQuoteIn);
+        IDAOfiV1Pair pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenBase, tokenQuote, m, n, fee));
+        amountQuoteIn = amountQuoteIn.mul(1000 - (fee + pair.PLATFORM_FEE())) / 1000;
+        amountBaseOut = pair.getBaseOut(amountQuoteIn);
     }
 
-    function getQuoteOut(uint256 amountBaseIn, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
+    function getQuoteOut(uint256 amountBaseIn, address tokenBase, address tokenQuote, uint32 m, uint32 n, uint32 fee)
         public view override returns (uint256 amountQuoteOut)
     {
-        amountBaseIn = amountBaseIn.mul(1000 - fee) / 1000;
-        amountQuoteOut = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getQuoteOut(amountBaseIn);
+        IDAOfiV1Pair pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenBase, tokenQuote, m, n, fee));
+        amountBaseIn = amountBaseIn.mul(1000 - (fee + pair.PLATFORM_FEE())) / 1000;
+        amountQuoteOut = pair.getQuoteOut(amountBaseIn);
     }
-
-    function getBaseIn(uint256 amountQuoteOut, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
-        public view override returns (uint256 amountBaseIn)
-    {
-        amountQuoteOut = amountQuoteOut.mul(1000 + fee) / 1000;
-        amountBaseIn = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getBaseIn(amountQuoteOut);
-    }
-
-    function getQuoteIn(uint256 amountBaseOut, address tokenA, address tokenB, uint32 m, uint32 n, uint32 fee)
-        public view override returns (uint256 amountQuoteIn)
-    {
-        amountBaseOut = amountBaseOut.mul(1000 + fee) / 1000;
-        amountQuoteIn = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenA, tokenB, m, n, fee)).getQuoteIn(amountBaseOut);
-    }
-
-    // function getAmountsOut(uint256 amountIn, SwapParams[] calldata path)
-    //     public view override returns (uint256[] memory amounts)
-    // {
-    //     require(path.length >= 2, 'DAOfiV1Router: INVALID_PATH');
-    //     amounts = new uint256[](path.length);
-    //     amounts[0] = amountIn;
-    //     for (uint256 i; i < path.length - 1; i++) {
-    //         SwapParams memory spIn = abi.decode(path[i], (SwapParams));
-    //         SwapParams memory spOut = abi.decode(path[i + 1], (SwapParams));
-    //         IDAOfiV1Pair pair = IDAOfiV1Pair(
-    //             DAOfiV1Library.pairFor(factory, spIn.token, spOut.token, spIn.m, spIn.n, spIn.fee)
-    //         );
-    //         CurveParams memory params = abi.decode(pair.getCurveParams(), (CurveParams));
-    //         if (params.baseToken == spOut.token) {
-    //             amounts[i + 1] = pair.getBaseOut(amounts[i].mul(1000 - params.fee) / 1000);
-    //         } else {
-    //             amounts[i + 1] = pair.getQuoteOut(amounts[i].mul(1000 - params.fee) / 1000);
-    //         }
-    //     }
-    // }
-
-    // function getAmountsIn(uint256 amountOut, SwapParams[] calldata path)
-    //     public view override returns (uint256[] memory amounts)
-    // {
-    //     require(path.length >= 2, 'DAOfiV1Router: INVALID_PATH');
-    //     amounts = new uint256[](path.length);
-    //     amounts[amounts.length - 1] = amountOut;
-    //     for (uint i = path.length - 1; i > 0; i--) {
-    //         SwapParams memory spIn = abi.decode(path[i - 1], (SwapParams));
-    //         SwapParams memory spOut = abi.decode(path[i], (SwapParams));
-    //         IDAOfiV1Pair pair = IDAOfiV1Pair(
-    //             DAOfiV1Library.pairFor(factory, spIn.token, spOut.token, spIn.m, spIn.n, spIn.fee)
-    //         );
-    //         CurveParams memory params = abi.decode(pair.getCurveParams(), (CurveParams));
-    //         if (params.baseToken == spOut.token) {
-    //             amounts[i - 1] = pair.getQuoteIn(amounts[i].mul(1000 + params.fee) / 1000);
-    //         } else {
-    //             amounts[i - 1] = pair.getBaseIn(amounts[i].mul(1000 + params.fee) / 1000);
-    //         }
-    //     }
-    // }
 }
