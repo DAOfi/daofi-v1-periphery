@@ -48,7 +48,6 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
                 address(this),
                 lp.tokenBase,
                 lp.tokenQuote,
-                lp.tokenBase,
                 lp.sender,
                 lp.m,
                 lp.n,
@@ -75,7 +74,6 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
                 address(this),
                 lp.tokenBase,
                 WETH,
-                lp.tokenBase,
                 sender,
                 lp.m,
                 lp.n,
@@ -105,8 +103,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         IDAOfiV1Pair pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(
             factory, lp.tokenBase, lp.tokenQuote, lp.m, lp.n, lp.fee
         ));
-        CurveParams memory params = abi.decode(pair.getCurveParams(), (CurveParams));
-        require(msg.sender == params.pairOwner, 'DAOfiV1Router: FORBIDDEN');
+        require(msg.sender == pair.pairOwner, 'DAOfiV1Router: FORBIDDEN');
         (amountBase, amountQuote) = pair.withdraw(lp.to);
     }
 
@@ -117,8 +114,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         uint deadline
     ) external override ensure(deadline) returns (uint amountToken, uint amountETH) {
         IDAOfiV1Pair pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, lp.tokenBase, WETH, lp.m, lp.n, lp.fee));
-        CurveParams memory params = abi.decode(pair.getCurveParams(), (CurveParams));
-        require(sender == params.pairOwner, 'DAOfiV1Router: FORBIDDEN');
+        require(sender == pair.pairOwner, 'DAOfiV1Router: FORBIDDEN');
         (amountToken, amountETH) = pair.withdraw(to);
         TransferHelper.safeTransfer(lp.tokenBase, to, amountToken);
         IWETH10(WETH).withdraw(amountETH);
