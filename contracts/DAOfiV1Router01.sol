@@ -155,6 +155,18 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
     // TODO maintain the original non metatx removal
     function removeLiquidity(
         LiquidityParams calldata lp,
+        uint deadline
+    ) external override ensure(deadline) returns (uint amountBase, uint amountQuote) {
+        IDAOfiV1Pair pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(
+            factory, lp.tokenBase, lp.tokenQuote, lp.m, lp.n, lp.fee
+        ));
+        CurveParams memory params = abi.decode(pair.getCurveParams(), (CurveParams));
+        require(lp.sender == params.pairOwner, 'DAOfiV1Router: FORBIDDEN');
+        (amountBase, amountQuote) = pair.withdraw(lp.to);
+    }
+
+    function removeLiquidityMetaTX(
+        LiquidityParams calldata lp,
         RemoveLiquidityParams calldata rp,
         uint deadline
     ) external override ensure(deadline) returns (uint amountBase, uint amountQuote) {

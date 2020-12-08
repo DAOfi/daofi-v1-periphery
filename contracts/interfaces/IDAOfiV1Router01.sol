@@ -61,6 +61,11 @@ interface IDAOfiV1Router01 {
 
     function removeLiquidity(
         LiquidityParams calldata lp,
+        uint deadline
+    ) external returns (uint256 amountBase, uint256 amountQuote);
+
+    function removeLiquidityMetaTX(
+        LiquidityParams calldata lp,
         RemoveLiquidityParams calldata rp,
         uint deadline
     ) external returns (uint256 amountBase, uint256 amountQuote);
