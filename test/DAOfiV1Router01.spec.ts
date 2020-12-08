@@ -95,7 +95,6 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       nonce: number;
       deadline: number | string;
     }
-
     interface Domain {
       name: string;
       version: string;
@@ -109,9 +108,23 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       { name: "chainId", type: "uint256" },
       { name: "verifyingContract", type: "address" },
     ];
+    
+    const domain: Domain = {
+      name: 'DAOfiV1Router01',
+      version: '1',
+      chainId: 77,
+      verifyingContract: router.address
+    }
 
-    const domain: Domain = { name: 'DAOfiV1Router01', version: '1', chainId: 77, verifyingContract: router.address };
     const nonce = await router.nonces(wallet.address);
+
+    const message: removeLiquidityMessage = {
+      sender: wallet.address,
+      to: wallet.address,
+      nonce: parseInt(nonce.toString()),
+      deadline: MaxUint256.toString()
+    }
+
     const hexNonce = nonce.toHexString()
     //let nonce = res.data.nonce.hex.toString();
     let count = 66 - hexNonce.length
@@ -121,13 +134,6 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
 
     let sender = wallet.address
     let to = wallet.address
-    //
-    const message: removeLiquidityMessage = {
-      sender: wallet.address,
-      to: wallet.address,
-      nonce: nonce,
-      deadline: MaxUint256.toString()
-    };
 
     let typedData = {
       "types": {
@@ -145,65 +151,19 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
         ],
       },
       primaryType: "Permit",
-      domain: { "name": 'DAOfiV1Router01', "version": '1', "chainId": 77, "verifyingContract": router.address },
-      message: {
-        "sender": wallet.address,
-        "to": wallet.address,
-        "nonce": parseInt(nonce.toString()),
-        "deadline": MaxUint256.toString()
-      }
+      domain: domain,
+      message: message
     }
+
     console.log(typedData)
-    let test = {
-      "types":{
-        "EIP712Domain":[
-          {"name":"name","type":"string"},
-          {"name":"version","type":"string"},
-          {"name":"chainId","type":"uint256"},
-          {"name":"verifyingContract","type":"address"}
-        ],"Person":[
-          {"name":"name","type":"string"},
-          {"name":"wallet","type":"address"}
-        ],"Mail":[
-          {"name":"from","type":"Person"},
-          {"name":"to","type":"Person"},
-          {"name":"contents","type":"string"}
-        ]
-      },
-      "primaryType":"Mail",
-      "domain":{
-        "name":"Ether Mail",
-        "version":"1",
-        "chainId":1,
-        "verifyingContract":"0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
-      },
-      "message":{
-        "from":{
-          "name":"Cow",
-          "wallet":"0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826"
-        },
-        "to":{
-          "name":"Bob",
-          "wallet":"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB"
-        },
-        "contents":"Hello, Bob!"
-      }
-    }
-    console.log(nonce)
-    //console.log(test)
-    //const typeDataString = JSON.stringify(typedData)
-    //console.log(typeDataString)
-    const params = JSON.stringify([wallet.address, typedData])
-    let fruits: any[] = [wallet.address, typedData];
+
     const result = await ethers.provider.send('eth_signTypedData', [wallet.address, typedData])
     const resultFormat = {
       r: result.slice(0, 66),
       s: '0x' + result.slice(66, 130),
       v: parseInt(result.slice(130, 132), 16),
     }
-    //const result = await send(wallet.provider, 'eth_signTypedData', fruits)
     console.log(resultFormat)
-    console.log(wallet.address)
 
     let typhash = await router.METATX_TYPEHASH()
     console.log(typhash)
