@@ -77,7 +77,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       .withArgs(router.address, expectedBaseReserve, quoteReserve, expectedBaseOutput, wallet.address)
   })
 
-  it.only('removeLiquidity:', async () => {
+  it('removeLiquidityMetaTX:', async () => {
     const { router, tokenBase, tokenQuote, pair } = routerFixture
     const baseSupply = expandTo18Decimals(1e9)
     const quoteReserveFloat = getReserveForStartPrice(10, 1, 1, 1)
@@ -85,9 +85,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
     const expectedBaseOutput = ethers.BigNumber.from('10000000000000000000')
     const expectedBaseReserve = baseSupply.sub(expectedBaseOutput)
 
-    // TODO create 712 signature
-    const DOMAIN_SEPARATOR = await router.DOMAIN_SEPARATOR();
-    console.log(DOMAIN_SEPARATOR)
+    expect(await router.DOMAIN_SEPARATOR()).to.eq('0x334dd47b82b7f5dfa379b03840e6821c0d72e997fb91c5d9897528e62d0f1d09')
 
     interface removeLiquidityMessage {
       sender: string;
@@ -108,7 +106,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       { name: "chainId", type: "uint256" },
       { name: "verifyingContract", type: "address" },
     ];
-    
+
     const domain: Domain = {
       name: 'DAOfiV1Router01',
       version: '1',
@@ -126,11 +124,9 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
     }
 
     const hexNonce = nonce.toHexString()
-    //let nonce = res.data.nonce.hex.toString();
     let count = 66 - hexNonce.length
     let formatNonce = `${'0x'}${zeros(count)}${hexNonce.substr(2)}`
-
-    console.log('nonce: '+formatNonce)
+    //console.log('nonce: '+formatNonce)
 
     let sender = wallet.address
     let to = wallet.address
@@ -143,19 +139,17 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
           {"name":"chainId","type":"uint256"},
           {"name":"verifyingContract","type":"address"}
         ],
-        "Permit": [
+        "RemoveLiquidity": [
           { "name": "sender", "type": "address" },
           { "name": "to", "type": "address" },
           { "name": "nonce", "type": "uint256" },
           { "name": "deadline", "type": "uint256" }
         ],
       },
-      primaryType: "Permit",
+      primaryType: "RemoveLiquidity",
       domain: domain,
       message: message
     }
-
-    console.log(typedData)
 
     const result = await ethers.provider.send('eth_signTypedData', [wallet.address, typedData])
     const resultFormat = {
@@ -163,10 +157,8 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       s: '0x' + result.slice(66, 130),
       v: parseInt(result.slice(130, 132), 16),
     }
-    console.log(resultFormat)
 
-    let typhash = await router.METATX_TYPEHASH()
-    console.log(typhash)
+    expect(await router.REMOVELIQUIDITY_TYPEHASH()).to.eq('0xa18a978269f0898e183ef7e956ef1c89ee5b161a5a686d8d42efca0109ed88c7')
 
     await tokenBase.approve(router.address, baseSupply)
     await tokenQuote.approve(router.address, quoteReserve)

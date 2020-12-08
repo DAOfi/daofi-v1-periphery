@@ -24,8 +24,8 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
     address public immutable override WxDAI;
 
     bytes32 public DOMAIN_SEPARATOR;
-    // bytes32 public constant METATX_TYPEHASH = keccak256("Permit(address holder,address spender,uint256 nonce,uint256 expiry,bool allowed)");
-    bytes32 public METATX_TYPEHASH;
+    // bytes32 public constant REMOVELIQUIDITY_METATX_TYPEHASH = keccak256("RemoveLiquidity(address sender,address to,uint256 nonce,uint256 deadline)");
+    bytes32 public REMOVELIQUIDITY_TYPEHASH;
     mapping(address => uint256) public nonces;
     string public constant version = "1";
 
@@ -38,6 +38,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         factory = _factory;
         WxDAI = _WxDAI;
         require(_chainId != 0);
+        // TODO: Can use EIP712 contract for this
         DOMAIN_SEPARATOR = keccak256(
             abi.encode(
                 keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
@@ -47,7 +48,8 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
                 address(this)
             )
         );
-        METATX_TYPEHASH = keccak256("Permit(address sender,address to,uint256 nonce,uint256 deadline)");
+        // TODO: Can hardcode this
+        REMOVELIQUIDITY_TYPEHASH = keccak256("RemoveLiquidity(address sender,address to,uint256 nonce,uint256 deadline)");
     }
 
     receive() external payable {
@@ -156,16 +158,6 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         RemoveLiquidityParams calldata rp,
         uint deadline
     ) external override ensure(deadline) returns (uint amountBase, uint amountQuote) {
-        // bytes memory data = abi.encode(
-        //     lp.sender,
-        //     lp.to,
-        //     deadline,
-        //     rp.nonce
-        // );
-        // require(
-        //     EIP712.recover(DOMAIN_SEPARATOR, rp.v, rp.r, rp.s, data) == lp.sender,
-        //     "DAOfiV1Router: invalid signature"
-        // );
         require(lp.sender != address(0), "DAOfiV1Router: invalid spender");
         require(lp.to != address(0), "DAOfiV1Router: invalid to address");
         require(rp.v == 27 || rp.v == 28, "DAOfiV1Router: invalid v");
@@ -175,7 +167,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
             abi.encodePacked(
                 "\x19\x01",
                 DOMAIN_SEPARATOR,
-                keccak256(abi.encode(METATX_TYPEHASH, lp.sender, lp.to, rp.nonce, deadline))
+                keccak256(abi.encode(REMOVELIQUIDITY_TYPEHASH, lp.sender, lp.to, rp.nonce, deadline))
             )
         );
 
