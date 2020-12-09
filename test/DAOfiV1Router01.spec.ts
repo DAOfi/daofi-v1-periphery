@@ -142,7 +142,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
     expect(reserves[1]).to.eq(zero)
   })
 
-  it.skip('removeLiquidityETH:', async () => {
+  it.only('removeLiquidityETH:', async () => {
     const { router, tokenBase, WETH, pairETH } = routerFixture
     const baseSupply = expandTo18Decimals(1e9)
     const quoteReserveFloat = getReserveForStartPrice(10, 1e3, 1)

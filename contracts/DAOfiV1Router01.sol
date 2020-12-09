@@ -102,7 +102,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
             factory, lp.tokenBase, lp.tokenQuote, lp.m, lp.n, lp.fee
         ));
         require(msg.sender == pair.pairOwner(), 'DAOfiV1Router: FORBIDDEN');
-        (amountBase, amountQuote) = pair.withdraw(lp.to);
+        (amountBase, amountQuote) = pair.withdraw(lp.to, false);
     }
 
     function removeLiquidityETH(
@@ -111,7 +111,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
     ) external override ensure(deadline) returns (uint amountToken, uint amountETH) {
         IDAOfiV1Pair pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, lp.tokenBase, WETH, lp.m, lp.n, lp.fee));
         require(msg.sender == pair.pairOwner(), 'DAOfiV1Router: FORBIDDEN');
-        (amountToken, amountETH) = pair.withdraw(lp.to);
+        (amountToken, amountETH) = pair.withdraw(lp.to, true);
         IWETH10(WETH).withdraw(amountETH);
         TransferHelper.safeTransferETH(lp.to, amountETH);
     }
