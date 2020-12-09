@@ -121,7 +121,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         uint deadline
     ) external override ensure(deadline) {
         IDAOfiV1Pair pair = IDAOfiV1Pair(
-            DAOfiV1Library.pairFor(factory, sp.tokenIn, sp.tokenOut, sp.m, sp.n, sp.fee)
+            DAOfiV1Library.pairFor(factory, sp.tokenBase, sp.tokenQuote, sp.m, sp.n, sp.fee)
         );
         TransferHelper.safeTransferFrom(
             sp.tokenIn,

@@ -10,6 +10,8 @@ interface IDAOfiV1Router01 {
         address tokenOut;
         uint256 amountIn;
         uint256 amountOut;
+        address tokenBase;
+        address tokenQuote;
         uint32 m;
         uint32 n;
         uint32 fee;
