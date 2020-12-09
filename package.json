@@ -15,7 +15,7 @@
     "contracts"
   ],
   "dependencies": {
-    "@daofi/daofi-v1-core": "0.1.0-mainnet.1",
+    "@daofi/daofi-v1-core": "0.1.0-mainnet.2",
     "@uniswap/lib": "2.1.0"
   },
   "devDependencies": {
