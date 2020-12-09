@@ -142,7 +142,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
     expect(reserves[1]).to.eq(zero)
   })
 
-  it.only('removeLiquidityETH:', async () => {
+  it('removeLiquidityETH:', async () => {
     const { router, tokenBase, WETH, pairETH } = routerFixture
     const baseSupply = expandTo18Decimals(1e9)
     const quoteReserveFloat = getReserveForStartPrice(10, 1e3, 1)
@@ -176,7 +176,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       fee: 3
     }, MaxUint256))
       .to.emit(pairETH, 'Withdraw')
-      .withArgs(router.address, expectedBaseReserve, quoteReserve, wallet.address)
+      .withArgs(router.address, expectedBaseReserve, quoteReserve, router.address)
     expect(await tokenBase.balanceOf(wallet.address)).to.eq(baseSupply)
     expect(await WETH.balanceOf(wallet.address)).to.eq(await WETH.totalSupply())
     expect(await tokenBase.balanceOf(pairETH.address)).to.eq(zero)
