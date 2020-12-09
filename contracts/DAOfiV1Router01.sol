@@ -111,7 +111,8 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
     ) external override ensure(deadline) returns (uint amountToken, uint amountETH) {
         IDAOfiV1Pair pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, lp.tokenBase, WETH, lp.m, lp.n, lp.fee));
         require(msg.sender == pair.pairOwner(), 'DAOfiV1Router: FORBIDDEN');
-        (amountToken, amountETH) = pair.withdraw(lp.to);
+        (amountToken, amountETH) = pair.withdraw(address(this));
+        assert(IERC20(lp.tokenBase).transfer(lp.to, amountToken));
         IWETH10(WETH).withdraw(amountETH);
         TransferHelper.safeTransferETH(lp.to, amountETH);
     }
