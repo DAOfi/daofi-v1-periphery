@@ -51,7 +51,7 @@ async function main() {
   //   tokenQuote: tokenB.address,
   //   amountBase: baseSupply,
   //   amountQuote: zero,
-  //   m: 1e6,
+  //   m: 1e3,
   //   n: 1,
   //   fee: 3
   // }, ethers.constants.MaxUint256, overrides)
@@ -64,7 +64,7 @@ async function main() {
 
   const quoteAmountIn = ethers.utils.parseEther('50')
   //const baseAmountOut = ethers.BigNumber.from('9984000000000000000')
-  const baseAmountOut = await router.getBaseOut(quoteAmountIn, tokenA.address, tokenB.address, 1e6, 1, 3, overrides)
+  const baseAmountOut = await router.getBaseOut(quoteAmountIn, tokenA.address, tokenB.address, 1e3, 1, 3, overrides)
   console.log('expected output:', baseAmountOut)
 
   await tokenB.approve(router.address, quoteAmountIn)
@@ -75,7 +75,7 @@ async function main() {
     tokenOut: tokenA.address,
     amountIn: quoteAmountIn,
     amountOut: baseAmountOut,
-    m: 1e6,
+    m: 1e3,
     n: 1,
     fee: 3
   }, ethers.constants.MaxUint256, overrides)
