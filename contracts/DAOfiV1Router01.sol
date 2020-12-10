@@ -176,42 +176,42 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         );
     }
 
-    // function swapExactXDAIForTokens(
-    //     uint amountOutMin,
-    //     bytes[] calldata path,
-    //     address to,
-    //     uint deadline
-    // ) external override payable ensure(deadline) {
-    //     SwapParams memory sp0 = abi.decode(path[0], (SwapParams));
-    //     require(sp0.token == WxDAI, 'DAOfiV1Router: INVALID_PATH');
-    //     SwapParams memory sp1 = abi.decode(path[1], (SwapParams));
-    //     IWxDAI(WxDAI).deposit{value: msg.value}();
-    //     assert(IWxDAI(WxDAI).transfer(
-    //         DAOfiV1Library.pairFor(factory, sp0.token, sp1.token, sp0.m, sp0.n, sp0.fee),
-    //         msg.value
-    //     ));
-    //     SwapParams memory spFinal = abi.decode(path[path.length - 1], (SwapParams));
-    //     uint balanceBefore = IERC20(spFinal.token).balanceOf(to);
-    //     for (uint i; i < path.length - 1; i++) {
-    //         (address pairOut, uint256 amountBaseOut, uint256 amountQuoteOut) = _swap(path[i], path[i + 1]);
-    //         SwapParams memory spOut = abi.decode(path[i + 1], (SwapParams));
-    //         address _to = to;
-    //         if (i < path.length - 2) {
-    //             SwapParams memory spNext = abi.decode(path[i + 2], (SwapParams));
-    //             _to = DAOfiV1Library.pairFor(factory, spOut.token, spNext.token, spOut.m, spOut.n, spOut.fee);
-    //         }
-    //         IDAOfiV1Pair(pairOut).swap(
-    //             amountBaseOut,
-    //             amountQuoteOut,
-    //             _to,
-    //             new bytes(0)
-    //         );
-    //     }
-    //     require(
-    //         IERC20(spFinal.token).balanceOf(to).sub(balanceBefore) >= amountOutMin,
-    //         'DAOfiV1Router: INSUFFICIENT_OUTPUT_AMOUNT'
-    //     );
-    // }
+    function swapExactETHForTokens(
+        SwapParams calldata sp,
+        uint deadline
+    ) external payable ensure(deadline) {
+        require(sp.tokenQuote == WETH, 'DAOfiV1Router: INVALID TOKEN, WETH MUST BE QUOTE');
+        require(sp.tokenIn == WETH, 'DAOfiV1Router: INVALID TOKEN, WETH MUST BE TOKEN IN');
+        IDAOfiV1Pair pair = IDAOfiV1Pair(
+            DAOfiV1Library.pairFor(factory, sp.tokenBase, sp.tokenQuote, sp.m, sp.n, sp.fee)
+        );
+        IWETH10(WETH).deposit{value: msg.value}();
+        assert(IWETH10(WETH).transfer(address(pair), msg.value));
+        uint balanceBefore = IERC20(sp.tokenOut).balanceOf(sp.to);
+
+        (, uint reserveQuote) = pair.getReserves();
+        uint amountQuoteIn = IWETH10(WETH).balanceOf(address(pair)).sub(reserveQuote);
+        uint amountBaseOut = getBaseOut(
+            amountQuoteIn,
+            pair.baseToken(),
+            pair.quoteToken(),
+            pair.slopeNumerator(),
+            pair.n(),
+            pair.fee()
+        );
+        pair.swap(
+            sp.tokenIn,
+            sp.tokenOut,
+            amountQuoteIn,
+            amountBaseOut,
+            sp.to
+        );
+
+        require(
+            IERC20(sp.tokenOut).balanceOf(sp.to).sub(balanceBefore) >= sp.amountOut,
+            'DAOfiV1Router: INSUFFICIENT_OUTPUT_AMOUNT'
+        );
+    }
 
     // function swapExactTokensForXDAI(
     //     uint amountIn,
