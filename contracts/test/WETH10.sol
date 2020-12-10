@@ -4,6 +4,7 @@
 pragma solidity =0.7.4;
 
 import "../interfaces/IWETH10.sol";
+import 'hardhat/console.sol';
 
 
 interface TransferReceiver {
@@ -255,7 +256,7 @@ contract WETH10 is IWETH10 {
         } else { // Transfer
             balanceOf[to] += value;
         }
-
+        
         emit Transfer(msg.sender, to, value);
 
         return true;

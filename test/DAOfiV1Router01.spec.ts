@@ -300,4 +300,47 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       .to.emit(pairETH, 'Swap')
       .withArgs(router.address, WETH.address, tokenBase.address, quoteAmountIn, baseAmountOut, wallet.address)
   })
+
+  it('swap: Tokens for Ether', async () => {
+    const { router, tokenBase, WETH, pairETH } = routerFixture
+    const baseSupply = expandTo18Decimals(1e9)
+    const WETHSupply = expandTo18Decimals(10)
+
+    await tokenBase.approve(router.address, baseSupply)
+    await WETH.deposit({value: WETHSupply})
+    await WETH.approve(router.address, WETHSupply)
+    await router.addLiquidity({
+      sender: wallet.address,
+      to: wallet.address,
+      tokenBase: tokenBase.address,
+      tokenQuote: WETH.address,
+      amountBase: baseSupply,
+      amountQuote: WETHSupply,
+      m: 1e3,
+      n: 1,
+      fee: 3
+    }, MaxUint256)
+
+    const baseAmountIn = expandTo18Decimals(10)
+    const quoteAmountOut = await router.getQuoteOut(baseAmountIn, tokenBase.address, WETH.address, 1e3, 1, 3)
+    await tokenBase.approve(router.address, baseAmountIn)
+
+    await expect(router.swapExactTokensForETH({
+      sender: wallet.address,
+      to: wallet.address,
+      tokenIn: tokenBase.address,
+      tokenOut: WETH.address,
+      amountIn: baseAmountIn,
+      amountOut: quoteAmountOut,
+      tokenBase: tokenBase.address,
+      tokenQuote: WETH.address,
+      m: 1e3,
+      n: 1,
+      fee: 3
+    }, MaxUint256))
+      .to.emit(WETH, 'Transfer')
+      .withArgs(pairETH.address, router.address, quoteAmountOut)
+      .to.emit(pairETH, 'Swap')
+      .withArgs(router.address, tokenBase.address, WETH.address, baseAmountIn, quoteAmountOut, router.address)
+  })
 })
