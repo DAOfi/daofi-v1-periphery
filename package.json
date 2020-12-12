@@ -45,7 +45,8 @@
     "compile": "npx hardhat compile && ts-node scripts/hashContract.ts",
     "pretest": "yarn compile",
     "test": "npx hardhat test",
-    "prepublishOnly": "yarn compile"
+    "prepublishOnly": "yarn compile",
+    "deploy": "ts-node scripts/deploy.ts"
   },
   "license": "GPL-3.0-or-later"
 }
