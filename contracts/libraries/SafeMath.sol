@@ -1,19 +1,66 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: SEE LICENSE IN LICENSE
 pragma solidity =0.7.4;
 pragma experimental ABIEncoderV2;
 
-// a library for performing overflow-safe math, courtesy of DappHub (https://github.com/dapphub/ds-math)
-
+/**
+ * @dev This library supports basic math operations with overflow/underflow protection.
+ */
 library SafeMath {
-    function add(uint x, uint y) internal pure returns (uint z) {
-        require((z = x + y) >= x, 'ds-math-add-overflow');
+    /**
+     * @dev returns the sum of _x and _y, reverts if the calculation overflows
+     *
+     * @param _x   value 1
+     * @param _y   value 2
+     *
+     * @return sum
+     */
+    function add(uint256 _x, uint256 _y) internal pure returns (uint256) {
+        uint256 z = _x + _y;
+        require(z >= _x, "ERR_OVERFLOW");
+        return z;
     }
 
-    function sub(uint x, uint y) internal pure returns (uint z) {
-        require((z = x - y) <= x, 'ds-math-sub-underflow');
+    /**
+     * @dev returns the difference of _x minus _y, reverts if the calculation underflows
+     *
+     * @param _x   minuend
+     * @param _y   subtrahend
+     *
+     * @return difference
+     */
+    function sub(uint256 _x, uint256 _y) internal pure returns (uint256) {
+        require(_x >= _y, "ERR_UNDERFLOW");
+        return _x - _y;
     }
 
-    function mul(uint x, uint y) internal pure returns (uint z) {
-        require(y == 0 || (z = x * y) / y == x, 'ds-math-mul-overflow');
+    /**
+     * @dev returns the product of multiplying _x by _y, reverts if the calculation overflows
+     *
+     * @param _x   factor 1
+     * @param _y   factor 2
+     *
+     * @return product
+     */
+    function mul(uint256 _x, uint256 _y) internal pure returns (uint256) {
+        // gas optimization
+        if (_x == 0) return 0;
+
+        uint256 z = _x * _y;
+        require(z / _x == _y, "ERR_OVERFLOW");
+        return z;
+    }
+
+    /**
+     * @dev Integer division of two numbers truncating the quotient, reverts on division by zero.
+     *
+     * @param _x   dividend
+     * @param _y   divisor
+     *
+     * @return quotient
+     */
+    function div(uint256 _x, uint256 _y) internal pure returns (uint256) {
+        require(_y > 0, "ERR_DIVIDE_BY_ZERO");
+        uint256 c = _x / _y;
+        return c;
     }
 }

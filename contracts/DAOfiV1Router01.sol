@@ -19,20 +19,42 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
     address public immutable override factory;
     address public immutable override WETH;
 
+    /**
+    * @dev Modifier to add timeout to specific functions.
+    *
+    * @param deadline the block.timestamp to check against
+    */
     modifier ensure(uint deadline) {
         require(deadline >= block.timestamp, 'DAOfiV1Router: EXPIRED');
         _;
     }
 
+    /**
+    * @dev Create the router given a factory and WETH contract.
+    *
+    * @param _factory address of the core factory
+    * @param _WETH address of the WETH10 contract
+    */
     constructor(address _factory, address _WETH) {
         factory = _factory;
         WETH = _WETH;
     }
 
+    /**
+    * @dev Fallback to only accept WETH via WETH contract fallback.
+    */
     receive() external payable {
-        assert(msg.sender == WETH); // only accept WETH via fallback from the WxDAI contract
+        assert(msg.sender == WETH); // only accept WETH via fallback from the WETH contract
     }
 
+    /**
+    * @dev Method for adding initial liquidity to a pair.
+    *
+    * @param lp Liquidity params, see IDAOfiV1Router.sol for details
+    * @param deadline block timestamp
+    *
+    * @return amountBase the initial supply of base token
+    */
     function addLiquidity(
         LiquidityParams calldata lp,
         uint deadline
@@ -40,7 +62,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         if (IDAOfiV1Factory(factory).getPair(
             lp.tokenBase,
             lp.tokenQuote,
-            lp.m,
+            lp.slopeNumerator,
             lp.n,
             lp.fee
         ) == address(0)) {
@@ -49,13 +71,13 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
                 lp.tokenBase,
                 lp.tokenQuote,
                 msg.sender,
-                lp.m,
+                lp.slopeNumerator,
                 lp.n,
                 lp.fee
             );
         }
         address pair = DAOfiV1Library.pairFor(
-            factory, lp.tokenBase, lp.tokenQuote, lp.m, lp.n, lp.fee
+            factory, lp.tokenBase, lp.tokenQuote, lp.slopeNumerator, lp.n, lp.fee
         );
 
         TransferHelper.safeTransferFrom(lp.tokenBase, lp.sender, pair, lp.amountBase);
@@ -63,17 +85,26 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         amountBase = IDAOfiV1Pair(pair).deposit(lp.to);
     }
 
+    /**
+    * @dev Method for adding initial liquidity to a pair.
+    * Used only for pairs where ETH is the quote token.
+    *
+    * @param lp Liquidity params, see IDAOfiV1Router.sol for details
+    * @param deadline block timestamp
+    *
+    * @return amountBase the initial supply of base token
+    */
     function addLiquidityETH(
         LiquidityParams calldata lp,
         uint deadline
     ) external override payable ensure(deadline) returns (uint256 amountBase) {
-        if (IDAOfiV1Factory(factory).getPair(lp.tokenBase, WETH, lp.m, lp.n, lp.fee) == address(0)) {
+        if (IDAOfiV1Factory(factory).getPair(lp.tokenBase, WETH, lp.slopeNumerator, lp.n, lp.fee) == address(0)) {
             IDAOfiV1Factory(factory).createPair(
                 address(this),
                 lp.tokenBase,
                 WETH,
                 msg.sender,
-                lp.m,
+                lp.slopeNumerator,
                 lp.n,
                 lp.fee
             );
@@ -82,7 +113,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
             factory,
             lp.tokenBase,
             WETH,
-            lp.m,
+            lp.slopeNumerator,
             lp.n,
             lp.fee
         );
@@ -94,22 +125,41 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         if (msg.value > lp.amountQuote) TransferHelper.safeTransferETH(msg.sender, msg.value - lp.amountQuote);
     }
 
+    /**
+    * @dev Method for removing the liquidity in a pair, effecitvely closing the pair to more trading.
+    *
+    * @param lp Liquidity params, see IDAOfiV1Router.sol for details
+    * @param deadline block timestamp
+    *
+    * @return amountBase the amount of base token withdrawn
+    * @return amountQuote the amount of quote token withdrawn
+    */
     function removeLiquidity(
         LiquidityParams calldata lp,
         uint deadline
     ) external override ensure(deadline) returns (uint amountBase, uint amountQuote) {
         IDAOfiV1Pair pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(
-            factory, lp.tokenBase, lp.tokenQuote, lp.m, lp.n, lp.fee
+            factory, lp.tokenBase, lp.tokenQuote, lp.slopeNumerator, lp.n, lp.fee
         ));
         require(msg.sender == pair.pairOwner(), 'DAOfiV1Router: FORBIDDEN');
         (amountBase, amountQuote) = pair.withdraw(lp.to);
     }
 
+    /**
+    * @dev Method for removing the liquidity in a pair, effecitvely closing the pair to more trading.
+    * Used only for pairs where ETH is the quote token.
+    *
+    * @param lp Liquidity params, see IDAOfiV1Router.sol for details
+    * @param deadline block timestamp
+    *
+    * @return amountToken the amount of base token withdrawn
+    * @return amountETH the amount of quote token withdrawn
+    */
     function removeLiquidityETH(
         LiquidityParams calldata lp,
         uint deadline
     ) external override ensure(deadline) returns (uint amountToken, uint amountETH) {
-        IDAOfiV1Pair pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, lp.tokenBase, WETH, lp.m, lp.n, lp.fee));
+        IDAOfiV1Pair pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, lp.tokenBase, WETH, lp.slopeNumerator, lp.n, lp.fee));
         require(msg.sender == pair.pairOwner(), 'DAOfiV1Router: FORBIDDEN');
         (amountToken, amountETH) = pair.withdraw(address(this));
         assert(IERC20(lp.tokenBase).transfer(lp.to, amountToken));
@@ -117,12 +167,18 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         TransferHelper.safeTransferETH(lp.to, amountETH);
     }
 
+    /**
+    * @dev Exchanges tokens in for tokens out.
+    *
+    * @param sp Swap params, see IDAOfiV1Router.sol for details
+    * @param deadline block timestamp
+    */
     function swapExactTokensForTokens(
         SwapParams calldata sp,
         uint deadline
     ) external override ensure(deadline) {
         IDAOfiV1Pair pair = IDAOfiV1Pair(
-            DAOfiV1Library.pairFor(factory, sp.tokenBase, sp.tokenQuote, sp.m, sp.n, sp.fee)
+            DAOfiV1Library.pairFor(factory, sp.tokenBase, sp.tokenQuote, sp.slopeNumerator, sp.n, sp.fee)
         );
         TransferHelper.safeTransferFrom(
             sp.tokenIn,
@@ -176,6 +232,13 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         );
     }
 
+    /**
+    * @dev Exchanges ETH in for tokens out. Used only for pairs where ETH is
+    * the quote token.
+    *
+    * @param sp Swap params, see IDAOfiV1Router.sol for details
+    * @param deadline block timestamp
+    */
     function swapExactETHForTokens(
         SwapParams calldata sp,
         uint deadline
@@ -183,7 +246,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         require(sp.tokenQuote == WETH, 'DAOfiV1Router: INVALID TOKEN, WETH MUST BE QUOTE');
         require(sp.tokenIn == WETH, 'DAOfiV1Router: INVALID TOKEN, WETH MUST BE TOKEN IN');
         IDAOfiV1Pair pair = IDAOfiV1Pair(
-            DAOfiV1Library.pairFor(factory, sp.tokenBase, sp.tokenQuote, sp.m, sp.n, sp.fee)
+            DAOfiV1Library.pairFor(factory, sp.tokenBase, sp.tokenQuote, sp.slopeNumerator, sp.n, sp.fee)
         );
         IWETH10(WETH).deposit{value: msg.value}();
         assert(IWETH10(WETH).transfer(address(pair), msg.value));
@@ -211,6 +274,13 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         );
     }
 
+    /**
+    * @dev Exchanges tokens in for ETH out. Used only for pairs where ETH is
+    * the quote token.
+    *
+    * @param sp Swap params, see IDAOfiV1Router.sol for details
+    * @param deadline block timestamp
+    */
     function swapExactTokensForETH(
         SwapParams calldata sp,
         uint deadline
@@ -218,7 +288,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         require(sp.tokenQuote == WETH, 'DAOfiV1Router: INVALID TOKEN, WETH MUST BE QUOTE');
         require(sp.tokenOut == WETH, 'DAOfiV1Router: INVALID TOKEN, WETH MUST BE TOKEN OUT');
         IDAOfiV1Pair pair = IDAOfiV1Pair(
-            DAOfiV1Library.pairFor(factory, sp.tokenBase, sp.tokenQuote, sp.m, sp.n, sp.fee)
+            DAOfiV1Library.pairFor(factory, sp.tokenBase, sp.tokenQuote, sp.slopeNumerator, sp.n, sp.fee)
         );
         TransferHelper.safeTransferFrom(
             sp.tokenIn,
@@ -253,30 +323,76 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         TransferHelper.safeTransferETH(sp.to, amountOut);
     }
 
-    function basePrice(address tokenBase, address tokenQuote, uint32 m, uint32 n, uint32 fee)
+    /**
+    * @dev Get the price of 1 base token.
+    *
+    * @param tokenBase the pair's base token address
+    * @param tokenQuote the pair's quote token address
+    * @param slopeNumerator the numerator of the pair's m parameter
+    * @param n the pair's n parameter
+    * @param fee the pair's fee parameter
+    *
+    * @return price the price in quote tokens
+    */
+    function basePrice(address tokenBase, address tokenQuote, uint32 slopeNumerator, uint32 n, uint32 fee)
         public view override returns (uint256 price)
     {
-        price = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenBase, tokenQuote, m, n, fee)).basePrice();
+        price = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenBase, tokenQuote, slopeNumerator, n, fee)).basePrice();
     }
 
-    function quotePrice(address tokenBase, address tokenQuote, uint32 m, uint32 n, uint32 fee)
+    /**
+    * @dev Get the price of 1 quote token.
+    *
+    * @param tokenBase the pair's base token address
+    * @param tokenQuote the pair's quote token address
+    * @param slopeNumerator the numerator of the pair's m parameter
+    * @param n the pair's n parameter
+    * @param fee the pair's fee parameter
+    *
+    * @return price the price in base tokens
+    */
+    function quotePrice(address tokenBase, address tokenQuote, uint32 slopeNumerator, uint32 n, uint32 fee)
         public view override returns (uint256 price)
     {
-        price = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenBase, tokenQuote, m, n, fee)).quotePrice();
+        price = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenBase, tokenQuote, slopeNumerator, n, fee)).quotePrice();
     }
 
-    function getBaseOut(uint256 amountQuoteIn, address tokenBase, address tokenQuote, uint32 m, uint32 n, uint32 fee)
+    /**
+    * @dev Get the amount of base tokens returned for a given amount of quote tokens, including fees.
+    *
+    * @param amountQuoteIn the amount of quote tokens being swapped
+    * @param tokenBase the pair's base token address
+    * @param tokenQuote the pair's quote token address
+    * @param slopeNumerator the numerator of the pair's m parameter
+    * @param n the pair's n parameter
+    * @param fee the pair's fee parameter
+    *
+    * @return amountBaseOut the amount of base token returned
+    */
+    function getBaseOut(uint256 amountQuoteIn, address tokenBase, address tokenQuote, uint32 slopeNumerator, uint32 n, uint32 fee)
         public view override returns (uint256 amountBaseOut)
     {
-        IDAOfiV1Pair pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenBase, tokenQuote, m, n, fee));
+        IDAOfiV1Pair pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenBase, tokenQuote, slopeNumerator, n, fee));
         amountQuoteIn = amountQuoteIn.mul(1000 - (fee + pair.PLATFORM_FEE())) / 1000;
         amountBaseOut = pair.getBaseOut(amountQuoteIn);
     }
 
-    function getQuoteOut(uint256 amountBaseIn, address tokenBase, address tokenQuote, uint32 m, uint32 n, uint32 fee)
+    /**
+    * @dev Get the amount of quote tokens returned for a given amount of base tokens, including fees.
+    *
+    * @param amountBaseIn the amount of base tokens being swapped
+    * @param tokenBase the pair's base token address
+    * @param tokenQuote the pair's quote token address
+    * @param slopeNumerator the numerator of the pair's m parameter
+    * @param n the pair's n parameter
+    * @param fee the pair's fee parameter
+    *
+    * @return amountQuoteOut the amount of quote token returned
+    */
+    function getQuoteOut(uint256 amountBaseIn, address tokenBase, address tokenQuote, uint32 slopeNumerator, uint32 n, uint32 fee)
         public view override returns (uint256 amountQuoteOut)
     {
-        IDAOfiV1Pair pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenBase, tokenQuote, m, n, fee));
+        IDAOfiV1Pair pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenBase, tokenQuote, slopeNumerator, n, fee));
         amountBaseIn = amountBaseIn.mul(1000 - (fee + pair.PLATFORM_FEE())) / 1000;
         amountQuoteOut = pair.getQuoteOut(amountBaseIn);
     }
