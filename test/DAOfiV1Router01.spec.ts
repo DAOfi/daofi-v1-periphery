@@ -39,7 +39,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       tokenQuote: tokenQuote.address,
       amountBase: baseSupply,
       amountQuote: zero,
-      m: 1e3,
+      slopeNumerator: 1e3,
       n: 1,
       fee: 3
     }, MaxUint256))
@@ -64,7 +64,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       tokenQuote: tokenQuote.address,
       amountBase: baseSupply,
       amountQuote: quoteReserve,
-      m: 1e3,
+      slopeNumerator: 1e3,
       n: 1,
       fee: 3
     }, MaxUint256))
@@ -89,7 +89,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       tokenQuote: WETH.address,
       amountBase: baseSupply,
       amountQuote: quoteReserve,
-      m: 1e3,
+      slopeNumerator: 1e3,
       n: 1,
       fee: 3
     }, MaxUint256, {value: quoteReserve}))
@@ -114,7 +114,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       tokenQuote: tokenQuote.address,
       amountBase: baseSupply,
       amountQuote: quoteReserve,
-      m: 1e3,
+      slopeNumerator: 1e3,
       n: 1,
       fee: 3
     }, MaxUint256)
@@ -126,7 +126,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       tokenQuote: tokenQuote.address,
       amountBase: baseSupply,
       amountQuote: quoteReserve,
-      m: 1e3,
+      slopeNumerator: 1e3,
       n: 1,
       fee: 3
     }, MaxUint256))
@@ -159,7 +159,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       tokenQuote: WETH.address,
       amountBase: baseSupply,
       amountQuote: quoteReserve,
-      m: 1e3,
+      slopeNumerator: 1e3,
       n: 1,
       fee: 3
     }, MaxUint256, {value: quoteReserve})
@@ -171,7 +171,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       tokenQuote: WETH.address,
       amountBase: baseSupply,
       amountQuote: quoteReserve,
-      m: 1e3,
+      slopeNumerator: 1e3,
       n: 1,
       fee: 3
     }, MaxUint256))
@@ -234,7 +234,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       tokenQuote: tokenQuote.address,
       amountBase: baseSupply,
       amountQuote: zero,
-      m: 1e3,
+      slopeNumerator: 1e3,
       n: 1,
       fee: 3
     }, MaxUint256)
@@ -252,14 +252,14 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       amountOut: baseAmountOut,
       tokenBase: tokenBase.address,
       tokenQuote: tokenQuote.address,
-      m: 1e3,
+      slopeNumerator: 1e3,
       n: 1,
       fee: 3
     }, MaxUint256))
       .to.emit(tokenBase, 'Transfer')
       .withArgs(pair.address, wallet.address, baseAmountOut)
       .to.emit(pair, 'Swap')
-      .withArgs(router.address, tokenQuote.address, tokenBase.address, quoteAmountIn, baseAmountOut, wallet.address)
+      .withArgs(pair.address, router.address, tokenQuote.address, tokenBase.address, quoteAmountIn, baseAmountOut, wallet.address)
   })
 
   it('swap: Ether for Tokens', async () => {
@@ -274,7 +274,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       tokenQuote: WETH.address,
       amountBase: baseSupply,
       amountQuote: zero,
-      m: 1e3,
+      slopeNumerator: 1e3,
       n: 1,
       fee: 3
     }, MaxUint256)
@@ -291,14 +291,14 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       amountOut: baseAmountOut,
       tokenBase: tokenBase.address,
       tokenQuote: WETH.address,
-      m: 1e3,
+      slopeNumerator: 1e3,
       n: 1,
       fee: 3
     }, MaxUint256, {value: quoteAmountIn}))
       .to.emit(tokenBase, 'Transfer')
       .withArgs(pairETH.address, wallet.address, baseAmountOut)
       .to.emit(pairETH, 'Swap')
-      .withArgs(router.address, WETH.address, tokenBase.address, quoteAmountIn, baseAmountOut, wallet.address)
+      .withArgs(pairETH.address, router.address, WETH.address, tokenBase.address, quoteAmountIn, baseAmountOut, wallet.address)
   })
 
   it('swap: Tokens for Ether', async () => {
@@ -316,7 +316,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       tokenQuote: WETH.address,
       amountBase: baseSupply,
       amountQuote: WETHSupply,
-      m: 1e3,
+      slopeNumerator: 1e3,
       n: 1,
       fee: 3
     }, MaxUint256)
@@ -334,13 +334,13 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       amountOut: quoteAmountOut,
       tokenBase: tokenBase.address,
       tokenQuote: WETH.address,
-      m: 1e3,
+      slopeNumerator: 1e3,
       n: 1,
       fee: 3
     }, MaxUint256))
       .to.emit(WETH, 'Transfer')
       .withArgs(pairETH.address, router.address, quoteAmountOut)
       .to.emit(pairETH, 'Swap')
-      .withArgs(router.address, tokenBase.address, WETH.address, baseAmountIn, quoteAmountOut, router.address)
+      .withArgs(pairETH.address, router.address, tokenBase.address, WETH.address, baseAmountIn, quoteAmountOut, router.address)
   })
 })

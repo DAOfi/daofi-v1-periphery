@@ -4,29 +4,29 @@ pragma experimental ABIEncoderV2;
 
 interface IDAOfiV1Router01 {
     struct SwapParams {
-        address sender;
-        address to;
-        address tokenIn;
-        address tokenOut;
-        uint256 amountIn;
-        uint256 amountOut;
-        address tokenBase;
-        address tokenQuote;
-        uint32 m;
-        uint32 n;
-        uint32 fee;
+        address sender; // Override the message sender, used for permit pattern
+        address to; // Recipient of the swap
+        address tokenIn; // The input token address, base or quote
+        address tokenOut; // The output token address, base or quote (input != output)
+        uint256 amountIn; // The amount of token input
+        uint256 amountOut; // The amount of token output
+        address tokenBase; // The base token address of the pair
+        address tokenQuote; // The quote token address of the pair
+        uint32 slopeNumerator; // The pair's numerator value (1-1000)
+        uint32 n; // The pair's n value (1-3)
+        uint32 fee; // The pair's fee value (0-10)
     }
 
     struct LiquidityParams {
-        address sender;
-        address to;
-        address tokenBase;
-        address tokenQuote;
-        uint256 amountBase;
-        uint256 amountQuote;
-        uint32 m;
-        uint32 n;
-        uint32 fee;
+        address sender; // Override the message sender, used for permit pattern
+        address to; // Recipient of the initial base supply
+        address tokenBase; // The base token address of the pair
+        address tokenQuote; // The quote token address of the pair
+        uint256 amountBase; // The pair's total base reserve
+        uint256 amountQuote; // The pair's initial quote reserve
+        uint32 slopeNumerator; // The pair's numerator value (1-1000)
+        uint32 n; // The pair's n value (1-3)
+        uint32 fee; // The pair's fee value (0-10)
     }
 
     function factory() external view returns (address);

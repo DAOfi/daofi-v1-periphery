@@ -20,7 +20,7 @@ export interface DAOfiV1Fixture {
 
 export async function getFixtureWithParams(
   wallet: SignerWithAddress,
-  m: number,
+  slopeNumerator: number,
   n: number,
   fee: number,
   fromWallet: boolean = true
@@ -46,17 +46,17 @@ export async function getFixtureWithParams(
 
   // initialize
   const controller = fromWallet ? wallet.address : router.address
-  await factory.createPair(controller, tokenBase.address, tokenQuote.address, wallet.address, m, n, fee)
-  const pairAddress = await factory.getPair(tokenBase.address, tokenQuote.address, m, n, fee)
+  await factory.createPair(controller, tokenBase.address, tokenQuote.address, wallet.address, slopeNumerator, n, fee)
+  const pairAddress = await factory.getPair(tokenBase.address, tokenQuote.address, slopeNumerator, n, fee)
   const pair = new Contract(pairAddress, JSON.stringify(DAOfiV1Pair.abi)).connect(wallet)
 
   // init eth pair
-  await factory.createPair(controller, tokenBase.address, WETH.address, wallet.address, m, n, fee)
-  const pairAddressETH = await factory.getPair(tokenBase.address, WETH.address, m, n, fee)
+  await factory.createPair(controller, tokenBase.address, WETH.address, wallet.address, slopeNumerator, n, fee)
+  const pairAddressETH = await factory.getPair(tokenBase.address, WETH.address, slopeNumerator, n, fee)
   const pairETH = new Contract(pairAddressETH, JSON.stringify(DAOfiV1Pair.abi)).connect(wallet)
 
-  await factory.createPair(controller, tokenBase.address, xDAI.address, wallet.address, m, n, fee)
-  const xDAIPairAddress = await factory.getPair(tokenBase.address, xDAI.address, m, n, fee)
+  await factory.createPair(controller, tokenBase.address, xDAI.address, wallet.address, slopeNumerator, n, fee)
+  const xDAIPairAddress = await factory.getPair(tokenBase.address, xDAI.address, slopeNumerator, n, fee)
   const xDAIPair = new Contract(xDAIPairAddress, JSON.stringify(DAOfiV1Pair.abi)).connect(wallet)
 
   return {
