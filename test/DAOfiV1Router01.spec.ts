@@ -23,7 +23,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 0', () => {
   beforeEach(async function () {
     wallet = (await ethers.getSigners())[0]
     walletFixture = await getFixtureWithParams(wallet, slopeD, 1, 0)
-    // routerFixture = await getFixtureWithParams(wallet, slopeD, 1, 0, false)
+    routerFixture = await getFixtureWithParams(wallet, slopeD, 1, 0, false)
   })
 
   it.only('addLiquidity: base only', async () => {
