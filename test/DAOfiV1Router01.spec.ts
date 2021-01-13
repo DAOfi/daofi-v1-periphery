@@ -12,7 +12,7 @@ let walletFixture: DAOfiV1Fixture
 let routerFixture: DAOfiV1Fixture
 let wallet: SignerWithAddress
 
-describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
+describe('DAOfiV1Router01: m = 1, n = 1, fee = 0', () => {
   async function addLiquidity(baseReserve: BigNumber, quoteReserve: BigNumber) {
     const { tokenBase, tokenQuote, pair } = walletFixture
     if (baseReserve.gt(zero)) await tokenBase.transfer(pair.address, baseReserve)
@@ -22,11 +22,11 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
 
   beforeEach(async function () {
     wallet = (await ethers.getSigners())[0]
-    walletFixture = await getFixtureWithParams(wallet, slopeD, 1, 3)
-    routerFixture = await getFixtureWithParams(wallet, slopeD, 1, 3, false)
+    walletFixture = await getFixtureWithParams(wallet, slopeD, 1, 0)
+    // routerFixture = await getFixtureWithParams(wallet, slopeD, 1, 0, false)
   })
 
-  it('addLiquidity: base only', async () => {
+  it.only('addLiquidity: base only', async () => {
     const { router, tokenBase, tokenQuote, pair } = routerFixture
     const baseSupply = expandTo18Decimals(1e9)
 
