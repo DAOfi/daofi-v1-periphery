@@ -7,10 +7,10 @@
   resolved "https://registry.yarnpkg.com/@daofi/bancor/-/bancor-0.6.27-test.5.tgz#76e735ea4690371166a46aafea0b1b47cf1f275b"
   integrity sha512-l2hGuwTiSrnt6RP/v+bSqm9/FFFxDXFNQ7uppNEgVOXZPji2JzIhXQJ4ohhrbNnAQKPOxUVeUWNzRzM5BhdmpQ==
 
-"@daofi/daofi-v1-core@0.1.0-mainnet.4":
-  version "0.1.0-mainnet.4"
-  resolved "https://registry.yarnpkg.com/@daofi/daofi-v1-core/-/daofi-v1-core-0.1.0-mainnet.4.tgz#3e383fe253d4d5f66341e20d280d00b9adf62fd7"
-  integrity sha512-SZHImCicw4YdAUyFVg2bbjbAtUlKMCso4PfrK+b0+tfW3yr/F7gIOd0wzWn4hg9DM+ds5O0S7+ElHdVXJP90Fw==
+"@daofi/daofi-v1-core@0.1.0-mainnet-linear.0":
+  version "0.1.0-mainnet-linear.0"
+  resolved "https://registry.yarnpkg.com/@daofi/daofi-v1-core/-/daofi-v1-core-0.1.0-mainnet-linear.0.tgz#50cfb6ee1ebeb6e857ee77fa253a35d4896b4e55"
+  integrity sha512-qPMyAzk+0CXWy/PSjlGtGg7828C4CPfiI1iCMe53fyf2pCoFpoQ58N5QabKS0qvZH3fepm+7r7TU0jMxOmchGg==
 
 "@ensdomains/ens@^0.4.4":
   version "0.4.5"

@@ -39,6 +39,7 @@ export async function getFixtureWithParams(
 
   // deploy factory
   const formula = await deployContract(wallet, BancorFormula as any)
+  await formula.init()
   const factory = await deployContract(wallet, DAOfiV1Factory, [formula.address])
 
   // deploy router
@@ -71,4 +72,3 @@ export async function getFixtureWithParams(
     pairETH,
   }
 }
-
