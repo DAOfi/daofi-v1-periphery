@@ -7,7 +7,7 @@ import { expandTo18Decimals, getReserveForStartPrice } from './shared/utilities'
 
 const zero = ethers.BigNumber.from(0)
 const MaxUint256 = ethers.constants.MaxUint256
-
+const slopeD = 1e6
 let walletFixture: DAOfiV1Fixture
 let routerFixture: DAOfiV1Fixture
 let wallet: SignerWithAddress
@@ -22,8 +22,8 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
 
   beforeEach(async function () {
     wallet = (await ethers.getSigners())[0]
-    walletFixture = await getFixtureWithParams(wallet, 1e3, 1, 3)
-    routerFixture = await getFixtureWithParams(wallet, 1e3, 1, 3, false)
+    walletFixture = await getFixtureWithParams(wallet, slopeD, 1, 3)
+    routerFixture = await getFixtureWithParams(wallet, slopeD, 1, 3, false)
   })
 
   it('addLiquidity: base only', async () => {
@@ -39,7 +39,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       tokenQuote: tokenQuote.address,
       amountBase: baseSupply,
       amountQuote: zero,
-      slopeNumerator: 1e3,
+      slopeNumerator: slopeD,
       n: 1,
       fee: 3
     }, MaxUint256))
@@ -50,7 +50,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
   it('addLiquidity: base and quote', async () => {
     const { router, tokenBase, tokenQuote, pair } = routerFixture
     const baseSupply = expandTo18Decimals(1e9) // total supply
-    const quoteReserveFloat = getReserveForStartPrice(10, 1e3, 1) // 50
+    const quoteReserveFloat = getReserveForStartPrice(10, slopeD, 1) // 50
     const quoteReserve = expandTo18Decimals(quoteReserveFloat)
     const expectedBaseOutput = ethers.BigNumber.from('100000000000000000000')
     const expectedBaseReserve = baseSupply.sub(expectedBaseOutput)
@@ -64,7 +64,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       tokenQuote: tokenQuote.address,
       amountBase: baseSupply,
       amountQuote: quoteReserve,
-      slopeNumerator: 1e3,
+      slopeNumerator: slopeD,
       n: 1,
       fee: 3
     }, MaxUint256))
@@ -75,7 +75,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
   it('addLiquidityETH: base and quote', async () => {
     const { router, tokenBase, tokenQuote, pairETH, WETH } = routerFixture
     const baseSupply = expandTo18Decimals(1e9) // total supply
-    const quoteReserveFloat = getReserveForStartPrice(10, 1e3, 1) // 50
+    const quoteReserveFloat = getReserveForStartPrice(10, slopeD, 1) // 50
     const quoteReserve = expandTo18Decimals(quoteReserveFloat)
     const expectedBaseOutput = ethers.BigNumber.from('100000000000000000000')
     const expectedBaseReserve = baseSupply.sub(expectedBaseOutput)
@@ -89,7 +89,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       tokenQuote: WETH.address,
       amountBase: baseSupply,
       amountQuote: quoteReserve,
-      slopeNumerator: 1e3,
+      slopeNumerator: slopeD,
       n: 1,
       fee: 3
     }, MaxUint256, {value: quoteReserve}))
@@ -100,7 +100,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
   it('removeLiquidity:', async () => {
     const { router, tokenBase, tokenQuote, pair } = routerFixture
     const baseSupply = expandTo18Decimals(1e9)
-    const quoteReserveFloat = getReserveForStartPrice(10, 1e3, 1)
+    const quoteReserveFloat = getReserveForStartPrice(10, slopeD, 1)
     const quoteReserve = expandTo18Decimals(quoteReserveFloat)
     const expectedBaseOutput = ethers.BigNumber.from('100000000000000000000')
     const expectedBaseReserve = baseSupply.sub(expectedBaseOutput)
@@ -114,7 +114,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       tokenQuote: tokenQuote.address,
       amountBase: baseSupply,
       amountQuote: quoteReserve,
-      slopeNumerator: 1e3,
+      slopeNumerator: slopeD,
       n: 1,
       fee: 3
     }, MaxUint256)
@@ -126,7 +126,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       tokenQuote: tokenQuote.address,
       amountBase: baseSupply,
       amountQuote: quoteReserve,
-      slopeNumerator: 1e3,
+      slopeNumerator: slopeD,
       n: 1,
       fee: 3
     }, MaxUint256))
@@ -145,7 +145,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
   it('removeLiquidityETH:', async () => {
     const { router, tokenBase, WETH, pairETH } = routerFixture
     const baseSupply = expandTo18Decimals(1e9)
-    const quoteReserveFloat = getReserveForStartPrice(10, 1e3, 1)
+    const quoteReserveFloat = getReserveForStartPrice(10, slopeD, 1)
     const quoteReserve = expandTo18Decimals(quoteReserveFloat)
     const expectedBaseOutput = ethers.BigNumber.from('100000000000000000000')
     const expectedBaseReserve = baseSupply.sub(expectedBaseOutput)
@@ -159,7 +159,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       tokenQuote: WETH.address,
       amountBase: baseSupply,
       amountQuote: quoteReserve,
-      slopeNumerator: 1e3,
+      slopeNumerator: slopeD,
       n: 1,
       fee: 3
     }, MaxUint256, {value: quoteReserve})
@@ -171,7 +171,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       tokenQuote: WETH.address,
       amountBase: baseSupply,
       amountQuote: quoteReserve,
-      slopeNumerator: 1e3,
+      slopeNumerator: slopeD,
       n: 1,
       fee: 3
     }, MaxUint256))
@@ -191,14 +191,14 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
     const { tokenBase, tokenQuote, router } = walletFixture
     await addLiquidity(expandTo18Decimals(1e9), expandTo18Decimals(50))
     const quotePrice = ethers.BigNumber.from('994999999999999999')
-    expect(await router.basePrice(tokenBase.address, tokenQuote.address, 1e3, 1, 3)).to.eq(quotePrice)
+    expect(await router.basePrice(tokenBase.address, tokenQuote.address, slopeD, 1, 3)).to.eq(quotePrice)
   })
 
   it('quotePrice:', async () => {
     const { tokenBase, tokenQuote, router } = walletFixture
     await addLiquidity(expandTo18Decimals(1e9), expandTo18Decimals(50))
     const basePrice = ethers.BigNumber.from('995049383620779533')
-    expect(await router.quotePrice(tokenBase.address, tokenQuote.address, 1e3, 1, 3)).to.eq(basePrice)
+    expect(await router.quotePrice(tokenBase.address, tokenQuote.address, slopeD, 1, 3)).to.eq(basePrice)
   })
 
   it('getBaseOut:', async () => {
@@ -206,7 +206,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
     await addLiquidity(expandTo18Decimals(1e9), zero)
     const quoteAmountIn = expandTo18Decimals(50)
     const baseAmountOut = ethers.BigNumber.from('99600000000000000000')
-    expect(await router.getBaseOut(quoteAmountIn, tokenBase.address, tokenQuote.address, 1e3, 1, 3)).to.eq(
+    expect(await router.getBaseOut(quoteAmountIn, tokenBase.address, tokenQuote.address, slopeD, 1, 3)).to.eq(
       baseAmountOut
     )
   })
@@ -217,7 +217,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
     await addLiquidity(expandTo18Decimals(1e9), expandTo18Decimals(50))
     const baseAmountIn = ethers.BigNumber.from('10000000000000000000')
     const quoteAmountOut = ethers.BigNumber.from('9463991999999999999')
-    expect(await router.getQuoteOut(baseAmountIn, tokenBase.address, tokenQuote.address, 1e3, 1, 3)).to.eq(
+    expect(await router.getQuoteOut(baseAmountIn, tokenBase.address, tokenQuote.address, slopeD, 1, 3)).to.eq(
       quoteAmountOut
     )
   })
@@ -234,13 +234,13 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       tokenQuote: tokenQuote.address,
       amountBase: baseSupply,
       amountQuote: zero,
-      slopeNumerator: 1e3,
+      slopeNumerator: slopeD,
       n: 1,
       fee: 3
     }, MaxUint256)
 
     const quoteAmountIn = expandTo18Decimals(50)
-    const baseAmountOut = await router.getBaseOut(quoteAmountIn, tokenBase.address, tokenQuote.address, 1e3, 1, 3)
+    const baseAmountOut = await router.getBaseOut(quoteAmountIn, tokenBase.address, tokenQuote.address, slopeD, 1, 3)
 
     await tokenQuote.approve(router.address, quoteAmountIn)
     await expect(router.swapExactTokensForTokens({
@@ -252,7 +252,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       amountOut: baseAmountOut,
       tokenBase: tokenBase.address,
       tokenQuote: tokenQuote.address,
-      slopeNumerator: 1e3,
+      slopeNumerator: slopeD,
       n: 1,
       fee: 3
     }, MaxUint256))
@@ -274,13 +274,13 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       tokenQuote: WETH.address,
       amountBase: baseSupply,
       amountQuote: zero,
-      slopeNumerator: 1e3,
+      slopeNumerator: slopeD,
       n: 1,
       fee: 3
     }, MaxUint256)
 
     const quoteAmountIn = expandTo18Decimals(50)
-    const baseAmountOut = await router.getBaseOut(quoteAmountIn, tokenBase.address, WETH.address, 1e3, 1, 3)
+    const baseAmountOut = await router.getBaseOut(quoteAmountIn, tokenBase.address, WETH.address, slopeD, 1, 3)
 
     await expect(router.swapExactETHForTokens({
       sender: wallet.address,
@@ -291,7 +291,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       amountOut: baseAmountOut,
       tokenBase: tokenBase.address,
       tokenQuote: WETH.address,
-      slopeNumerator: 1e3,
+      slopeNumerator: slopeD,
       n: 1,
       fee: 3
     }, MaxUint256, {value: quoteAmountIn}))
@@ -316,13 +316,13 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       tokenQuote: WETH.address,
       amountBase: baseSupply,
       amountQuote: WETHSupply,
-      slopeNumerator: 1e3,
+      slopeNumerator: slopeD,
       n: 1,
       fee: 3
     }, MaxUint256)
 
     const baseAmountIn = expandTo18Decimals(10)
-    const quoteAmountOut = await router.getQuoteOut(baseAmountIn, tokenBase.address, WETH.address, 1e3, 1, 3)
+    const quoteAmountOut = await router.getQuoteOut(baseAmountIn, tokenBase.address, WETH.address, slopeD, 1, 3)
     await tokenBase.approve(router.address, baseAmountIn)
 
     await expect(router.swapExactTokensForETH({
@@ -334,7 +334,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 3', () => {
       amountOut: quoteAmountOut,
       tokenBase: tokenBase.address,
       tokenQuote: WETH.address,
-      slopeNumerator: 1e3,
+      slopeNumerator: slopeD,
       n: 1,
       fee: 3
     }, MaxUint256))

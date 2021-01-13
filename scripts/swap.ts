@@ -38,7 +38,7 @@ async function main() {
     wallet
   )
   console.log('connected router', router.address)
-
+  const slopeD = 1e6
   // const baseSupply = ethers.utils.parseEther('1000000000')
   // const zero = ethers.BigNumber.from(0)
   // await tokenA.approve(router.address, baseSupply, overrides)
@@ -51,7 +51,7 @@ async function main() {
   //   tokenQuote: tokenB.address,
   //   amountBase: baseSupply,
   //   amountQuote: zero,
-  //   slopeNumerator: 1e3,
+  //   slopeNumerator: slopeD,
   //   n: 1,
   //   fee: 3
   // }, ethers.constants.MaxUint256, overrides)
@@ -64,7 +64,7 @@ async function main() {
 
   const quoteAmountIn = ethers.utils.parseEther('50')
   //const baseAmountOut = ethers.BigNumber.from('9984000000000000000')
-  const baseAmountOut = await router.getBaseOut(quoteAmountIn, tokenA.address, tokenB.address, 1e3, 1, 3, overrides)
+  const baseAmountOut = await router.getBaseOut(quoteAmountIn, tokenA.address, tokenB.address, slopeD, 1, 3, overrides)
   console.log('expected output:', baseAmountOut)
 
   await tokenB.approve(router.address, quoteAmountIn)
@@ -75,7 +75,7 @@ async function main() {
     tokenOut: tokenA.address,
     amountIn: quoteAmountIn,
     amountOut: baseAmountOut,
-    slopeNumerator: 1e3,
+    slopeNumerator: slopeD,
     n: 1,
     fee: 3
   }, ethers.constants.MaxUint256, overrides)
