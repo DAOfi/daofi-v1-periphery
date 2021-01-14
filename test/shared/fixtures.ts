@@ -36,6 +36,7 @@ export async function getFixtureWithParams(
   const tokenQuote =  await Token.deploy(ethers.BigNumber.from('0x033b2e3c9fd0803ce8000000'))
   const xDAI = await XDai.deploy()
   const WETH = await weth.deploy()
+  console.log('weth: '+ WETH.address)
 
   // deploy factory
   const formula = await deployContract(wallet, BancorFormula as any)
@@ -69,6 +70,8 @@ export async function getFixtureWithParams(
     xDAI,
     factory,
     router,
-    pair
+    pair,
+    pairETH,
+    WETH
   }
 }
