@@ -250,7 +250,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 0', () => {
     }, MaxUint256)
 
     const quoteAmountIn = expandTo18Decimals(50)
-    const baseAmountOut = await router.getBaseOut(quoteAmountIn, tokenBase.address, tokenQuote.address, 1e6, 1, 3)
+    const baseAmountOut = await router.getBaseOut(quoteAmountIn, tokenBase.address, tokenQuote.address, 1e6, 1, 0)
 
     await tokenQuote.approve(router.address, quoteAmountIn)
     await expect(router.swapExactTokensForTokens({
@@ -290,7 +290,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 0', () => {
     }, MaxUint256)
 
     const quoteAmountIn = expandTo18Decimals(50)
-    const baseAmountOut = await router.getBaseOut(quoteAmountIn, tokenBase.address, WETH.address, 1e6, 1, 3)
+    const baseAmountOut = await router.getBaseOut(quoteAmountIn, tokenBase.address, WETH.address, 1e6, 1, 0)
 
     await expect(router.swapExactETHForTokens({
       sender: wallet.address,
@@ -311,7 +311,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 0', () => {
       .withArgs(pairETH.address, router.address, WETH.address, tokenBase.address, quoteAmountIn, baseAmountOut, wallet.address)
   })
 
-  it('swap: Tokens for Ether', async () => {
+  it.only('swap: Tokens for Ether', async () => {
     const { router, tokenBase, WETH, pairETH } = routerFixture
     const baseSupply = expandTo18Decimals(1e9)
     const WETHSupply = expandTo18Decimals(10)
@@ -332,7 +332,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 0', () => {
     }, MaxUint256)
 
     const baseAmountIn = expandTo18Decimals(10)
-    const quoteAmountOut = await router.getQuoteOut(baseAmountIn, tokenBase.address, WETH.address, 1e6, 1, 3)
+    const quoteAmountOut = await router.getQuoteOut(baseAmountIn, tokenBase.address, WETH.address, 1e6, 1, 0)
     await tokenBase.approve(router.address, baseAmountIn)
 
     await expect(router.swapExactTokensForETH({
