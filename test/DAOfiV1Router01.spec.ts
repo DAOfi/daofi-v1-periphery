@@ -272,6 +272,53 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 0', () => {
       .withArgs(pair.address, router.address, tokenQuote.address, tokenBase.address, quoteAmountIn, baseAmountOut, wallet.address)
   })
 
+  it.only('swap: low liquidity error case', async () => {
+    const { router, tokenBase, tokenQuote, pair } = routerFixture
+    const baseSupply = expandTo18Decimals(60)
+    const quoteSupply = expandTo18Decimals(1)
+
+    await tokenBase.approve(router.address, baseSupply)
+    await tokenQuote.approve(router.address, quoteSupply)
+    await router.addLiquidity({
+      sender: wallet.address,
+      to: wallet.address,
+      tokenBase: tokenBase.address,
+      tokenQuote: tokenQuote.address,
+      amountBase: baseSupply,
+      amountQuote: quoteSupply,
+      slopeNumerator: 1e6,
+      n: 1,
+      fee: 0
+    }, MaxUint256)
+
+    const quoteAmountIn = expandTo18Decimals(1)
+    const baseAmountOut = await router.getBaseOut(quoteAmountIn, tokenBase.address, tokenQuote.address, 1e6, 1, 0)
+
+    async function swap() {
+      await tokenQuote.approve(router.address, quoteAmountIn)
+      await expect(router.swapExactTokensForTokens({
+        sender: wallet.address,
+        to: wallet.address,
+        tokenIn: tokenQuote.address,
+        tokenOut: tokenBase.address,
+        amountIn: quoteAmountIn,
+        amountOut: baseAmountOut,
+        tokenBase: tokenBase.address,
+        tokenQuote: tokenQuote.address,
+        slopeNumerator: 1e6,
+        n: 1,
+        fee: 0
+      }, MaxUint256))
+        .to.emit(tokenBase, 'Transfer')
+        .withArgs(pair.address, wallet.address, baseAmountOut)
+        .to.emit(pair, 'Swap')
+        .withArgs(pair.address, router.address, tokenQuote.address, tokenBase.address, quoteAmountIn, baseAmountOut, wallet.address)
+    }
+    await swap()
+    // swapping same amount again fails 
+    await swap()
+  })
+
   it('swap: Ether for Tokens', async () => {
     const { router, tokenBase, WETH, pairETH } = routerFixture
     const baseSupply = expandTo18Decimals(1e9)

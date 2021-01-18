@@ -16,11 +16,11 @@ async function main() {
     DAOfiV1Router01,
     [
       // factory
-      '0xe6Aa73645c1602fECC21f97fDFA473Fb5d60d47e',
+      '0xEfeEfC37727912bF7d6E568E3E0130477EB5f236',
       // WXDAI
       //'0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d',
       // WETH
-      '0xe9796Ea0432d158C8fd9d7168cc499c1fe572759'
+      '0xCD2090f4D87aA335FC9D64d98BaD032648527b68'
     ],
     {
       chainId: process.env.CHAIN_ID ? parseInt(process.env.CHAIN_ID) : kovanID,
