@@ -186,11 +186,18 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
             address(pair),
             sp.amountIn
         );
+
         uint balanceBefore = IERC20(sp.tokenOut).balanceOf(sp.to);
         {
             if (pair.baseToken() == sp.tokenOut) {
                 (, uint reserveQuote) = pair.getReserves();
-                uint amountQuoteIn = IERC20(sp.tokenIn).balanceOf(address(pair)).sub(reserveQuote);
+                (, uint pQuoteFee) = pair.getPlatformFees();
+                (, uint oQuoteFee) = pair.getOwnerFees();
+                uint amountQuoteIn = IERC20(sp.tokenIn).balanceOf(address(pair))
+                    .sub(reserveQuote)
+                    .sub(pQuoteFee)
+                    .sub(oQuoteFee);
+
                 uint amountBaseOut = getBaseOut(
                     amountQuoteIn,
                     pair.baseToken(),
@@ -199,6 +206,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
                     pair.n(),
                     pair.fee()
                 );
+
                 pair.swap(
                     sp.tokenIn,
                     sp.tokenOut,
@@ -208,7 +216,13 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
                 );
             } else {
                 (uint reserveBase,) = pair.getReserves();
-                uint amountBaseIn = IERC20(sp.tokenIn).balanceOf(address(pair)).sub(reserveBase);
+                (uint pBaseFee,) = pair.getPlatformFees();
+                (uint oBaseFee,) = pair.getOwnerFees();
+                uint amountBaseIn = IERC20(sp.tokenIn).balanceOf(address(pair))
+                    .sub(reserveBase)
+                    .sub(pBaseFee)
+                    .sub(oBaseFee);
+
                 uint amountQuoteOut = getQuoteOut(
                     amountBaseIn,
                     pair.baseToken(),
@@ -217,6 +231,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
                     pair.n(),
                     pair.fee()
                 );
+
                 pair.swap(
                     sp.tokenIn,
                     sp.tokenOut,
