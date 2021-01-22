@@ -188,6 +188,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         );
 
         uint balanceBefore = IERC20(sp.tokenOut).balanceOf(sp.to);
+        console.log("balance before: %s", balanceBefore);
         {
             if (pair.baseToken() == sp.tokenOut) {
                 (, uint reserveQuote) = pair.getReserves();
@@ -241,6 +242,9 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
                 );
             }
         }
+        console.log("balance after: %s", IERC20(sp.tokenOut).balanceOf(sp.to));
+        console.log("balance after minus before: %s", IERC20(sp.tokenOut).balanceOf(sp.to).sub(balanceBefore));
+        console.log("amount out: %s", sp.amountOut);
         require(
             IERC20(sp.tokenOut).balanceOf(sp.to).sub(balanceBefore) >= sp.amountOut,
             'DAOfiV1Router: INSUFFICIENT_OUTPUT_AMOUNT'

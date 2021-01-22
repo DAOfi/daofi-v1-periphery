@@ -290,10 +290,14 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 0', () => {
       n: 1,
       fee: 0
     }, MaxUint256)
+  console.log('reserves:', (await pair.getReserves()))
+  console.log('base reserve:', (await pair.getReserves())[0].toString())
+  console.log('quote reserve:', (await pair.getReserves())[1].toString())
 
     const quoteAmountIn = expandTo18Decimals(1)
     const baseAmountOut = await router.getBaseOut(quoteAmountIn, tokenBase.address, tokenQuote.address, 1e6, 1, 0)
-
+    console.log('quote amount in:', quoteAmountIn.toString())
+    console.log('base amount out:', baseAmountOut.toString())
     async function swap() {
       await tokenQuote.approve(router.address, quoteAmountIn)
       await expect(router.swapExactTokensForTokens({
@@ -315,7 +319,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 0', () => {
         .withArgs(pair.address, router.address, tokenQuote.address, tokenBase.address, quoteAmountIn, baseAmountOut, wallet.address)
     }
     await swap()
-    // swapping same amount again fails 
+    // swapping same amount again fails
     await swap()
   })
 
