@@ -272,7 +272,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 0', () => {
       .withArgs(pair.address, router.address, tokenQuote.address, tokenBase.address, quoteAmountIn, baseAmountOut, wallet.address)
   })
 
-  it.only('swap: low liquidity error case', async () => {
+  it.only('swap: multiple swaps', async () => {
     const { router, tokenBase, tokenQuote, pair } = routerFixture
     const baseSupply = expandTo18Decimals(60)
     const quoteSupply = expandTo18Decimals(1)
@@ -290,15 +290,17 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 0', () => {
       n: 1,
       fee: 0
     }, MaxUint256)
-  console.log('reserves:', (await pair.getReserves()))
-  console.log('base reserve:', (await pair.getReserves())[0].toString())
-  console.log('quote reserve:', (await pair.getReserves())[1].toString())
 
-    const quoteAmountIn = expandTo18Decimals(1)
-    const baseAmountOut = await router.getBaseOut(quoteAmountIn, tokenBase.address, tokenQuote.address, 1e6, 1, 0)
-    console.log('quote amount in:', quoteAmountIn.toString())
-    console.log('base amount out:', baseAmountOut.toString())
+    console.log('reserves:', (await pair.getReserves()))
+    console.log('base reserve:', (await pair.getReserves())[0].toString())
+    console.log('quote reserve:', (await pair.getReserves())[1].toString())
+    let quoteAmountIn
+    let baseAmountOut
     async function swap() {
+      quoteAmountIn = expandTo18Decimals(1)
+      baseAmountOut = await router.getBaseOut(quoteAmountIn, tokenBase.address, tokenQuote.address, 1e6, 1, 0)
+      console.log('quote amount in:', quoteAmountIn.toString())
+      console.log('base amount out:', baseAmountOut.toString())
       await tokenQuote.approve(router.address, quoteAmountIn)
       await expect(router.swapExactTokensForTokens({
         sender: wallet.address,
@@ -313,14 +315,19 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 0', () => {
         n: 1,
         fee: 0
       }, MaxUint256))
-        .to.emit(tokenBase, 'Transfer')
-        .withArgs(pair.address, wallet.address, baseAmountOut)
-        .to.emit(pair, 'Swap')
-        .withArgs(pair.address, router.address, tokenQuote.address, tokenBase.address, quoteAmountIn, baseAmountOut, wallet.address)
+      .to.emit(tokenBase, 'Transfer')
+      .withArgs(pair.address, wallet.address, baseAmountOut)
+      .to.emit(pair, 'Swap')
+      .withArgs(pair.address, router.address, tokenQuote.address, tokenBase.address, quoteAmountIn, baseAmountOut, wallet.address)
     }
-    await swap()
-    // swapping same amount again fails
-    await swap()
+
+    for(var i=0; i<10; i++) {
+      console.log('swap #: ' + i)
+      await swap()
+    }
+    // await swap()
+    // // swapping same amount again fails
+    // await swap()
   })
 
   it('swap: Ether for Tokens', async () => {
