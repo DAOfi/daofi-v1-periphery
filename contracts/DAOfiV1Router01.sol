@@ -5,7 +5,6 @@ pragma experimental ABIEncoderV2;
 import '@daofi/daofi-v1-core/contracts/interfaces/IDAOfiV1Factory.sol';
 import '@daofi/daofi-v1-core/contracts/interfaces/IDAOfiV1Pair.sol';
 import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
-import 'hardhat/console.sol';
 
 import './interfaces/IDAOfiV1Router01.sol';
 import './interfaces/IERC20.sol';
@@ -188,7 +187,6 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         );
 
         uint balanceBefore = IERC20(sp.tokenOut).balanceOf(sp.to);
-        console.log("balance before: %s", balanceBefore);
         {
             if (pair.baseToken() == sp.tokenOut) {
                 (, uint reserveQuote) = pair.getReserves();
@@ -242,9 +240,6 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
                 );
             }
         }
-        console.log("balance after: %s", IERC20(sp.tokenOut).balanceOf(sp.to));
-        console.log("balance after minus before: %s", IERC20(sp.tokenOut).balanceOf(sp.to).sub(balanceBefore));
-        console.log("amount out: %s", sp.amountOut);
         require(
             IERC20(sp.tokenOut).balanceOf(sp.to).sub(balanceBefore) >= sp.amountOut,
             'DAOfiV1Router: INSUFFICIENT_OUTPUT_AMOUNT'
