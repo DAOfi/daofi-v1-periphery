@@ -26,7 +26,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 0', () => {
     routerFixture = await getFixtureWithParams(wallet, 1e6, 1, 0, false)
   })
 
-  it('addLiquidity: base only', async () => {
+  it('addLiquidity: zero quote', async () => {
     const { router, tokenBase, tokenQuote, pair } = routerFixture
     const baseSupply = expandTo18Decimals(1e9)
 
