@@ -181,7 +181,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         );
         TransferHelper.safeTransferFrom(
             sp.tokenIn,
-            sp.sender,
+            msg.sender, // use msg.sender since we are not using metatx in this version
             address(pair),
             sp.amountIn
         );
@@ -311,7 +311,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         );
         TransferHelper.safeTransferFrom(
             sp.tokenIn,
-            sp.sender,
+            msg.sender,
             address(pair),
             sp.amountIn
         );
