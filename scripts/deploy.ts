@@ -9,7 +9,7 @@ async function main() {
   const provider = new ethers.providers.JsonRpcProvider(
     process.env.JSONRPC_URL || 'https://kovan.poa.network'
   )
-  const wallet = new ethers.Wallet(process.env.PRIVATE_KEY || '0x011f5d8c37def36f4bd85f8b1a8e82bf104abdaac8c0710ab70e5f86dba180cc', provider)
+  const wallet = new ethers.Wallet(process.env.PRIVATE_KEY || '', provider)
   console.log('wallet', wallet.address)
   const router = await deployContract(
     wallet,
