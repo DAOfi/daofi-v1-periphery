@@ -8,7 +8,7 @@ import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
 
 import './interfaces/IDAOfiV1Router01.sol';
 import './interfaces/IERC20.sol';
-import './interfaces/IWETH10.sol';
+import './interfaces/IWXDAI.sol';
 import './libraries/DAOfiV1Library.sol';
 import './libraries/SafeMath.sol';
 
@@ -16,7 +16,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
     using SafeMath for *;
 
     address public immutable override factory;
-    address public immutable override WETH;
+    address public immutable override WXDAI;
 
     /**
     * @dev Modifier to add timeout to specific functions.
@@ -29,23 +29,23 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
     }
 
     /**
-    * @dev Create the router given a factory and WETH contract.
+    * @dev Create the router given a factory and WXDAI contract.
     *
     * @param _factory address of the core factory
-    * @param _WETH address of the WETH10 contract
+    * @param _WXDAI address of the WXDAI contract
     */
-    constructor(address _factory, address _WETH) {
+    constructor(address _factory, address _WXDAI) {
         require(_factory != address(0), 'DAOfiV1Router: INVALID FACTORY ADDRESS');
-        require(_WETH != address(0), 'DAOfiV1Router: INVALID WETH ADDRESS');
+        require(_WXDAI != address(0), 'DAOfiV1Router: INVALID WXDAI ADDRESS');
         factory = _factory;
-        WETH = _WETH;
+        WXDAI = _WXDAI;
     }
 
     /**
-    * @dev Fallback to only accept WETH via WETH contract fallback.
+    * @dev Fallback to only accept WXDAI via WXDAI contract fallback.
     */
     receive() external payable {
-        assert(msg.sender == WETH); // only accept WETH via fallback from the WETH contract
+        assert(msg.sender == WXDAI); // only accept WXDAI via fallback from the WXDAI contract
     }
 
     /**
@@ -88,22 +88,22 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
 
     /**
     * @dev Method for adding initial liquidity to a pair.
-    * Used only for pairs where ETH is the quote token.
+    * Used only for pairs where XDAI is the quote token.
     *
     * @param lp Liquidity params, see IDAOfiV1Router.sol for details
     * @param deadline block timestamp
     *
     * @return amountBase the initial supply of base token
     */
-    function addLiquidityETH(
+    function addLiquidityXDAI(
         LiquidityParams calldata lp,
         uint deadline
     ) external override payable ensure(deadline) returns (uint256 amountBase) {
-        if (IDAOfiV1Factory(factory).getPair(lp.tokenBase, WETH, lp.slopeNumerator, lp.n, lp.fee) == address(0)) {
+        if (IDAOfiV1Factory(factory).getPair(lp.tokenBase, WXDAI, lp.slopeNumerator, lp.n, lp.fee) == address(0)) {
             IDAOfiV1Factory(factory).createPair(
                 address(this),
                 lp.tokenBase,
-                WETH,
+                WXDAI,
                 msg.sender,
                 lp.slopeNumerator,
                 lp.n,
@@ -113,14 +113,14 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         address pair = DAOfiV1Library.pairFor(
             factory,
             lp.tokenBase,
-            WETH,
+            WXDAI,
             lp.slopeNumerator,
             lp.n,
             lp.fee
         );
         TransferHelper.safeTransferFrom(lp.tokenBase, msg.sender, pair, lp.amountBase);
-        IWETH10(WETH).deposit{value: lp.amountQuote}();
-        assert(IWETH10(WETH).transfer(pair, lp.amountQuote));
+        IWXDAI(WXDAI).deposit{value: lp.amountQuote}();
+        assert(IWXDAI(WXDAI).transfer(pair, lp.amountQuote));
         amountBase = IDAOfiV1Pair(pair).deposit(lp.to);
         // refund dust eth, if any
         if (msg.value > lp.amountQuote) TransferHelper.safeTransferETH(msg.sender, msg.value - lp.amountQuote);
@@ -156,15 +156,15 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
     * @return amountToken the amount of base token withdrawn
     * @return amountETH the amount of quote token withdrawn
     */
-    function removeLiquidityETH(
+    function removeLiquidityXDAI(
         LiquidityParams calldata lp,
         uint deadline
     ) external override ensure(deadline) returns (uint amountToken, uint amountETH) {
-        IDAOfiV1Pair pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, lp.tokenBase, WETH, lp.slopeNumerator, lp.n, lp.fee));
+        IDAOfiV1Pair pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, lp.tokenBase, WXDAI, lp.slopeNumerator, lp.n, lp.fee));
         require(msg.sender == pair.pairOwner(), 'DAOfiV1Router: FORBIDDEN');
         (amountToken, amountETH) = pair.withdraw(address(this));
         assert(IERC20(lp.tokenBase).transfer(lp.to, amountToken));
-        IWETH10(WETH).withdraw(amountETH);
+        IWXDAI(WXDAI).withdraw(amountETH);
         TransferHelper.safeTransferETH(lp.to, amountETH);
     }
 
@@ -255,22 +255,22 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
     * @param sp Swap params, see IDAOfiV1Router.sol for details
     * @param deadline block timestamp
     */
-    function swapExactETHForTokens(
+    function swapExactXDAIForTokens(
         SwapParams calldata sp,
         uint deadline
     ) external payable ensure(deadline) {
-        require(sp.tokenQuote == WETH, 'DAOfiV1Router: INVALID TOKEN, WETH MUST BE QUOTE');
-        require(sp.tokenIn == WETH, 'DAOfiV1Router: INVALID TOKEN, WETH MUST BE TOKEN IN');
+        require(sp.tokenQuote == WXDAI, 'DAOfiV1Router: INVALID TOKEN, WXDAI MUST BE QUOTE');
+        require(sp.tokenIn == WXDAI, 'DAOfiV1Router: INVALID TOKEN, WXDAI MUST BE TOKEN IN');
         IDAOfiV1Pair pair = IDAOfiV1Pair(
             DAOfiV1Library.pairFor(factory, sp.tokenBase, sp.tokenQuote, sp.slopeNumerator, sp.n, sp.fee)
         );
-        IWETH10(WETH).deposit{value: msg.value}();
-        assert(IWETH10(WETH).transfer(address(pair), msg.value));
+        IWXDAI(WXDAI).deposit{value: msg.value}();
+        assert(IWXDAI(WXDAI).transfer(address(pair), msg.value));
         uint balanceBefore = IERC20(sp.tokenOut).balanceOf(sp.to);
         (, uint reserveQuote) = pair.getReserves();
         (, uint pQuoteFee) = pair.getPlatformFees();
         (, uint oQuoteFee) = pair.getOwnerFees();
-        uint amountQuoteIn = IWETH10(WETH).balanceOf(address(pair))
+        uint amountQuoteIn = IWXDAI(WXDAI).balanceOf(address(pair))
             .sub(reserveQuote)
             .sub(pQuoteFee)
             .sub(oQuoteFee);
@@ -302,12 +302,12 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
     * @param sp Swap params, see IDAOfiV1Router.sol for details
     * @param deadline block timestamp
     */
-    function swapExactTokensForETH(
+    function swapExactTokensForWXDAI(
         SwapParams calldata sp,
         uint deadline
     ) external ensure(deadline) {
-        require(sp.tokenQuote == WETH, 'DAOfiV1Router: INVALID TOKEN, WETH MUST BE QUOTE');
-        require(sp.tokenOut == WETH, 'DAOfiV1Router: INVALID TOKEN, WETH MUST BE TOKEN OUT');
+        require(sp.tokenQuote == WXDAI, 'DAOfiV1Router: INVALID TOKEN, WXDAI MUST BE QUOTE');
+        require(sp.tokenOut == WXDAI, 'DAOfiV1Router: INVALID TOKEN, WXDAI MUST BE TOKEN OUT');
         IDAOfiV1Pair pair = IDAOfiV1Pair(
             DAOfiV1Library.pairFor(factory, sp.tokenBase, sp.tokenQuote, sp.slopeNumerator, sp.n, sp.fee)
         );
@@ -317,7 +317,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
             address(pair),
             sp.amountIn
         );
-        uint balanceBefore = IWETH10(sp.tokenOut).balanceOf(sp.to);
+        uint balanceBefore = IWXDAI(sp.tokenOut).balanceOf(sp.to);
         (uint reserveBase,) = pair.getReserves();
         (uint pBaseFee,) = pair.getPlatformFees();
         (uint oBaseFee,) = pair.getOwnerFees();
@@ -340,12 +340,12 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
             amountQuoteOut,
             address(this)
         );
-        uint amountOut = IWETH10(WETH).balanceOf(address(this));
+        uint amountOut = IWXDAI(WXDAI).balanceOf(address(this));
         require(
-            IWETH10(sp.tokenOut).balanceOf(address(this)).sub(balanceBefore) >= sp.amountOut,
+            IWXDAI(sp.tokenOut).balanceOf(address(this)).sub(balanceBefore) >= sp.amountOut,
             'DAOfiV1Router: INSUFFICIENT_OUTPUT_AMOUNT'
         );
-        IWETH10(WETH).withdraw(amountOut);
+        IWXDAI(WXDAI).withdraw(amountOut);
         TransferHelper.safeTransferETH(sp.to, amountOut);
     }
 
