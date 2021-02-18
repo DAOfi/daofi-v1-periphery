@@ -75,8 +75,8 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 0', () => {
       .withArgs(router.address, expectedBaseReserve, quoteReserve, expectedBaseOutput, wallet.address)
   })
 
-  it('addLiquidityETH: base and quote', async () => {
-    const { router, tokenBase, tokenQuote, pairETH, WETH } = routerFixture
+  it('addLiquidityXDAI: base and quote', async () => {
+    const { router, tokenBase, tokenQuote, xDAIPair, xDAI } = routerFixture
     const baseSupply = expandTo18Decimals(1e9) // total supply
     const quoteReserveFloat = getReserveForStartPrice(10, 1e6, 1) // 50
     const quoteReserve = expandTo18Decimals(quoteReserveFloat)
@@ -86,18 +86,18 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 0', () => {
 
     await tokenBase.approve(router.address, baseSupply)
     //await tokenQuote.approve(router.address, quoteReserve)
-    await expect(router.addLiquidityETH({
+    await expect(router.addLiquidityXDAI({
       sender: wallet.address,
       to: wallet.address,
       tokenBase: tokenBase.address,
-      tokenQuote: WETH.address,
+      tokenQuote: xDAI.address,
       amountBase: baseSupply,
       amountQuote: quoteReserve,
       slopeNumerator: 1e6,
       n: 1,
       fee: 0
     }, MaxUint256, {value: quoteReserve}))
-      .to.emit(pairETH, 'Deposit')
+      .to.emit(xDAIPair, 'Deposit')
       .withArgs(router.address, expectedBaseReserve, quoteReserve, expectedBaseOutput, wallet.address)
   })
 
@@ -147,8 +147,8 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 0', () => {
     expect(reserves[1]).to.eq(zero)
   })
 
-  it('removeLiquidityETH:', async () => {
-    const { router, tokenBase, WETH, pairETH } = routerFixture
+  it('removeLiquidityXDAI:', async () => {
+    const { router, tokenBase, xDAI, xDAIPair } = routerFixture
     const baseSupply = expandTo18Decimals(1e9)
     const quoteReserveFloat = getReserveForStartPrice(10, 1e6, 1)
     const quoteReserve = expandTo18Decimals(quoteReserveFloat)
@@ -158,11 +158,11 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 0', () => {
 
     await tokenBase.approve(router.address, baseSupply)
     //await tokenQuote.approve(router.address, quoteReserve)
-    await router.addLiquidityETH({
+    await router.addLiquidityXDAI({
       sender: wallet.address,
       to: wallet.address,
       tokenBase: tokenBase.address,
-      tokenQuote: WETH.address,
+      tokenQuote: xDAI.address,
       amountBase: baseSupply,
       amountQuote: quoteReserve,
       slopeNumerator: 1e6,
@@ -170,25 +170,25 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 0', () => {
       fee: 0
     }, MaxUint256, {value: quoteReserve})
 
-    await expect(router.removeLiquidityETH({
+    await expect(router.removeLiquidityXDAI({
       sender: wallet.address,
       to: wallet.address,
       tokenBase: tokenBase.address,
-      tokenQuote: WETH.address,
+      tokenQuote: xDAI.address,
       amountBase: baseSupply,
       amountQuote: quoteReserve,
       slopeNumerator: 1e6,
       n: 1,
       fee: 0
     }, MaxUint256))
-      .to.emit(pairETH, 'Withdraw')
+      .to.emit(xDAIPair, 'Withdraw')
       .withArgs(router.address, expectedBaseReserve, quoteReserve, router.address)
     expect(await tokenBase.balanceOf(wallet.address)).to.eq(baseSupply)
-    expect(await WETH.balanceOf(wallet.address)).to.eq(await WETH.totalSupply())
-    expect(await tokenBase.balanceOf(pairETH.address)).to.eq(zero)
-    expect(await WETH.balanceOf(pairETH.address)).to.eq(zero)
+    expect(await xDAI.balanceOf(wallet.address)).to.eq(await xDAI.totalSupply())
+    expect(await tokenBase.balanceOf(xDAIPair.address)).to.eq(zero)
+    expect(await xDAI.balanceOf(xDAIPair.address)).to.eq(zero)
 
-    const reserves = await pairETH.getReserves()
+    const reserves = await xDAIPair.getReserves()
     expect(reserves[0]).to.eq(zero)
     expect(reserves[1]).to.eq(zero)
   })
@@ -321,8 +321,8 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 0', () => {
     }
   })
 
-  it('swap: Ether for Tokens', async () => {
-    const { router, tokenBase, WETH, pairETH } = routerFixture
+  it('swap: XDAI for Tokens', async () => {
+    const { router, tokenBase, xDAI, xDAIPair } = routerFixture
     const baseSupply = expandTo18Decimals(1e9)
 
     await tokenBase.approve(router.address, baseSupply)
@@ -330,7 +330,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 0', () => {
       sender: wallet.address,
       to: wallet.address,
       tokenBase: tokenBase.address,
-      tokenQuote: WETH.address,
+      tokenQuote: xDAI.address,
       amountBase: baseSupply,
       amountQuote: zero,
       slopeNumerator: 1e6,
@@ -339,68 +339,68 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 0', () => {
     }, MaxUint256)
 
     const quoteAmountIn = expandTo18Decimals(50)
-    const baseAmountOut = await router.getBaseOut(quoteAmountIn, tokenBase.address, WETH.address, 1e6, 1, 0)
+    const baseAmountOut = await router.getBaseOut(quoteAmountIn, tokenBase.address, xDAI.address, 1e6, 1, 0)
 
-    await expect(router.swapExactETHForTokens({
+    await expect(router.swapExactXDAIForTokens({
       sender: wallet.address,
       to: wallet.address,
-      tokenIn: WETH.address,
+      tokenIn: xDAI.address,
       tokenOut: tokenBase.address,
       amountIn: quoteAmountIn,
       amountOut: baseAmountOut,
       tokenBase: tokenBase.address,
-      tokenQuote: WETH.address,
+      tokenQuote: xDAI.address,
       slopeNumerator: 1e6,
       n: 1,
       fee: 0
     }, MaxUint256, {value: quoteAmountIn}))
       .to.emit(tokenBase, 'Transfer')
-      .withArgs(pairETH.address, wallet.address, baseAmountOut)
-      .to.emit(pairETH, 'Swap')
-      .withArgs(pairETH.address, router.address, WETH.address, tokenBase.address, quoteAmountIn, baseAmountOut, wallet.address)
+      .withArgs(xDAIPair.address, wallet.address, baseAmountOut)
+      .to.emit(xDAIPair, 'Swap')
+      .withArgs(xDAIPair.address, router.address, xDAI.address, tokenBase.address, quoteAmountIn, baseAmountOut, wallet.address)
   })
 
-  it('swap: Tokens for Ether', async () => {
-    const { router, tokenBase, WETH, pairETH } = routerFixture
+  it('swap: Tokens for XDAI', async () => {
+    const { router, tokenBase, xDAI, xDAIPair } = routerFixture
     const baseSupply = expandTo18Decimals(1e9)
     //const WETHSupply = expandTo18Decimals(10) TODO, Low weth fails to transfer tokens
-    const WETHSupply = expandTo18Decimals(1000)
+    const WXDAISupply = expandTo18Decimals(1000)
 
     await tokenBase.approve(router.address, baseSupply)
-    await WETH.deposit({value: WETHSupply})
-    await WETH.approve(router.address, WETHSupply)
+    await xDAI.deposit({value: WXDAISupply})
+    await xDAI.approve(router.address, WXDAISupply)
     await router.addLiquidity({
       sender: wallet.address,
       to: wallet.address,
       tokenBase: tokenBase.address,
-      tokenQuote: WETH.address,
+      tokenQuote: xDAI.address,
       amountBase: baseSupply,
-      amountQuote: WETHSupply,
+      amountQuote: WXDAISupply,
       slopeNumerator: 1e6,
       n: 1,
       fee: 0
     }, MaxUint256)
 
     const baseAmountIn = expandTo18Decimals(10)
-    const quoteAmountOut = await router.getQuoteOut(baseAmountIn, tokenBase.address, WETH.address, 1e6, 1, 0)
+    const quoteAmountOut = await router.getQuoteOut(baseAmountIn, tokenBase.address, xDAI.address, 1e6, 1, 0)
     await tokenBase.approve(router.address, baseAmountIn)
 
-    await expect(router.swapExactTokensForETH({
+    await expect(router.swapExactTokensForXDAI({
       sender: wallet.address,
       to: wallet.address,
       tokenIn: tokenBase.address,
-      tokenOut: WETH.address,
+      tokenOut: xDAI.address,
       amountIn: baseAmountIn,
       amountOut: quoteAmountOut,
       tokenBase: tokenBase.address,
-      tokenQuote: WETH.address,
+      tokenQuote: xDAI.address,
       slopeNumerator: 1e6,
       n: 1,
       fee: 0
     }, MaxUint256))
-      .to.emit(WETH, 'Transfer')
-      .withArgs(pairETH.address, router.address, quoteAmountOut)
-      .to.emit(pairETH, 'Swap')
-      .withArgs(pairETH.address, router.address, tokenBase.address, WETH.address, baseAmountIn, quoteAmountOut, router.address)
+      .to.emit(xDAI, 'Transfer')
+      .withArgs(xDAIPair.address, router.address, quoteAmountOut)
+      .to.emit(xDAIPair, 'Swap')
+      .withArgs(xDAIPair.address, router.address, tokenBase.address, xDAI.address, baseAmountIn, quoteAmountOut, router.address)
   })
 })

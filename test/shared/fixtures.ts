@@ -42,7 +42,7 @@ export async function getFixtureWithParams(
   await formula.init()
   const factory = await deployContract(wallet, DAOfiV1Factory, [formula.address])
   // deploy router
-  const router = await Router.deploy(factory.address, WETH.address)
+  const router = await Router.deploy(factory.address, xDAI.address)
 
   // // initialize
   const controller = fromWallet ? wallet.address : router.address
