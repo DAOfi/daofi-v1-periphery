@@ -31,14 +31,14 @@ interface IDAOfiV1Router01 {
 
     function factory() external view returns (address);
 
-    function WETH() external view returns (address);
+    function WXDAI() external view returns (address);
 
     function addLiquidity(
         LiquidityParams calldata lp,
         uint deadline
     ) external returns (uint256 amountBase);
 
-    function addLiquidityETH(
+    function addLiquidityXDAI(
         LiquidityParams calldata lp,
         uint deadline
     ) external payable returns (uint256 amountBase);
@@ -48,7 +48,7 @@ interface IDAOfiV1Router01 {
         uint deadline
     ) external returns (uint256 amountBase, uint256 amountQuote);
 
-    function removeLiquidityETH(
+    function removeLiquidityXDAI(
         LiquidityParams calldata lp,
         uint deadline
     ) external returns (uint256 amountToken, uint256 amountETH);
