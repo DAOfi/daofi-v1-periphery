@@ -302,7 +302,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
     * @param sp Swap params, see IDAOfiV1Router.sol for details
     * @param deadline block timestamp
     */
-    function swapExactTokensForWXDAI(
+    function swapExactTokensForXDAI(
         SwapParams calldata sp,
         uint deadline
     ) external ensure(deadline) {
