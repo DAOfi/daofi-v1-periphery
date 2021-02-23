@@ -8,7 +8,7 @@ import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
 
 import './interfaces/IDAOfiV1Router01.sol';
 import './interfaces/IERC20.sol';
-import './interfaces/IWXDAI.sol';
+import './interfaces/IWxDAI.sol';
 import './libraries/DAOfiV1Library.sol';
 import './libraries/SafeMath.sol';
 
