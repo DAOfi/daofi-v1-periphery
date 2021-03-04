@@ -81,8 +81,8 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
             factory, lp.tokenBase, lp.tokenQuote, lp.slopeNumerator, lp.n, lp.fee
         );
 
-        TransferHelper.safeTransferFrom(lp.tokenBase, lp.sender, pair, lp.amountBase);
-        TransferHelper.safeTransferFrom(lp.tokenQuote, lp.sender, pair, lp.amountQuote);
+        TransferHelper.safeTransferFrom(lp.tokenBase, msg.sender, pair, lp.amountBase);
+        TransferHelper.safeTransferFrom(lp.tokenQuote, msg.sender, pair, lp.amountQuote);
         amountBase = IDAOfiV1Pair(pair).deposit(lp.to);
     }
 
