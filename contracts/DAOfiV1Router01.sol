@@ -60,23 +60,22 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         LiquidityParams calldata lp,
         uint deadline
     ) external override ensure(deadline) returns (uint256 amountBase) {
-        if (IDAOfiV1Factory(factory).getPair(
+        require(IDAOfiV1Factory(factory).getPair(
             lp.tokenBase,
             lp.tokenQuote,
             lp.slopeNumerator,
             lp.n,
             lp.fee
-        ) == address(0)) {
-            IDAOfiV1Factory(factory).createPair(
-                address(this),
-                lp.tokenBase,
-                lp.tokenQuote,
-                msg.sender,
-                lp.slopeNumerator,
-                lp.n,
-                lp.fee
-            );
-        }
+        ) == address(0), 'DAOfiV1Router: PAIR_EXISTS');
+        IDAOfiV1Factory(factory).createPair(
+            address(this),
+            lp.tokenBase,
+            lp.tokenQuote,
+            msg.sender,
+            lp.slopeNumerator,
+            lp.n,
+            lp.fee
+        );
         address pair = DAOfiV1Library.pairFor(
             factory, lp.tokenBase, lp.tokenQuote, lp.slopeNumerator, lp.n, lp.fee
         );
@@ -99,17 +98,21 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         LiquidityParams calldata lp,
         uint deadline
     ) external override payable ensure(deadline) returns (uint256 amountBase) {
-        if (IDAOfiV1Factory(factory).getPair(lp.tokenBase, WXDAI, lp.slopeNumerator, lp.n, lp.fee) == address(0)) {
-            IDAOfiV1Factory(factory).createPair(
-                address(this),
-                lp.tokenBase,
-                WXDAI,
-                msg.sender,
-                lp.slopeNumerator,
-                lp.n,
-                lp.fee
-            );
-        }
+        require(
+            IDAOfiV1Factory(factory).getPair(
+                lp.tokenBase, WXDAI, lp.slopeNumerator, lp.n, lp.fee
+            ) == address(0),
+            'DAOfiV1Router: PAIR_EXISTS'
+        );
+        IDAOfiV1Factory(factory).createPair(
+            address(this),
+            lp.tokenBase,
+            WXDAI,
+            msg.sender,
+            lp.slopeNumerator,
+            lp.n,
+            lp.fee
+        );
         address pair = DAOfiV1Library.pairFor(
             factory,
             lp.tokenBase,
@@ -120,7 +123,8 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         );
         TransferHelper.safeTransferFrom(lp.tokenBase, msg.sender, pair, lp.amountBase);
         IWXDAI(WXDAI).deposit{value: lp.amountQuote}();
-        assert(IWXDAI(WXDAI).transfer(pair, lp.amountQuote));
+        //assert(IWXDAI(WXDAI).transfer(pair, lp.amountQuote));
+        TransferHelper.safeTransferFrom(WXDAI, msg.sender, pair, lp.amountQuote);
         amountBase = IDAOfiV1Pair(pair).deposit(lp.to);
         // refund dust eth, if any
         if (msg.value > lp.amountQuote) TransferHelper.safeTransferETH(msg.sender, msg.value - lp.amountQuote);
@@ -162,8 +166,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
     ) external override ensure(deadline) returns (uint amountToken, uint amountETH) {
         IDAOfiV1Pair pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, lp.tokenBase, WXDAI, lp.slopeNumerator, lp.n, lp.fee));
         require(msg.sender == pair.pairOwner(), 'DAOfiV1Router: FORBIDDEN');
-        (amountToken, amountETH) = pair.withdraw(address(this));
-        assert(IERC20(lp.tokenBase).transfer(lp.to, amountToken));
+        (amountToken, amountETH) = pair.withdraw(lp.to);
         IWXDAI(WXDAI).withdraw(amountETH);
         TransferHelper.safeTransferETH(lp.to, amountETH);
     }
@@ -340,9 +343,9 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
             amountQuoteOut,
             address(this)
         );
-        uint amountOut = IWXDAI(WXDAI).balanceOf(address(this));
+        uint amountOut =  IWXDAI(sp.tokenOut).balanceOf(sp.to).sub(balanceBefore);
         require(
-            IWXDAI(sp.tokenOut).balanceOf(address(this)).sub(balanceBefore) >= sp.amountOut,
+            amountOut >= sp.amountOut,
             'DAOfiV1Router: INSUFFICIENT_OUTPUT_AMOUNT'
         );
         IWXDAI(WXDAI).withdraw(amountOut);
@@ -358,29 +361,12 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
     * @param n the pair's n parameter
     * @param fee the pair's fee parameter
     *
-    * @return price the price in quote tokens
+    * @return quotePrice the price in quote tokens
     */
-    function basePrice(address tokenBase, address tokenQuote, uint32 slopeNumerator, uint32 n, uint32 fee)
-        public view override returns (uint256 price)
+    function price(address tokenBase, address tokenQuote, uint32 slopeNumerator, uint32 n, uint32 fee)
+        public view override returns (uint256 quotePrice)
     {
-        price = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenBase, tokenQuote, slopeNumerator, n, fee)).basePrice();
-    }
-
-    /**
-    * @dev Get the price of 1 quote token.
-    *
-    * @param tokenBase the pair's base token address
-    * @param tokenQuote the pair's quote token address
-    * @param slopeNumerator the numerator of the pair's m parameter
-    * @param n the pair's n parameter
-    * @param fee the pair's fee parameter
-    *
-    * @return price the price in base tokens
-    */
-    function quotePrice(address tokenBase, address tokenQuote, uint32 slopeNumerator, uint32 n, uint32 fee)
-        public view override returns (uint256 price)
-    {
-        price = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenBase, tokenQuote, slopeNumerator, n, fee)).quotePrice();
+        quotePrice = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, tokenBase, tokenQuote, slopeNumerator, n, fee)).price();
     }
 
     /**
