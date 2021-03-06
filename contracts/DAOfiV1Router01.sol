@@ -5,6 +5,7 @@ pragma experimental ABIEncoderV2;
 import '@daofi/daofi-v1-core/contracts/interfaces/IDAOfiV1Factory.sol';
 import '@daofi/daofi-v1-core/contracts/interfaces/IDAOfiV1Pair.sol';
 import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
+import 'hardhat/console.sol';
 
 import './interfaces/IDAOfiV1Router01.sol';
 import './interfaces/IERC20.sol';
@@ -76,13 +77,16 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
             lp.n,
             lp.fee
         );
+
         address pair = DAOfiV1Library.pairFor(
             factory, lp.tokenBase, lp.tokenQuote, lp.slopeNumerator, lp.n, lp.fee
         );
 
         TransferHelper.safeTransferFrom(lp.tokenBase, msg.sender, pair, lp.amountBase);
         TransferHelper.safeTransferFrom(lp.tokenQuote, msg.sender, pair, lp.amountQuote);
+
         amountBase = IDAOfiV1Pair(pair).deposit(lp.to);
+
     }
 
     /**
@@ -123,8 +127,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         );
         TransferHelper.safeTransferFrom(lp.tokenBase, msg.sender, pair, lp.amountBase);
         IWXDAI(WXDAI).deposit{value: lp.amountQuote}();
-        //assert(IWXDAI(WXDAI).transfer(pair, lp.amountQuote));
-        TransferHelper.safeTransferFrom(WXDAI, msg.sender, pair, lp.amountQuote);
+        assert(IWXDAI(WXDAI).transfer(pair, lp.amountQuote));
         amountBase = IDAOfiV1Pair(pair).deposit(lp.to);
         // refund dust eth, if any
         if (msg.value > lp.amountQuote) TransferHelper.safeTransferETH(msg.sender, msg.value - lp.amountQuote);
@@ -166,7 +169,8 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
     ) external override ensure(deadline) returns (uint amountToken, uint amountETH) {
         IDAOfiV1Pair pair = IDAOfiV1Pair(DAOfiV1Library.pairFor(factory, lp.tokenBase, WXDAI, lp.slopeNumerator, lp.n, lp.fee));
         require(msg.sender == pair.pairOwner(), 'DAOfiV1Router: FORBIDDEN');
-        (amountToken, amountETH) = pair.withdraw(lp.to);
+        (amountToken, amountETH) = pair.withdraw(address(this));
+        assert(IERC20(lp.tokenBase).transfer(lp.to, amountToken));
         IWXDAI(WXDAI).withdraw(amountETH);
         TransferHelper.safeTransferETH(lp.to, amountETH);
     }
@@ -320,7 +324,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
             address(pair),
             sp.amountIn
         );
-        uint balanceBefore = IWXDAI(sp.tokenOut).balanceOf(sp.to);
+        uint balanceBefore = IWXDAI(WXDAI).balanceOf(address(this));
         (uint reserveBase,) = pair.getReserves();
         (uint pBaseFee,) = pair.getPlatformFees();
         (uint oBaseFee,) = pair.getOwnerFees();
@@ -338,12 +342,12 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         );
         pair.swap(
             sp.tokenIn,
-            sp.tokenOut,
+            WXDAI,
             amountBaseIn,
             amountQuoteOut,
             address(this)
         );
-        uint amountOut =  IWXDAI(sp.tokenOut).balanceOf(sp.to).sub(balanceBefore);
+        uint amountOut = IWXDAI(WXDAI).balanceOf(address(this)).sub(balanceBefore);
         require(
             amountOut >= sp.amountOut,
             'DAOfiV1Router: INSUFFICIENT_OUTPUT_AMOUNT'
