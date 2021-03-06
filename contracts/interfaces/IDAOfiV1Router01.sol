@@ -12,7 +12,7 @@ interface IDAOfiV1Router01 {
         uint256 amountOut; // The amount of token output
         address tokenBase; // The base token address of the pair
         address tokenQuote; // The quote token address of the pair
-        uint32 slopeNumerator; // The pair's numerator value (1-1000)
+        uint32 slopeNumerator; // The pair's numerator value (1-1000000)
         uint32 n; // The pair's n value (1-3)
         uint32 fee; // The pair's fee value (0-10)
     }
@@ -24,7 +24,7 @@ interface IDAOfiV1Router01 {
         address tokenQuote; // The quote token address of the pair
         uint256 amountBase; // The pair's total base reserve
         uint256 amountQuote; // The pair's initial quote reserve
-        uint32 slopeNumerator; // The pair's numerator value (1-1000)
+        uint32 slopeNumerator; // The pair's numerator value (1-1000000)
         uint32 n; // The pair's n value (1-3)
         uint32 fee; // The pair's fee value (0-10)
     }
@@ -71,11 +71,8 @@ interface IDAOfiV1Router01 {
     //     uint deadline
     // ) external;
 
-    function basePrice(address tokenBase, address tokenQuote, uint32 m, uint32 n, uint32 fee)
-        external view returns (uint256 price);
-
-    function quotePrice(address tokenBase, address tokenQuote, uint32 m, uint32 n, uint32 fee)
-        external view returns (uint256 price);
+    function price(address tokenBase, address tokenQuote, uint32 m, uint32 n, uint32 fee)
+        external view returns (uint256 quotePrice);
 
     function getBaseOut(uint256 amountQuoteIn, address tokenBase, address tokenQuote, uint32 m, uint32 n, uint32 fee)
         external view returns (uint256 amountBaseOut);

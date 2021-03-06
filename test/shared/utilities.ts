@@ -1,6 +1,6 @@
 import { ethers } from 'hardhat'
 import { BigNumber, Contract } from 'ethers'
-const { keccak256, defaultAbiCoder, toUtf8Bytes, solidityPack } = ethers.utils
+const { getAddress, keccak256, defaultAbiCoder, toUtf8Bytes, solidityPack } = ethers.utils
 
 export const MINIMUM_LIQUIDITY = ethers.BigNumber.from(10).pow(3)
 
@@ -55,6 +55,25 @@ export async function getApprovalDigest(
       ]
     )
   )
+}
+
+export function getCreate2Address(
+  factoryAddress: string,
+  tokenBase: string,
+  tokenQuote: string,
+  slopeNumerator: number,
+  n: number,
+  fee: number,
+  bytecode: string
+): string {
+  const create2Inputs = [
+    '0xff',
+    factoryAddress,
+    keccak256(solidityPack(['address', 'address', 'uint32', 'uint32', 'uint32'], [tokenBase, tokenQuote, slopeNumerator, n, fee])),
+    keccak256(bytecode)
+  ]
+  const sanitizedInputs = `0x${create2Inputs.map(i => i.slice(2)).join('')}`
+  return getAddress(`0x${keccak256(sanitizedInputs).slice(-40)}`)
 }
 
 const slopeD = 1e6
