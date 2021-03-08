@@ -13,9 +13,9 @@ async function main() {
     DAOfiV1Router01,
     [
       // factory
-      '0x3F527d6693e5F16023b9e7c3AAE843483e2a597C',
+      '0x6C2B55F000f29fF0744d56c1c785f91C39Ab29f1',
       // WXDAI
-      '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d',
+      '0x705581f5830Cfd11715020543f5309ADEBdbd074',
     ],
     {
       chainId: process.env.CHAIN_ID ? parseInt(process.env.CHAIN_ID) : 0x4D, // default to sokol (77)
