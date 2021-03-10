@@ -7,10 +7,10 @@
   resolved "https://registry.yarnpkg.com/@daofi/bancor/-/bancor-0.6.27-daofi.0.tgz#8ac8b34eec0f63eb8448e9e0c7e3cb2bf990d2fe"
   integrity sha512-9SWP+YEZyDZxLm8sfdeJRAjze9SrdvPk59XWvW/S3rNrr3U9b5G/wZWkKrTi6Y+IPKAqZQL796nBNts7whjBcg==
 
-"@daofi/daofi-v1-core@1.0.3":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@daofi/daofi-v1-core/-/daofi-v1-core-1.0.3.tgz#9d819ae494f63b891ab40b335c580e80e5c18a35"
-  integrity sha512-UvCiPN0mIjtBLUEjjFkbWDSsJGP/eUHXiC3nROd/7phXs/51gQuBaJylLTM6jQklmqC7gOkSCY7ZYza4IDn2gw==
+"@daofi/daofi-v1-core@1.0.4":
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/@daofi/daofi-v1-core/-/daofi-v1-core-1.0.4.tgz#0ec87326f7c5daee82c0139608087d7066163c15"
+  integrity sha512-MrkeEHdInit0KYqMxxn/xCe0iSRCTngogT0pJTjeb5RCQi2kiMo9czaAaLo9L66s0ZS3NSmOP38YSQNT8iplBA==
 
 "@ensdomains/ens@^0.4.4":
   version "0.4.5"
