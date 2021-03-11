@@ -12,10 +12,14 @@ async function main() {
     wallet,
     DAOfiV1Router01,
     [
-      // factory
-      '0x1F92A85AB6F3aC7eB1F6E1B2114c79a349Fd936f',
+      // factory sokol
+      // '0x1F92A85AB6F3aC7eB1F6E1B2114c79a349Fd936f',
+      // factory xdai
+      '0xc77a83553938EBcB7b0d8d91aa8C5DbBAb8eEA8d',
       // WXDAI on sokol
-      '0x705581f5830Cfd11715020543f5309ADEBdbd074',
+      // '0x705581f5830Cfd11715020543f5309ADEBdbd074',
+      // WXDAI on xdai
+      '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d'
     ],
     {
       chainId: process.env.CHAIN_ID ? parseInt(process.env.CHAIN_ID) : 0x4D, // default to sokol (77)
