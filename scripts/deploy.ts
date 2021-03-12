@@ -15,7 +15,7 @@ async function main() {
       // factory sokol
       // '0x1F92A85AB6F3aC7eB1F6E1B2114c79a349Fd936f',
       // factory xdai
-      '0xc77a83553938EBcB7b0d8d91aa8C5DbBAb8eEA8d',
+      '0x408b10d4a4EA307017B647732D7BcE95A3fD76B2',
       // WXDAI on sokol
       // '0x705581f5830Cfd11715020543f5309ADEBdbd074',
       // WXDAI on xdai
