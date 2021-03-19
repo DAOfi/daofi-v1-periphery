@@ -4,7 +4,7 @@ import ERC20 from '../build/contracts/test/ERC20.sol/ERC20.json'
 
 async function main() {
   const provider = new ethers.providers.JsonRpcProvider(
-    process.env.JSONRPC_URL || 'https://sokol.poa.network'
+    process.env.JSONRPC_URL || 'https://kovan.poa.network'
   )
   const wallet = new ethers.Wallet(process.env.PRIVATE_KEY || '', provider)
   console.log('wallet', wallet.address)

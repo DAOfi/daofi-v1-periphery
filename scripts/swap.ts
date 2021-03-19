@@ -11,7 +11,7 @@ async function main() {
     gasPrice: ethers.utils.parseUnits('200', 'gwei')
   }
   const provider = new ethers.providers.JsonRpcProvider(
-    process.env.JSONRPC_URL || 'https://sokol.poa.network',
+    process.env.JSONRPC_URL || 'https://kovan.poa.network',
     process.env.CHAIN_ID ? parseInt(process.env.CHAIN_ID) : 0x4d
   )
   const wallet = new ethers.Wallet(process.env.PRIVATE_KEY || '', provider)

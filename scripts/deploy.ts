@@ -4,7 +4,7 @@ import DAOfiV1Router01 from '../build/contracts/DAOfiV1Router01.sol/DAOfiV1Route
 
 async function main() {
   const provider = new ethers.providers.JsonRpcProvider(
-    process.env.JSONRPC_URL || 'https://sokol.poa.network'
+    process.env.JSONRPC_URL || 'https://kovan.poa.network'
   )
   const wallet = new ethers.Wallet(process.env.PRIVATE_KEY || '', provider)
   console.log('Wallet:', wallet.address)
@@ -22,7 +22,7 @@ async function main() {
       '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d'
     ],
     {
-      chainId: process.env.CHAIN_ID ? parseInt(process.env.CHAIN_ID) : 0x4D, // default to sokol (77)
+      chainId: process.env.CHAIN_ID ? parseInt(process.env.CHAIN_ID) : 0x2A, // default to kovan (77)
       gasLimit: 9999999,
       gasPrice: ethers.utils.parseUnits('120', 'gwei')
     }
