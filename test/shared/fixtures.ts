@@ -75,7 +75,7 @@ export async function getTokenFixture(
 }
 
 
-export async function getXDAIFixture(
+export async function getETHFixture(
   wallet: SignerWithAddress,
   slopeNumerator: number = 1e6,
   n: number,
@@ -104,7 +104,7 @@ export async function getXDAIFixture(
   const amountQuote = expandTo18Decimals(quoteAmount)
   await tokenBase.approve(router.address, amountBase)
 
-  await expect(router.addLiquidityXDAI({
+  await expect(router.addLiquidityETH({
     sender: wallet.address,
     to: wallet.address,
     tokenBase: tokenBase.address,

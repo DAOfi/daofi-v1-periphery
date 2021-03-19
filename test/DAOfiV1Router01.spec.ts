@@ -2,14 +2,14 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-wit
 import { expect } from 'chai'
 import { BigNumber, Contract } from 'ethers'
 import { ethers } from 'hardhat'
-import { Fixture, getTokenFixture, getXDAIFixture } from './shared/fixtures'
+import { Fixture, getTokenFixture, getETHFixture } from './shared/fixtures'
 import { expandTo18Decimals, getReserveForStartPrice } from './shared/utilities'
 
 const zero = ethers.BigNumber.from(0)
 const MaxUint256 = ethers.constants.MaxUint256
 
 let tokenFixture: Fixture
-let xdaiFixture: Fixture
+let ethFixture: Fixture
 let wallet: SignerWithAddress
 let baseReserve: BigNumber
 let quoteReserve: BigNumber
@@ -26,7 +26,7 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 0', () => {
     quoteReserveFloat = getReserveForStartPrice(10, 1e6, 1)
     quoteReserve = expandTo18Decimals(quoteReserveFloat)
     tokenFixture = await getTokenFixture(wallet, 1e6, 1, 0, quoteReserveFloat)
-    xdaiFixture = await getXDAIFixture(wallet, 1e6, 1, 0, quoteReserveFloat)
+    ethFixture = await getETHFixture(wallet, 1e6, 1, 0, quoteReserveFloat)
   })
 
   it('removeLiquidity:', async () => {
@@ -55,10 +55,10 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 0', () => {
     expect(reserves[1]).to.eq(zero)
   })
 
-  it('removeLiquidityXDAI:', async () => {
-    const { router, pair, tokenBase, xDAI } = xdaiFixture
+  it('removeLiquidityETH:', async () => {
+    const { router, pair, tokenBase, xDAI } = ethFixture
 
-    await expect(router.removeLiquidityXDAI({
+    await expect(router.removeLiquidityETH({
       sender: wallet.address,
       to: wallet.address,
       tokenBase: tokenBase.address,
@@ -164,13 +164,13 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 0', () => {
     }
   })
 
-  it('swap: XDAI for Tokens', async () => {
-    const { router, tokenBase, xDAI, pair } = xdaiFixture
+  it('swap: ETH for Tokens', async () => {
+    const { router, tokenBase, xDAI, pair } = ethFixture
 
     const quoteAmountIn = expandTo18Decimals(50)
     const baseAmountOut = await router.getBaseOut(quoteAmountIn, tokenBase.address, xDAI.address, 1e6, 1, 0)
 
-    await expect(router.swapExactXDAIForTokens({
+    await expect(router.swapExactETHForTokens({
       sender: wallet.address,
       to: wallet.address,
       tokenIn: xDAI.address,
@@ -189,13 +189,13 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 0', () => {
       .withArgs(pair.address, router.address, xDAI.address, tokenBase.address, quoteAmountIn, baseAmountOut, wallet.address)
   })
 
-  it('swap: Tokens for XDAI', async () => {
-    const { router, tokenBase, xDAI, pair } = xdaiFixture
+  it('swap: Tokens for ETH', async () => {
+    const { router, tokenBase, xDAI, pair } = ethFixture
 
     const quoteAmountOut = await router.getQuoteOut(expectedBaseOutput, tokenBase.address, xDAI.address, 1e6, 1, 0)
     await tokenBase.approve(router.address, expectedBaseOutput)
 
-    await expect(router.swapExactTokensForXDAI({
+    await expect(router.swapExactTokensForETH({
       sender: wallet.address,
       to: wallet.address,
       tokenIn: tokenBase.address,
