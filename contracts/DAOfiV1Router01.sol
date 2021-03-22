@@ -9,7 +9,7 @@ import 'hardhat/console.sol';
 
 import './interfaces/IDAOfiV1Router01.sol';
 import './interfaces/IERC20.sol';
-import './interfaces/IWxDAI.sol';
+import './interfaces/IWETH10.sol';
 import './libraries/DAOfiV1Library.sol';
 import './libraries/SafeMath.sol';
 
@@ -126,8 +126,8 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
             lp.fee
         );
         TransferHelper.safeTransferFrom(lp.tokenBase, msg.sender, pair, lp.amountBase);
-        IWETH(WETH).deposit{value: lp.amountQuote}();
-        assert(IWETH(WETH).transfer(pair, lp.amountQuote));
+        IWETH10(WETH).deposit{value: lp.amountQuote}();
+        assert(IWETH10(WETH).transfer(pair, lp.amountQuote));
         amountBase = IDAOfiV1Pair(pair).deposit(lp.to);
         // refund dust eth, if any
         if (msg.value > lp.amountQuote) TransferHelper.safeTransferETH(msg.sender, msg.value - lp.amountQuote);
@@ -171,7 +171,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         require(msg.sender == pair.pairOwner(), 'DAOfiV1Router: FORBIDDEN');
         (amountToken, amountETH) = pair.withdraw(address(this));
         assert(IERC20(lp.tokenBase).transfer(lp.to, amountToken));
-        IWETH(WETH).withdraw(amountETH);
+        IWETH10(WETH).withdraw(amountETH);
         TransferHelper.safeTransferETH(lp.to, amountETH);
     }
 
@@ -271,13 +271,13 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
         IDAOfiV1Pair pair = IDAOfiV1Pair(
             DAOfiV1Library.pairFor(factory, sp.tokenBase, sp.tokenQuote, sp.slopeNumerator, sp.n, sp.fee)
         );
-        IWETH(WETH).deposit{value: msg.value}();
-        assert(IWETH(WETH).transfer(address(pair), msg.value));
+        IWETH10(WETH).deposit{value: msg.value}();
+        assert(IWETH10(WETH).transfer(address(pair), msg.value));
         uint balanceBefore = IERC20(sp.tokenOut).balanceOf(sp.to);
         (, uint reserveQuote) = pair.getReserves();
         (, uint pQuoteFee) = pair.getPlatformFees();
         (, uint oQuoteFee) = pair.getOwnerFees();
-        uint amountQuoteIn = IWETH(WETH).balanceOf(address(pair))
+        uint amountQuoteIn = IWETH10(WETH).balanceOf(address(pair))
             .sub(reserveQuote)
             .sub(pQuoteFee)
             .sub(oQuoteFee);
@@ -324,7 +324,7 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
             address(pair),
             sp.amountIn
         );
-        uint balanceBefore = IWETH(WETH).balanceOf(address(this));
+        uint balanceBefore = IWETH10(WETH).balanceOf(address(this));
         (uint reserveBase,) = pair.getReserves();
         (uint pBaseFee,) = pair.getPlatformFees();
         (uint oBaseFee,) = pair.getOwnerFees();
@@ -347,12 +347,12 @@ contract DAOfiV1Router01 is IDAOfiV1Router01 {
             amountQuoteOut,
             address(this)
         );
-        uint amountOut = IWETH(WETH).balanceOf(address(this)).sub(balanceBefore);
+        uint amountOut = IWETH10(WETH).balanceOf(address(this)).sub(balanceBefore);
         require(
             amountOut >= sp.amountOut,
             'DAOfiV1Router: INSUFFICIENT_OUTPUT_AMOUNT'
         );
-        IWETH(WETH).withdraw(amountOut);
+        IWETH10(WETH).withdraw(amountOut);
         TransferHelper.safeTransferETH(sp.to, amountOut);
     }
 

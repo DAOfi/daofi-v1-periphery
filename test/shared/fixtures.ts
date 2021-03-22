@@ -13,7 +13,7 @@ const MaxUint256 = ethers.constants.MaxUint256
 export interface Fixture {
   tokenBase: Contract
   tokenQuote: Contract
-  xDAI: Contract
+  WETH: Contract
   factory: any
   router: Contract
   pair: Contract
@@ -28,20 +28,20 @@ export async function getTokenFixture(
 ): Promise<Fixture> {
 
   const Token = await ethers.getContractFactory("ERC20")
-  const XDai = await ethers.getContractFactory("WxDAI")
+  const XDai = await ethers.getContractFactory("WETH10")
   const Router = await ethers.getContractFactory("DAOfiV1Router01")
 
   // deploy tokens
   const tokenBase = await Token.deploy(ethers.BigNumber.from('0x033b2e3c9fd0803ce8000000')) //1e9 tokens with 18
   const tokenQuote =  await Token.deploy(ethers.BigNumber.from('0x033b2e3c9fd0803ce8000000'))
-  const xDAI = await XDai.deploy()
+  const WETH = await XDai.deploy()
 
   // deploy factory
   const formula = await deployContract(wallet, BancorFormula as any)
   await formula.init()
   const factory = await deployContract(wallet, DAOfiV1Factory, [formula.address])
   // deploy router
-  const router = await Router.deploy(factory.address, xDAI.address)
+  const router = await Router.deploy(factory.address, WETH.address)
 
   // // initialize
   const amountBase = expandTo18Decimals(1e9)
@@ -67,7 +67,7 @@ export async function getTokenFixture(
   return {
     tokenBase,
     tokenQuote,
-    xDAI,
+    WETH,
     factory,
     router,
     pair,
@@ -84,20 +84,20 @@ export async function getETHFixture(
 ): Promise<Fixture> {
 
   const Token = await ethers.getContractFactory("ERC20")
-  const XDai = await ethers.getContractFactory("WxDAI")
+  const XDai = await ethers.getContractFactory("WETH10")
   const Router = await ethers.getContractFactory("DAOfiV1Router01")
 
   // deploy tokens
   const tokenBase = await Token.deploy(ethers.BigNumber.from('0x033b2e3c9fd0803ce8000000')) //1e9 tokens with 18
   const tokenQuote =  await Token.deploy(ethers.BigNumber.from('0x033b2e3c9fd0803ce8000000'))
-  const xDAI = await XDai.deploy()
+  const WETH = await XDai.deploy()
 
   // deploy factory
   const formula = await deployContract(wallet, BancorFormula as any)
   await formula.init()
   const factory = await deployContract(wallet, DAOfiV1Factory, [formula.address])
   // deploy router
-  const router = await Router.deploy(factory.address, xDAI.address)
+  const router = await Router.deploy(factory.address, WETH.address)
 
   // // initialize
   const amountBase = expandTo18Decimals(1e9)
@@ -108,7 +108,7 @@ export async function getETHFixture(
     sender: wallet.address,
     to: wallet.address,
     tokenBase: tokenBase.address,
-    tokenQuote: xDAI.address,
+    tokenQuote: WETH.address,
     amountBase,
     amountQuote,
     slopeNumerator,
@@ -116,13 +116,13 @@ export async function getETHFixture(
     fee
   }, MaxUint256, { value: amountQuote })).to.not.be.reverted
 
-  const pairAddress = await factory.getPair(tokenBase.address, xDAI.address, slopeNumerator, n, fee)
+  const pairAddress = await factory.getPair(tokenBase.address, WETH.address, slopeNumerator, n, fee)
   const pair = new Contract(pairAddress, JSON.stringify(DAOfiV1Pair.abi)).connect(wallet)
 
   return {
     tokenBase,
     tokenQuote,
-    xDAI,
+    WETH,
     factory,
     router,
     pair,
