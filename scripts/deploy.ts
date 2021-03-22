@@ -13,18 +13,18 @@ async function main() {
     DAOfiV1Router01,
     [
       // factory kovan
-      // '0x1F92A85AB6F3aC7eB1F6E1B2114c79a349Fd936f',
+      '0xf3Fc676c0aa38EC808CA848F081c55f3f03d4810',
       // factory mainnet
-      '0x408b10d4a4EA307017B647732D7BcE95A3fD76B2',
+      // '',
       // WETH on kovan
-      // '0x705581f5830Cfd11715020543f5309ADEBdbd074',
+      '0xa1c74a9a3e59ffe9bee7b85cd6e91c0751289ebd',
       // WETH on mainnet
-      '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d'
+      // '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
     ],
     {
-      chainId: process.env.CHAIN_ID ? parseInt(process.env.CHAIN_ID) : 0x2A, // default to kovan (77)
+      chainId: process.env.CHAIN_ID ? parseInt(process.env.CHAIN_ID) : 0x2A, // default to kovan (42)
       gasLimit: 9999999,
-      gasPrice: ethers.utils.parseUnits('120', 'gwei')
+      gasPrice: ethers.utils.parseUnits('200', 'gwei')
     }
   )
   console.log('Router deployted at:', router.address)

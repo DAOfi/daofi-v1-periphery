@@ -1,6 +1,6 @@
 {
   "name": "@daofi/daofi-v1-periphery",
-  "version": "1.0.3",
+  "version": "1.0.3-mainnet",
   "description": "Peripheral smart contracts for interacting with DAOfi V1",
   "engines": {
     "node": ">=12"
