@@ -13,10 +13,10 @@ async function main() {
     wallet,
     ERC20,
     [
-      ethers.utils.parseEther('1000000000')
+      ethers.utils.parseEther('1111111')
     ],
     {
-      chainId: process.env.CHAIN_ID ? parseInt(process.env.CHAIN_ID) : 0x4d,
+      chainId: process.env.CHAIN_ID ? parseInt(process.env.CHAIN_ID) : 0x2A,
       gasLimit: 9999999,
       gasPrice: ethers.utils.parseUnits('120', 'gwei')
     }
@@ -27,10 +27,10 @@ async function main() {
     wallet,
     ERC20,
     [
-      ethers.utils.parseEther('1000000000')
+      ethers.utils.parseEther('2222222')
     ],
     {
-      chainId: process.env.CHAIN_ID ? parseInt(process.env.CHAIN_ID) : 0x4d,
+      chainId: process.env.CHAIN_ID ? parseInt(process.env.CHAIN_ID) : 0x2A,
       gasLimit: 9999999,
       gasPrice: ethers.utils.parseUnits('120', 'gwei')
     }
