@@ -13,29 +13,29 @@ async function main() {
     wallet,
     ERC20,
     [
-      ethers.utils.parseEther('1111111')
-    ],
-    {
-      chainId: process.env.CHAIN_ID ? parseInt(process.env.CHAIN_ID) : 0x2A,
-      gasLimit: 9999999,
-      gasPrice: ethers.utils.parseUnits('120', 'gwei')
-    }
-  )
-  console.log('deployed tokenA', tokenA.address)
-
-  const tokenB = await deployContract(
-    wallet,
-    ERC20,
-    [
       ethers.utils.parseEther('2222222')
     ],
     {
       chainId: process.env.CHAIN_ID ? parseInt(process.env.CHAIN_ID) : 0x2A,
-      gasLimit: 9999999,
-      gasPrice: ethers.utils.parseUnits('120', 'gwei')
+      gasLimit: 1200000,
+      gasPrice: ethers.utils.parseUnits('200', 'gwei')
     }
   )
-  console.log('deployed tokenB', tokenB.address)
+  console.log('deployed tokenB', tokenA.address)
+
+  // const tokenB = await deployContract(
+  //   wallet,
+  //   ERC20,
+  //   [
+  //     ethers.utils.parseEther('2222222')
+  //   ],
+  //   {
+  //     chainId: process.env.CHAIN_ID ? parseInt(process.env.CHAIN_ID) : 0x2A,
+  //     gasLimit: 150000,
+  //     gasPrice: ethers.utils.parseUnits('200', 'gwei')
+  //   }
+  // )
+  // console.log('deployed tokenB', tokenB.address)
 }
 
 main()
