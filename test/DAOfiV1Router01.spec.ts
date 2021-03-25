@@ -29,6 +29,24 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 0', () => {
     ethFixture = await getETHFixture(wallet, 1e6, 1, 0, quoteReserveFloat)
   })
 
+  it('removeLiquidity: gas cost', async () => {
+    const { router, pair, tokenBase, tokenQuote } = tokenFixture
+
+    const tx =  await router.removeLiquidity({
+      sender: wallet.address,
+      to: wallet.address,
+      tokenBase: tokenBase.address,
+      tokenQuote: tokenQuote.address,
+      amountBase: baseReserve,
+      amountQuote: quoteReserve,
+      slopeNumerator: 1e6,
+      n: 1,
+      fee: 0
+    }, MaxUint256)
+    const receipt = await tx.wait()
+    expect(receipt.gasUsed).to.lte(85000)
+  })
+
   it('removeLiquidity:', async () => {
     const { router, pair, tokenBase, tokenQuote } = tokenFixture
 
@@ -53,6 +71,24 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 0', () => {
     const reserves = await pair.getReserves()
     expect(reserves[0]).to.eq(zero)
     expect(reserves[1]).to.eq(zero)
+  })
+
+  it('removeLiquidityETH: gas cost', async () => {
+    const { router, pair, tokenBase, WETH } = ethFixture
+
+    const tx = await router.removeLiquidityETH({
+      sender: wallet.address,
+      to: wallet.address,
+      tokenBase: tokenBase.address,
+      tokenQuote: WETH.address,
+      amountBase: baseReserve,
+      amountQuote: quoteReserve,
+      slopeNumerator: 1e6,
+      n: 1,
+      fee: 0
+    }, MaxUint256)
+    const receipt = await tx.wait()
+    expect(receipt.gasUsed).to.lte(85000)
   })
 
   it('removeLiquidityETH:', async () => {
@@ -104,6 +140,29 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 0', () => {
     expect(await router.getQuoteOut(expectedBaseOutput, tokenBase.address, tokenQuote.address, 1e6, 1, 0)).to.eq(
       quoteAmountOut
     )
+  })
+
+  it('swap: Tokens -> Tokens gas cost', async () => {
+    const { router, tokenBase, tokenQuote, pair } = tokenFixture
+    const quoteAmountIn = expandTo18Decimals(50)
+    const baseAmountOut = await router.getBaseOut(quoteAmountIn, tokenBase.address, tokenQuote.address, 1e6, 1, 0)
+
+    await tokenQuote.approve(router.address, quoteAmountIn)
+    const tx = await router.swapExactTokensForTokens({
+      sender: wallet.address,
+      to: wallet.address,
+      tokenIn: tokenQuote.address,
+      tokenOut: tokenBase.address,
+      amountIn: quoteAmountIn,
+      amountOut: baseAmountOut,
+      tokenBase: tokenBase.address,
+      tokenQuote: tokenQuote.address,
+      slopeNumerator: 1e6,
+      n: 1,
+      fee: 0
+    }, MaxUint256)
+    const receipt = await tx.wait()
+    expect(receipt.gasUsed).to.lte(230000)
   })
 
   it('swap: quote for base and back to quote', async () => {
@@ -164,6 +223,29 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 0', () => {
     }
   })
 
+  it('swap: ETH -> Tokens gas cost', async () => {
+    const { router, tokenBase, WETH, pair } = ethFixture
+
+    const quoteAmountIn = expandTo18Decimals(50)
+    const baseAmountOut = await router.getBaseOut(quoteAmountIn, tokenBase.address, WETH.address, 1e6, 1, 0)
+
+    const tx = await router.swapExactETHForTokens({
+      sender: wallet.address,
+      to: wallet.address,
+      tokenIn: WETH.address,
+      tokenOut: tokenBase.address,
+      amountIn: quoteAmountIn,
+      amountOut: baseAmountOut,
+      tokenBase: tokenBase.address,
+      tokenQuote: WETH.address,
+      slopeNumerator: 1e6,
+      n: 1,
+      fee: 0
+    }, MaxUint256, {value: quoteAmountIn})
+    const receipt = await tx.wait()
+    expect(receipt.gasUsed).to.lte(230000)
+  })
+
   it('swap: ETH for Tokens', async () => {
     const { router, tokenBase, WETH, pair } = ethFixture
 
@@ -187,6 +269,29 @@ describe('DAOfiV1Router01: m = 1, n = 1, fee = 0', () => {
       .withArgs(pair.address, wallet.address, baseAmountOut)
       .to.emit(pair, 'Swap')
       .withArgs(pair.address, router.address, WETH.address, tokenBase.address, quoteAmountIn, baseAmountOut, wallet.address)
+  })
+
+  it('swap: Tokens -> ETH gas cost', async () => {
+    const { router, tokenBase, WETH, pair } = ethFixture
+
+    const quoteAmountOut = await router.getQuoteOut(expectedBaseOutput, tokenBase.address, WETH.address, 1e6, 1, 0)
+    await tokenBase.approve(router.address, expectedBaseOutput)
+
+    const tx = await router.swapExactTokensForETH({
+      sender: wallet.address,
+      to: wallet.address,
+      tokenIn: tokenBase.address,
+      tokenOut: WETH.address,
+      amountIn: expectedBaseOutput,
+      amountOut: quoteAmountOut,
+      tokenBase: tokenBase.address,
+      tokenQuote: WETH.address,
+      slopeNumerator: 1e6,
+      n: 1,
+      fee: 0
+    }, MaxUint256)
+    const receipt = await tx.wait()
+    expect(receipt.gasUsed).to.lte(230000)
   })
 
   it('swap: Tokens for ETH', async () => {

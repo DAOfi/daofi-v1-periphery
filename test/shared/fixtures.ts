@@ -49,7 +49,7 @@ export async function getTokenFixture(
 
   await tokenBase.approve(router.address, amountBase)
   await tokenQuote.approve(router.address, amountQuote)
-  await expect(router.addLiquidity({
+  const addLiqTx = await router.addLiquidity({
     sender: wallet.address,
     to: wallet.address,
     tokenBase: tokenBase.address,
@@ -59,7 +59,10 @@ export async function getTokenFixture(
     slopeNumerator,
     n,
     fee
-  }, MaxUint256)).to.not.be.reverted
+  }, MaxUint256)
+  // check gas for add liquidity
+  const receipt = await addLiqTx.wait()
+  expect(receipt.gasUsed).to.lte(3800000)
 
   const pairAddress = await factory.getPair(tokenBase.address, tokenQuote.address, slopeNumerator, n, fee)
   const pair = new Contract(pairAddress, JSON.stringify(DAOfiV1Pair.abi)).connect(wallet)
