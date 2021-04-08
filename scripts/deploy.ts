@@ -4,7 +4,7 @@ import DAOfiV1Router01 from '../build/contracts/DAOfiV1Router01.sol/DAOfiV1Route
 
 async function main() {
   const provider = new ethers.providers.JsonRpcProvider(
-    process.env.JSONRPC_URL || 'https://kovan.poa.network'
+    process.env.JSONRPC_URL || 'https://data-seed-prebsc-1-s1.binance.org:8545'
   )
   const wallet = new ethers.Wallet(process.env.PRIVATE_KEY || '', provider)
   console.log('Wallet:', wallet.address)
@@ -12,19 +12,14 @@ async function main() {
     wallet,
     DAOfiV1Router01,
     [
-      // factory kovan
-      //'0xf3Fc676c0aa38EC808CA848F081c55f3f03d4810',
-      // factory mainnet
-      '0xEaC9260C59693f180936779451B996b303a0A488',
-      // WETH on kovan
-      // '0xa1c74a9a3e59ffe9bee7b85cd6e91c0751289ebd',
-      // WETH on mainnet
-       '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+      // factory BSC
+      '0x6B5437490EA99305C5acae19fE37454b3Ff199bF',
+      // WBNB
+      '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c'
     ],
     {
-      chainId: process.env.CHAIN_ID ? parseInt(process.env.CHAIN_ID) : 0x2A, // default to kovan (42)
       gasLimit: 8000000,
-      gasPrice: ethers.utils.parseUnits('200', 'gwei')
+      gasPrice: ethers.utils.parseUnits('20', 'gwei')
     }
   )
   console.log('Router deployted at:', router.address)
